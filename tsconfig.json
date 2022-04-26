@@ -1,27 +1,30 @@
 {
   "compilerOptions": {
-    "module": "esnext",
+    "module": "ESNext",
     "noImplicitAny": true,
     "removeComments": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    // Process & infer types from .js files.
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "allowJs": true,
     "target": "ES2017",
     "baseUrl": "./",
+    "typeRoots": [
+      "./node_modules/@types", 
+      "src/types", 
+      "./node_modules/localforage/typings"
+    ],
     "paths": {
       "*": [
         "src/*"
       ],
-      "@reactory/server-core/*": [
+      "@reactory/reactory-core/*": [
         "src/*"
-      ],
-      "@reactory/server-modules/*": [
-        "src/modules/*"
-      ],
+      ],      
       "test/*": [
         "test/*"
       ],
-    }
+    },
   },
 }

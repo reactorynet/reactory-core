@@ -1,0 +1,8 @@
+{
+  "extension": [
+    "ts"
+  ],
+  "spec": "test/*.spec.*",
+  "loader": "ts-node/register",
+  "recursive": true
+}
