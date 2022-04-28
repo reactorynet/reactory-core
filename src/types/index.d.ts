@@ -6,11 +6,21 @@ import ExcelJS from 'exceljs';
 import { Stream } from "stream";
 import moment from "moment";
 import { v4 as uuid } from 'uuid';
+import { GraphQLSchema } from 'graphql';
 import classNames from 'classnames';
 import ObjectMapper from 'object-mapper';
 import HumanNumner from 'human-number';
 import HumanDate from 'human-date';
-import { ApolloClient, ApolloQueryResult, MutationResult, Resolvers, gql, DocumentNode, NormalizedCacheObject, FetchResult } from '@apollo/client';
+import { ApolloClient, 
+  ApolloQueryResult, MutationResult, 
+  Resolvers, gql, DocumentNode, NormalizedCacheObject, FetchResult 
+} from '@apollo/client';
+
+import * as ApolloCoreAlias from '@apollo/client';
+import * as ApolloReactAlias from '@apollo/client/react';
+import * as ApolloHOCAlias from '@apollo/client/react/hoc';
+import * as ApolloReactHooksAlias from '@apollo/client/react/hooks';
+import * as ApolloReactComponentsAlias from '@apollo/client/react/components';
 import Module from 'module';
 import * as ReactAlias from 'react';
 import { Container } from "inversify";
@@ -313,7 +323,11 @@ declare namespace Reactory {
     }
 
     export interface ILoginResult {
-      token: string
+      user: {
+        firstName: string,
+        lastName: string,
+        token: string
+      }
     }
 
     export interface IReactoryApi {
@@ -1046,9 +1060,24 @@ declare namespace Reactory {
       }
     }
 
+    /**
+     * Defines an interface type for the GraphDirective Provider
+     */
+    export interface IGraphDirectiveProvider {
+      /**
+       * The directive name
+       */
+      name: string,
+      /**
+       * The transform that will transform the schema
+       */
+      transformer: (schema: GraphQLSchema) => GraphQLSchema
+    }
+
     export interface IGraphDefinitions {
       Resolvers: IGraphShape
       Types: string[]
+      Directives?: IGraphDirectiveProvider[]
     }
 
     export interface IResolverStruct {
@@ -1058,7 +1087,15 @@ declare namespace Reactory {
     }
 
     export interface IReactoryResolver {
-      resolver?: IResolverStruct
+      resolver?: IGraphShape
+    }
+
+    export interface IApolloPackage {
+      core: typeof ApolloCoreAlias
+      components: typeof ApolloReactComponentsAlias
+      react: typeof ApolloReactAlias 
+      hoc: typeof ApolloHOCAlias
+      hooks: typeof ApolloReactHooksAlias
     }
   }
 
