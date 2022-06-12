@@ -2469,6 +2469,19 @@ declare namespace Reactory {
        * The icon to use for the menu item.
        */
       icon?: string
+
+      /**
+       * Image property can be used when we want 
+       * the menu to render a particular image. 
+       * The format of this string is either a 
+       * full url link to the resource or a format string
+       * that can be interpolated at runtime.
+       * i.e.
+       * static: https://somesite.com/imageref.png
+       * interpoplated: ${reactory.user.avatar}
+       */
+      image?: string
+
       /**
        * The roles that the user must have in order to access this menu.
        */
@@ -2477,6 +2490,19 @@ declare namespace Reactory {
        * The sub menu items for this menu item
        */
       items?: IMenuItem[]
+      /**
+       * FUTURE USE - map a service function to provide 
+       * a men item that is dynamic based on state and additional
+       * logic, allows for async menu resolver
+       * 
+       * format: 
+       * my-custom.MenuResolverService@1.0.0::myResolverHandle
+       * 
+       * The resolver needs to be a registered service class type
+       * that exposes a function that will run with a standard resolver
+       * signature.
+       */
+      resolver?: string
     }
 
     /**
@@ -3571,7 +3597,11 @@ declare namespace Reactory {
        */
       menus: UX.IReactoryMenuConfig[],
       /**
-       * The application roles the app will expose
+       * The roles that your application will expose when in use.
+       * A logged in user, will automatically be assigned the role USER
+       * and an anonymous user will be assigned the ANON role. So your
+       * application should at the very least have the following 
+       * two applicationRoles ["USER", "ANON"]
        */
       applicationRoles: string[],
       /**
@@ -3580,13 +3610,18 @@ declare namespace Reactory {
       users?: IStaticallyLoadedUser[],
 
       /**
-       * Not used at the moment - may be deprecated
-       * in future.
+       * Used to expose a list of all the components 
+       * that ship with this client config. At the moment
+       * this is not being used anywhere but the react-native
+       * client cannot as easily ingest dynamic external libraries
+       * so we will rely on a server component registry during build
+       * time to include / download any components into our
+       * source tree during compilation.
        */
       components?: any[],
 
       /**
-       * The title of the current active theme for the user Api status call
+       * The title of the current active theme for the user Api status call.
        */
       theme?: string,
       /**
@@ -3594,6 +3629,11 @@ declare namespace Reactory {
        */
       themes?: UX.IReactoryTheme[]
 
+      /**
+       * A full list of application plugins that 
+       * that the application will load into the client
+       * during runtime / compile time.
+       */
       plugins?: Platform.IReactoryApplicationPlugin[]
       /**
        * The billing type structure for this application partner

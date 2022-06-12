@@ -6,9 +6,11 @@ import {
   ApolloClient,
   ApolloQueryResult,
   MutationResult,
+  QueryResult
 } from "@apollo/client";
-import React, { CSSProperties } from 'react';
-// import GoogleMap from 'react-google-maps/lib/components/GoogleMap';
+import React, { CSSProperties, StyleHTMLAttributes } from 'react';
+import Module from 'module';
+import GoogleMap from 'react-google-maps/lib/components/GoogleMap';
 
 namespace Reactory {
 
@@ -43,7 +45,7 @@ namespace Reactory {
     componentFqn: string,
     path: string,
     exact: boolean
-    element: (props) => React.ReactElement
+    render: (props) => React.ReactElement
   }
   export namespace Client {
 
@@ -156,10 +158,10 @@ namespace Reactory {
       onFormCommandEvent(commandId, func): void;
 
       hasRole(
-        itemRoles: string[],
-        userRoles?: string[],
-        organization?: Reactory.IOrganization,
-        business_unit?: Reactory.IBusinessUnit,
+        itemRoles: string[], 
+        userRoles?: string[], 
+        organization?: Reactory.IOrganization, 
+        business_unit?: Reactory.IBusinessUnit, 
         userMembership?: Reactory.IMembership[]): boolean;
 
       isAnon(): boolean;
@@ -472,9 +474,9 @@ namespace Reactory {
   }
 
   export interface IReactoryFormQuery extends IReactoryFormGraphElement {
-
+        
     queryMessage?: string,
-
+    
     props?: Object,
 
     edit?: boolean,
@@ -488,17 +490,17 @@ namespace Reactory {
     waitTimeout?: number,
     interval?: number,
     useWebsocket?: boolean,
-
+    
     notification?: any,
-    refreshEvents?: IReactoryEvent[] | undefined,
+    refreshEvents?: IReactoryEvent[] | undefined,    
   }
 
   export interface IReactoryFormMutation extends IReactoryFormGraphElement {
     name: string,
     text: string,
     updateMessage?: string,
-
-
+    
+    
     refreshEvents?: IReactoryEvent[] | undefined
     onSuccessUrl?: string,
     onSuccessRedirectTimeout?: number,
@@ -627,13 +629,13 @@ namespace Reactory {
       [key: string]: any
     },
     showSubmit?: boolean,
-    showHelp?: boolean,
+    showHelp?:boolean,
     showRefresh?: boolean,
     toolbarStyle?: CSSProperties,
     toolbarPosition?: string,
     buttons?: any[],
     showSchemaSelectorInToolbar?: boolean,
-    schemaSelector?: {
+    schemaSelector?:  {
       variant?: string | "icon-button" | "dropdown",
       style?: CSSProperties,
       showTitle?: boolean,
@@ -643,7 +645,7 @@ namespace Reactory {
       buttonTitle: string,
       activeColor?: any,
       components: string[]
-    },
+    },    
   }
   export interface IFormUISchema {
     'ui:form'?: IFormUIOptions,
@@ -708,9 +710,6 @@ namespace Reactory {
     fileType?: string,
     components: IReactoryComponentRegistryEntry
   }
-  /**
-   * 
-   */
   export interface IReactoryForm {
     id: string,
     uiFramework: string,
@@ -765,17 +764,7 @@ namespace Reactory {
      * may relay on in order to successfully load.
      */
     dependencies?: IReactoryComponentDefinition[],
-    /**
-     * An array of modules that the form may require. 
-     * These modules are compiled and emitted at runtime to optimize 
-     * best use of server resource and client resources
-     */
     modules?: IReactoryFormModule[]
-    /**
-     * Boolean flag stored on the form to indicate if the full 
-     * schema has been fetched yet.
-     */
-    __complete__?: Boolean
     [key: string]: any
   }
 
@@ -935,7 +924,7 @@ namespace Reactory {
   }
 
   export interface IReactoryMapOnChangeEvent {
-    target: any,
+    target: GoogleMap,
     value: IReactoryMarkerData,
     change: string | "add" | "edit" | "delete" | "hide" | "detail" | "select" | "zoom",
     index?: number,
@@ -960,7 +949,7 @@ namespace Reactory {
     pageSize: number
   }
 
-
+  
 
 }
 
