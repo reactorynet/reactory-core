@@ -918,7 +918,7 @@ declare namespace Reactory {
      * A Reactory UX Package is consist of fields
      * widgets and templates.
      */
-    export interface IReactoryUxPackage extends Reactory.IComponentFqnDefinition{      
+    export interface IReactoryUxPackage extends Reactory.IComponentFqnDefinition {
       /**
        * A description or translation key for your package
        */
@@ -2296,6 +2296,75 @@ declare namespace Reactory {
       },
 
       [property: string]: any
+
+    }
+    /**
+     * Model type for the social media reference and links
+     */
+    export interface IReactorySocialReference {
+      /**
+       * 
+       */
+      id: string
+      /**
+       * 
+       */
+      provider: string
+      /**
+       * 
+       */
+      url: string
+      /**
+       * 
+       */
+      authenticated: Boolean
+      /**
+       * 
+       */
+      scope: any
+      /**
+       * The authentication
+       */
+      auth: any
+      /**
+       * 
+       */
+      valid: Boolean
+      /**
+       * 
+       */
+      created: Date
+      /**
+       * 
+       */
+      updated: Date
+    }
+
+    export interface IReactorySocialMeta {
+      /**
+       * 
+       */
+      id: String
+      /**
+       * 
+       */
+      avatar: String
+      /**
+       * 
+       */
+      avatarProvider: String
+      /**
+       * 
+       */
+      headerBackground: String
+      /**
+       * 
+       */
+      headerBackgroundProvider: String
+      /**
+       * 
+       */
+      socials: IReactorySocialReference[]
     }
 
   }
