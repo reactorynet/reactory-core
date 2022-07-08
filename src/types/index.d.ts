@@ -778,6 +778,8 @@ declare namespace Reactory {
       IN = " IN "
     }
 
+    export type SortDirection = "asc" | "ascending" | "desc" | "descending"
+
     export interface SQLColumn {
       field: string,
       type: string,
@@ -1398,6 +1400,100 @@ declare namespace Reactory {
   }
 
   export namespace Models {
+
+    export type TUser = Reactory.Models.IUser | Reactory.Models.IUserDocument
+    export type TOrganization = Reactory.Models.IOrganization | Reactory.Models.IOrganization
+
+    export type TObjectID = string | ObjectId | null
+
+
+
+    /**
+     * Defines all the known reactory core model types that are shipped with the 
+     * core platform.  
+     */
+    export type ReactoryKnownModel = string | "User" | "Organization" | "BusinessUnit" | "Team" | "ReactoryModelMeta"
+
+    export type ReactoryKnownModelMap = {
+      User: "User",
+      Organization: "Organization",
+      BusinessUnit: "BusinessUnit",
+      Team: "Team",
+      ReactoryModelMeta: "ReactoryModelMeta"
+      [key: string]: ReactoryKnownModel
+    }
+
+    export type ReactoryKnownModels = ReactoryKnownModel[]
+
+    /**
+     * 
+     */
+    export interface IReactoryModelMetaHistory {
+      when: Date
+      description: string
+      outcome?: string
+      errors?: string[]
+    }
+
+    export interface IReactoryModelMeta<T extends ReactoryKnownModel> {
+      id?: TObjectID
+
+      /**
+       * The known model for associated with this entry
+       */
+      model: T
+
+      /**
+       * The version number for the model
+       */
+      version: string
+
+      /**
+       * audit of changes
+       */
+      history: IReactoryModelMetaHistory[]
+
+      /**
+       * The date in utc when the model was firdst created
+       */
+      created: Date
+      /***
+       * The time in utc when the record was updated
+       */
+      updated: Date
+    }
+
+
+
+    /**
+     * Defines the base model type, to ensure we have certain
+     * fields on all our data models.  
+     */
+    export interface IReactoryModel<T extends ReactoryKnownModel> {
+      id?: TObjectID
+      /**
+       * The date in utc when the record was created
+       */
+      created: Date
+      /**
+       * The user that created the record
+       */
+      createdBy: TUser
+      /***
+       * The time in utc when the record was updated
+       */
+      updated: Date
+      /**
+       * The user that updated the record
+       */
+      updatedBy: TUser
+
+      /**
+       * The model meta data for item
+       */
+      modelMeta?: IReactoryModelMeta<T>
+    }
+
 
     export interface CoreSimpleResponse {
       success: Boolean
@@ -2369,6 +2465,33 @@ declare namespace Reactory {
 
   }
 
+  /**
+   * The mongo namespace should be used for mongo / mongoose related types only.
+   */
+  export namespace Mongo {
+
+    /**
+     * Project Mongoose model interface
+     */
+    export interface IReactoryModelMetaDocument<T extends Models.ReactoryKnownModel> extends Models.IReactoryModelMeta<T> { }
+
+    /**
+     * Interface definitions for instance functions for the IResourceManagerProject
+     */
+    export interface IResourceManagerProjectDocumentFunctions {
+
+    }
+
+    export interface IResourceManagerProjectDocumentQueryHelpers {
+
+    }
+
+    export type ReactoryModelMetaDocument = Mongoose.Model<IReactoryModelMetaDocument<"ReactoryModelMeta">,
+      IResourceManagerProjectDocumentQueryHelpers,
+      IResourceManagerProjectDocumentFunctions>
+
+  }
+
   export namespace Native { }
 
   export namespace UX {
@@ -2431,7 +2554,6 @@ declare namespace Reactory {
       /**
        * A name for the theme mode
        * */
-
       name: String
 
       /**
@@ -2616,6 +2738,90 @@ declare namespace Reactory {
       roles?: string[]
       args?: Reactory.IKeyValuePair<string, any>[]
     }
+
+    // 
+    // Utility type that can be used to provide
+    // various styling options for graph elements
+    // 
+    export interface UXMeta {
+      // """
+      // A background color that will provided in either HEX or rgba values.
+      // """
+      backgroundColor: String
+      //   """
+      // A uri for a background image
+      // """
+      backgroundImage: String
+      //   """
+      // A color for the element
+      // """
+      color: String
+      //   """
+      // font to use
+      //   """
+      font: String
+      //   """
+      // font size
+      //   """
+      fontSize: string
+      //   """
+      // font styling
+      //   """
+      fontStyle: string
+      //   """
+      // url for an avatar
+      // """
+      avatar: string
+      //   """
+      // a material icon id
+      //   """
+      icon: string
+      //   """
+      // A classname
+      //   """
+      className: string
+      //   """
+      // custom jss that can be compiled by the client
+      //   """
+      jss: any
+      //   """
+      // custom styled element data
+      //   """
+      styled: any
+    }
+
+    export interface IThemedUXMeta {
+      // """
+      // theme name to which this applies
+      // """
+      theme: String
+
+      // """
+      // Theme mode:
+      // light / dark / os
+      // """
+      mode: ApplicationThemeModeType
+
+      // """
+      // UX Meta entry
+      // """
+      uxmeta: UXMeta
+    }
+
+    /**
+     * Themed UX Meta object map.
+     * default is required.
+     */
+    export type ThemedUXMeta = {
+      light?: IThemedUXMeta
+      dark?: IThemedUXMeta
+      default: IThemedUXMeta
+    }
+
+    /**
+     * Array of themed UX meta
+     */
+    export type ThemedUXMetaArray = IThemedUXMeta[]
   }
 
   export namespace Routing {
