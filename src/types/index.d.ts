@@ -57,6 +57,25 @@ declare namespace Reactory {
   }
 
   /**
+   * Object Transform object is used for fine grained control over an object data set.
+   */
+  export interface ObjectTransform { 
+    key: string,
+    transform<T>(sourceObject: any, sourceKey: string, targetObject: any, targetKey: string): T
+    default: Function | string | number
+  }
+
+  export type ObjectMapEntry = string | ObjectTransform
+
+  export type ObjectMapMultiTargetEntry = ObjectMapEntry[]
+
+  export type ObjectMap = IKeyValuePair<string, ObjectMapEntry | ObjectMapMultiTargetEntry>
+
+  export type ObjectMapper = {
+    merge<TSource, TResult>(source: TSource, map: ObjectMap): TResult
+    merge<TSource, TResult>(source: TSource, destination: TResult, map: ObjectMap): TResult
+  }
+  /**
    * A struct representation of IComponentFqnDefinition
    */
   export interface IComponentFqnDefinition {
@@ -2050,6 +2069,7 @@ declare namespace Reactory {
       removeRole(clientId: string, role: string, organizationId: string): Promise<IMembershipDocument[]>,
       removeAuthentication(provider: string): Promise<boolean>
       getAuthentication<T>(provider: string): IAuthentication<T>
+      setAuthentication<T>(authentication: IAuthentication<T>): Promise<boolean>
       getMembership(clientId: string | ObjectId, organizationId?: string | ObjectId, businessUnitId?: string | ObjectId): IMembershipDocument
       [key: string]: any
     }
@@ -3414,7 +3434,7 @@ declare namespace Reactory {
        * Authenticates a fetch request asynchronously
        * @param request 
        */
-      authenticateRquest(request?: any): Promise<any>
+      authenticateRequest(request?: any): Promise<any>
 
     }
 
@@ -3778,6 +3798,11 @@ declare namespace Reactory {
          * creates a hash from an object
          */
         hash: (obj: any) => number
+
+        /**
+         * Object mapper utility
+         */
+        objectMapper: ObjectMapper
       },
       /**
        * Function to help check for specific permission
