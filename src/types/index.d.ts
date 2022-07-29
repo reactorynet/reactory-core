@@ -1421,7 +1421,7 @@ declare namespace Reactory {
   export namespace Models {
 
     export type TUser = Reactory.Models.IUser | Reactory.Models.IUserDocument
-    export type TOrganization = Reactory.Models.IOrganization | Reactory.Models.IOrganization
+    export type TOrganization = Reactory.Models.IOrganization | Reactory.Models.IOrganizationDocument
 
     export type TObjectID = string | ObjectId | null
 
@@ -2041,25 +2041,21 @@ declare namespace Reactory {
       lastName: string,
     }
 
-    export interface IUser {
-      username: string,
+    export interface IUserBio {
       firstName: string,
       lastName: string,
-      email: string,
-      salt: string,
-      mobileNumber?: string,
       dateOfBirth?: Date,
-      password: string,
-      avatar: string,
-      avatarProvider: string,
-      organization: ObjectId | Reactory.Models.IOrganizationDocument,
-      memberships: Reactory.Models.IMembership[] | Mongoose.Types.Array<Reactory.Models.IMembership>,
-      sessionInfo: Reactory.Models.ISessionInfo,
-      authentications: Reactory.Models.IAuthentication<any>[],
-      deleted: boolean,
-      createdAt: Date,
-      updatedAt: Date,
-      meta?: Reactory.Models.IRecordMeta<any>,
+      avatar?: string,
+      avatarProvider?: string,
+    }
+
+    export interface IUserContact {
+      email?: string,
+      mobileNumber?: string,
+    }
+
+  
+    export interface IUserHelpers {
       fullName(email: boolean): string,
       setPassword(password: string): void,
       validatePassword(password: string): boolean,
@@ -2071,7 +2067,32 @@ declare namespace Reactory {
       getAuthentication<T>(provider: string): IAuthentication<T>
       setAuthentication<T>(authentication: IAuthentication<T>): Promise<boolean>
       getMembership(clientId: string | ObjectId, organizationId?: string | ObjectId, businessUnitId?: string | ObjectId): IMembershipDocument
-      [key: string]: any
+    }
+
+    /**
+     * User create parameters
+     */
+    export interface IUserCreateParams extends IUserBio, IUserContact { 
+      organization?: TOrganization,
+    }
+
+    export interface IUser extends IUserBio,
+      IUserContact,        
+      IUserHelpers {
+      
+        username?: string,
+        salt?: string,
+        password?: string,      
+        organization?: ObjectId | Reactory.Models.IOrganizationDocument,
+        memberships?: Reactory.Models.IMembership[] | Mongoose.Types.Array<Reactory.Models.IMembership>,
+        sessionInfo?: Reactory.Models.ISessionInfo,
+        authentications?: Reactory.Models.IAuthentication<any>[],
+        deleted?: boolean,
+        createdAt?: Date,
+        updatedAt?: Date,
+        meta?: Reactory.Models.IRecordMeta<any>,
+      
+        [key: string]: any
     }
 
     /**
@@ -3389,7 +3410,7 @@ declare namespace Reactory {
 
     export interface IReactoryUserService extends Reactory.Service.IReactoryDefaultService {
 
-      createUser(userInput: Reactory.Models.IUser, organization: Reactory.Models.IOrganization): Promise<Reactory.Models.IUserDocument>;
+      createUser(userInput: Reactory.Models.IUserCreateParams): Promise<Reactory.Models.IUserDocument>;
 
       updateUser(userInput: Reactory.Models.IUser): Promise<Reactory.Models.IUserDocument>
 
