@@ -4133,8 +4133,13 @@ declare namespace Reactory {
     }
 
     export interface IFormUIOptions {
+      submitIcon?: string,
+      submitIconProps?: {
+        color: string | "primary" | "secondary",
+        [key: string]: any
+      },
       submitProps?: {
-        variant?: string | "fab" | "button",
+        variant?: string | "fab" | "contained" | "outlined" | "text" ,
         iconAlign?: string | "left" | "right";
         onClick: () => void,
         href: any,
