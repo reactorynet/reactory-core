@@ -11,6 +11,7 @@ import classNames from 'classnames';
 import ObjectMapper from 'object-mapper';
 import HumanNumner from 'human-number';
 import HumanDate from 'human-date';
+import i18n from "i18next";
 import {
   ApolloClient,
   ApolloQueryResult, MutationResult,
@@ -1284,40 +1285,145 @@ declare namespace Reactory {
        * via the reactory.form(id)
        */
       id: string,
+      /**
+       * 
+       */
       uiFramework?: string,
+      /**
+       * 
+       */
       uiSupport?: string[],
+      /**
+       * 
+       */
       uiResources?: any[],
+      /**
+       * 
+       */
       title?: string,
+      /**
+       * 
+       */
       tags?: string[],
+      /**
+       * 
+       */
       helpTopics?: string[]
-      schema: Schema.AnySchema | Schema.TServerSchemaResolver | Schema.TClientUISchemaResolver,
+      /**
+       * 
+       */
+      schema: Schema.AnySchema | Schema.TServerSchemaResolver | Schema.TClientSchemaResolver,
+      /**
+       * 
+       */
       sanitizeSchema?: Schema.AnySchema,
+      /**
+       * 
+       */
       uiSchema?: Schema.IFormUISchema | Schema.IUISchema | Schema.TServerUISchemaResolver | Schema.TClientUISchemaResolver,
+      /**
+       * 
+       */
       uiSchemas?: IUISchemaMenuItem[],
+      /**
+       * 
+       */
       defaultUiSchemaKey?: string
+      /**
+       * 
+       */
       registerAsComponent?: boolean,
+      /**
+       * 
+       */
       nameSpace: string,
+      /**
+       * 
+       */
       name: string,
+      /**
+       * 
+       */
       description?: string,
+      /**
+       * 
+       */
       version: string,
+      /**
+       * 
+       */
       roles?: string[],
+      /**
+       * 
+       */
       components?: string[],
+      /**
+       * 
+       */
       graphql?: IFormGraphDefinition,
+      /**
+       * 
+       */
       defaultFormValue?: any,
+      /**
+       * 
+       */
       defaultPdfReport?: IReactoryPdfReport,
+      /**
+       * 
+       */
       defaultExport?: IExport,
+      /**
+       * 
+       */
       reports?: IReactoryPdfReport[],
+      /**
+       * 
+       */
       exports?: IExport[],
+      /**
+       * 
+       */
       refresh?: any,
+      /**
+       * 
+       */
       widgetMap?: IWidgetMap[],
+      /**
+       * 
+       */
       fieldMap?: IFieldMap[];
+      /**
+       * 
+       */
       backButton?: Boolean,
+      /**
+       * 
+       */
       workflow?: Object,
+      /**
+       * 
+       */
       noHtml5Validate?: boolean,
+      /**
+       * 
+       */
       formContext?: any,
+      /**
+       * 
+       */
       fields?: any,
+      /**
+       * 
+       */
       widgets?: any,
+      /**
+       * 
+       */
       wrap?: boolean,
+      /**
+       * 
+       */
       eventBubbles?: IEventBubbleAction[],
       /**
        * A custom field template 
@@ -1332,7 +1438,7 @@ declare namespace Reactory {
        */
       componentDefs?: string[]
       /**
-       * object map to use for mapping querystring
+       * object map to use for mapping querystring.
        */
       queryStringMap?: any,
 
@@ -2067,6 +2173,7 @@ declare namespace Reactory {
       getAuthentication<T>(provider: string): IAuthentication<T>
       setAuthentication<T>(authentication: IAuthentication<T>): Promise<boolean>
       getMembership(clientId: string | ObjectId, organizationId?: string | ObjectId, businessUnitId?: string | ObjectId): IMembershipDocument
+      setLocale(locale: string): Promise<any>
     }
 
     /**
@@ -2074,6 +2181,29 @@ declare namespace Reactory {
      */
     export interface IUserCreateParams extends IUserBio, IUserContact { 
       organization?: TOrganization,
+    }
+
+    export interface IUserIl8n {
+      /**
+       * The active locale key code being used
+       */
+      locale: string,
+      /**
+       * any specific user overrides
+       */
+      overrides?: Models.IReactoryTranslation[],
+      /**
+       * Date format options
+       */
+      dateFormat?: string
+      /**
+       * Time format
+       */
+      timeFormat?: string
+      /**
+       * 
+       */
+      dateTimeFormat?: string
     }
 
     export interface IUser extends IUserBio,
@@ -2090,6 +2220,7 @@ declare namespace Reactory {
         deleted?: boolean,
         createdAt?: Date,
         updatedAt?: Date,
+        il8n?: IUserIl8n
         meta?: Reactory.Models.IRecordMeta<any>,
       
         [key: string]: any
@@ -3628,7 +3759,16 @@ declare namespace Reactory {
       mutate(mutation: string, variables: any): Promise<any>
     }
 
-    export interface IReactoryTranslationSerivce extends Reactory.Service.IReactoryDefaultService {
+    export interface IReactoryTranslationService extends Reactory.Service.IReactoryDefaultService {
+      /**
+       * Initializes the i18n next component for the logged in user context.
+       * Loads system and module defined translations and loads any user defined translations into the user context.
+       * 
+       * returns true when completed without error, false if there was some kind of error.
+       * 
+       */
+      init(): Promise<boolean>;
+
       /**
        * Returns all the translations for a given locale string, if the 
        * local is not provide the syste default will be used as defined on the 
@@ -3661,6 +3801,20 @@ declare namespace Reactory {
        * @param translations 
        */
       getResources(translations: Models.IReactoryTranslations): Promise<any>
+      
+      /**
+       * Set translations package for a given languge. If present it must replace 
+       * a given translation. 
+       * @param translations 
+       */
+      setTranslations(translations: Models.IReactoryTranslations): Promise<Models.IReactoryTranslations>
+
+      /**
+       * Translates a key and merges with a given parameter set.
+       * @param key 
+       */
+      translate(key: string, params?: any): string
+      
     }
 
     export interface IReactoryTranslationServiceStatic {
@@ -3668,7 +3822,7 @@ declare namespace Reactory {
       reactory: IReactoryServiceDefinition
     }
 
-    export type TReactoryTranslationService = IReactoryTranslationSerivce & IReactoryTranslationServiceStatic
+    export type TReactoryTranslationService = IReactoryTranslationService & IReactoryTranslationServiceStatic
   }
 
   export namespace Server {
@@ -3823,12 +3977,23 @@ declare namespace Reactory {
         /**
          * Object mapper utility
          */
-        objectMapper: ObjectMapper
+        objectMapper: ObjectMapper,
+
+        /**
+         * lodash utility for array management
+         */
+        lodash: typeof Lodash,
       },
       /**
        * Function to help check for specific permission
        */
       hasRole: (role: string, partner?: Models.IPartner, organization?: Models.IOrganizationDocument, businessUnit?: Models.IBusinessUnitDocument) => boolean,
+
+      /**
+       * Internationalisation Service / Translation Service.
+       */
+      i18n: Reactory.Service.IReactoryTranslationService
+
       [key: string]: any
     }
 
