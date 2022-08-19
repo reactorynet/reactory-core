@@ -34,6 +34,7 @@ import * as MaterialStylesAlias from '@mui/styles';
 import * as MaterialIconsAlias from '@mui/icons-material'
 import * as ReactRouterAlias from 'react-router';
 import * as ReactRouterDomAlias from 'react-router-dom';
+import i18next from "i18next";
 
 /// <reference path="global.d.ts" />
 
@@ -393,6 +394,7 @@ declare namespace Reactory {
       queryObject: any;
       queryString: any;
       objectToQueryString: Function;
+      i18n: typeof i18next
 
       [key: string]: any;
 
@@ -624,6 +626,8 @@ declare namespace Reactory {
       setDevelopmentMode(enabled: boolean): void;
 
       isDevelopmentMode(): boolean;
+
+
     }
 
     export interface IReactoryWiredComponent {
@@ -2389,12 +2393,21 @@ declare namespace Reactory {
     }
 
     export interface IReactoryTranslationDocument extends Mongoose.Document, IReactoryTranslation {
+      
+    }
 
+    export interface IReactoryI18nResource {
+      id: string
+      ns: string
+      translations: {
+        [key: string]: string
+      }
     }
     export interface IReactoryTranslations {
       id: string
       locale: string
       translations: IReactoryTranslation[]
+      i18n: IReactoryI18nResource[]
       resources?: any
     }
 
@@ -3871,14 +3884,14 @@ declare namespace Reactory {
       name: string
       version: string
       dependencies?: string[]
-      priority: number,
+      priority: number,      
       graphDefinitions?: Graph.IGraphDefinitions,
       workflows?: Workflow.IWorkflow[],
       forms?: Forms.IReactoryForm[],
       pdfs?: Pdf.IReactoryPdfComponent[]
       services?: Service.IReactoryServiceDefinition[],
       clientPlugins?: Platform.IReactoryPluginDefinition,
-      translations?: Models.IReactoryTranslations[]
+      translations?: Models.IReactoryTranslations[]      
     }
 
 
@@ -3992,7 +4005,17 @@ declare namespace Reactory {
       /**
        * Internationalisation Service / Translation Service.
        */
-      i18n: Reactory.Service.IReactoryTranslationService
+      i18n: typeof i18n,
+
+      /**
+       * Current language 
+       */
+      lang: string,
+
+      /**
+       * Supported languages
+       */
+      languages: string[],
 
       [key: string]: any
     }
