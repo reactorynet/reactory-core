@@ -644,7 +644,7 @@ namespace Reactory {
       buttonVariant: any,
       buttonTitle: string,
       activeColor?: any,
-      components: string[]
+      components?: string[]
     },    
   }
   export interface IFormUISchema {

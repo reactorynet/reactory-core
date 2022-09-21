@@ -35,6 +35,7 @@ import * as MaterialIconsAlias from '@mui/icons-material'
 import * as ReactRouterAlias from 'react-router';
 import * as ReactRouterDomAlias from 'react-router-dom';
 import i18next from "i18next";
+import { JsxEmit } from "typescript";
 
 /// <reference path="global.d.ts" />
 
@@ -337,7 +338,9 @@ declare namespace Reactory {
       tags?: string[]
       roles?: string[]
       connectors?: any[]
-      componentType?: string
+      componentType?: string | "form" | "module" | "function" | "class" | "component" | "widget" | "form-widget"
+      title?: string,
+      description?: string
     }
 
     /**
@@ -418,12 +421,31 @@ declare namespace Reactory {
        */
       goto(where: string, state: any): void;
 
+      /**
+       * Registers a function with reactory component.
+       * @param fqn 
+       * @param functionReference 
+       * @param requiresApi 
+       */
       registerFunction(fqn: string, functionReference: Function, requiresApi: boolean): void;
 
+      /**
+       * central logging for the client
+       * @param message 
+       * @param params 
+       * @param kind 
+       */
       log(message: string, params?: any, kind?: string | "error" | "debug" | "warning" | "info"): void;
 
+      /**
+       * publish stats flushes statistic data associated with the user and 
+       */
       publishstats(): void;
 
+      /**
+       * flushes internally saved stats
+       * @param save 
+       */
       flushstats(save: boolean): void;
 
       /**
@@ -536,20 +558,56 @@ declare namespace Reactory {
        */
       getCDNResource: (path: string) => string;
 
+      /***
+       * Returns the routes for the application
+       */
       getRoutes(): any[];
-
+      
+      /**
+       * Returns the roles available for this application
+       */
       getApplicationRoles(): any[];
-
+      
+      /**
+       * Set the "User" object. This user object is technically an API response object that is 
+       * constructed from the logged in user.
+       * @param user
+       */
       setUser(user: any): void;
-
+      
+      /**
+       * Set the authorization token for the user
+       * @param token 
+       */
       setAuthToken(token: string): void;
-
+      /**
+       * gets the auth token for the logged in user
+       */
       getAuthToken(): string;
 
+      /**
+       * Sets the last user email address
+       * @param email 
+       */
       setLastUserEmail(email: string): void;
-
+      
+      /**
+       * Returns the last user that logged in
+       */
       getLastUserEmail(): void;
-
+      
+      /**
+       * Component register
+       * @param nameSpace 
+       * @param name 
+       * @param version 
+       * @param component 
+       * @param tags 
+       * @param roles 
+       * @param wrapWithApi 
+       * @param connectors 
+       * @param componentType 
+       */
       registerComponent(
         nameSpace: string,
         name: string,
@@ -571,6 +629,12 @@ declare namespace Reactory {
        * @param fqn 
        */
       getComponent<T>(fqn: string): T;
+      
+      /**
+       * Returns a slice of all the components that match the type
+       * @param type 
+       */
+      getComponentsByType(type: string): IReactoryComponentRegister
 
       /**
        * 
@@ -604,13 +668,36 @@ declare namespace Reactory {
       saveUserLoginCredentials(provider: string, props: any): Promise<any>;
 
       getUserLoginCredentials(provider: string): Promise<any>;
+      
+      /**
+       * Stores an Object With a Key
+       * @param key - unique key to use for the item
+       * @param objectToStore - the object to store
+       * @param indexDB - if true will use localForage / index DB to store the data, default is false
+       * @param cb - callback only applicable to indexDB true
+       */
+      storeObjectWithKey(key: string, objectToStore: any, indexDB?: boolean, cb?: (err: any) => void): Promise<void>;
 
-      storeObjectWithKey(key: string, objectToStore: any): void;
-
-      readObjectWithKey(key: string): any;
-
-      deleteObjectWithKey(key: string): void;
-
+      /**
+       * Reads an object from local storage
+       * @param key - the key to use for reading the storage
+       * @param indexDB - boolean flag to indicate whether or not to use index db
+       * @param cb  - callback for error handling
+       */
+      readObjectWithKey(key: string, indexDB?: boolean, cb?: (err: any) => void): Promise<any>;
+      
+      /**
+       * deletes an object from local storage
+       * @param key - the key to use for deleting 
+       * @param indexDB - boolean to indicate if the key is indexDB
+       * @param cb - callback for error handling
+       */
+      deleteObjectWithKey(key: string, indexDB?: boolean, cb?: (err: any) => void): Promise<void>;
+      
+      /**
+       * Calls the API Status graph endpoint
+       * @param options 
+       */
       status(options: any): Promise<Models.IApiStatus>;
 
       validateToken(token: string): any;
@@ -626,8 +713,6 @@ declare namespace Reactory {
       setDevelopmentMode(enabled: boolean): void;
 
       isDevelopmentMode(): boolean;
-
-
     }
 
     export interface IReactoryWiredComponent {
@@ -739,6 +824,503 @@ declare namespace Reactory {
         defaultValue?: JSX.Element
         [key: string]: any
       }
+
+      type StaticContentWidget = (props: StaticContentProps) => JSX.Element;
+
+      export interface IDropDownMenuItem { 
+        id?: string, 
+        key?: string, 
+        title?: string, 
+        icon?: string
+      }
+
+      export interface DropDownMenuProps {
+        menus: IDropDownMenuItem[],
+        onSelect: (evt: React.SyntheticEvent, menu: IDropDownMenuItem) => void 
+      }
+
+      export type DropDownMenu = (props: DropDownMenuProps) => JSX.Element;
+
+      export interface FullScreenModalProps {
+        onClose: () => void,
+        title: string,
+        children: any,
+        open: boolean,
+        [key: string]: any
+      }
+
+      export type FullScreenModal = (props: FullScreenModalProps) => JSX.Element;
+      export interface TAny {
+        id?: string,
+        [key: string]: any
+      }
+
+      export type MaterialListItemStyleFunction = (item: TAny, formContext: Reactory.Client.IReactoryFormContext<TAny>, index: number, items: TAny[]) => StyleSheet;
+      export type MaterialListItemObjectValueProvider = (item: TAny, formContext: Reactory.Client.IReactoryFormContext<TAny>, index: number, items: TAny[]) => any;
+      export type MaterialListItemStringValueProvider = (item: TAny, formContext: Reactory.Client.IReactoryFormContext<TAny>, index: number, items: TAny[]) => string;
+      export interface IMaterialListWidgetOptions<T> {
+        /**
+         * String field template to use for primary text
+         */
+        primaryText?: string | MaterialListItemStringValueProvider,
+        /**
+         * String field template for secondary text
+         */
+        secondaryText?: string | MaterialListItemStringValueProvider,
+        /**
+         * String field template for avatar
+         */
+        avatar?: string | MaterialListItemStringValueProvider,
+
+        /**
+         * String field template for the avatar alt
+         */
+        avatarAlt?: string | MaterialListItemStringValueProvider,
+        /**
+         * position of the avatar
+         */
+        avatarPosition?: string | "right" | "left",
+        /**
+         * avatar source field. Use this field to specify which property 
+         * should be used on the item as the source for the avatar
+         */
+        avatarSrcField?: string | MaterialListItemStringValueProvider,
+
+        /**
+         * The alt field name or provider function
+         */
+        avatarAltField?: string | MaterialListItemStringValueProvider,
+        /**
+         * Dropdown field / action button for the list item
+         */
+        dropdown?: string | MaterialListItemStringValueProvider,
+        /**
+         * Boolean to indicate if the list data must be 
+         * fetched by the component
+         */
+        remoteData?: boolean,
+        /**
+         * variable map to use for the input
+         */
+        variables?: object,
+        /**
+         * Result map to use when converting the data
+         */
+        resultMap?: object,
+        /**
+         * Key to use for to extract the array from the result
+         */
+        resultKey?: string,
+        /**
+         * Properties to pass to the List object
+         */
+        listProps?: any,
+        /**
+         * The name of the query on the graphql definition
+         */
+        query?: string,
+        /**
+         * Pagination settings for the list item
+         */
+        pagination?: {
+          /**
+           * Page size 
+           */
+          pageSize?: 25,
+          /**
+           * the variant will determine how the paging is managed
+           */
+          variant?: string | "page" | "infinte",
+          /**
+           * The result key to use for extracting the pagination field
+           */
+          resultKey?: string,
+          /**
+           * Object map for mapping the result
+           */
+          resultMap?: any
+        },
+        /**
+         * The icon property
+         */
+        icon?: string | MaterialListItemStringValueProvider,
+        /**
+         * Icon classname 
+         */
+        iconClassname?: string | MaterialListItemStringValueProvider,
+        /**
+         * The field name on the item to be referenced for the icon
+         */
+        iconField?: string | MaterialListItemStringValueProvider,
+        /**
+         * a map that is used to map the value in the item field
+         * to an icon
+         */
+        iconFieldMap?: {
+          [key: string]: string | MaterialListItemStringValueProvider
+        },
+        /**
+         * Stylesheet for the icon formatting
+         */
+        iconStyle?: StyleSheet | MaterialListItemStyleFunction,
+        /**
+         * Position of icon
+         */
+        iconPosition?: string | "left" | "right",
+        /**
+         * any custom jss we want to use when creating the list item
+         */
+        jss?: any,
+        /**
+         * A custom component that we may want to use for the item instead of the default 
+         * list item.
+         */
+        listItemsComponent?: string,
+
+        /**
+         * Secondary Action options
+         */
+        secondaryAction?: {
+          label?: string | MaterialListItemStringValueProvider,
+          iconKey?: string | MaterialListItemStringValueProvider,
+          componentFqn?: string | MaterialListItemStringValueProvider,
+          component?: MaterialListItemObjectValueProvider,
+          action?: string | MaterialListItemStringValueProvider,
+          actionData?: any | MaterialListItemObjectValueProvider,
+          link?: string | MaterialListItemStringValueProvider,
+          props?: any,
+          propsMap?: any
+        },
+        [key: string]: any
+      }
+
+      export type MaterialTableWidgetColumnDefinition = {
+        /**
+         * Field title
+         */
+        title: string,
+        /**
+         * The field / property name on the data set
+         */
+        field: string,
+        /**
+         * A component to bind to the column
+         */
+        component?: string,
+        /**
+         * Array of components to bind
+         */
+        components?: any[]
+        /**
+         * An array of components to bind to the column
+         */
+        propsMap?: any,
+        /**
+         * 
+         */
+        props?: any,
+        /**
+         * 
+         */
+        sort?: boolean,
+        /**
+         * 
+         */
+        total?: boolean,        
+
+        /**
+         * 
+         */
+        breakpoint?: string,
+
+        aggregator?: (column: MaterialTableWidgetColumnDefinition, data: any[] ) => any,
+        [key: string]: any
+      }
+
+      export interface IMaterialTableWidgetActionEvent {
+        via?: string | "form" | "amq" | "component",
+        /**
+         * name of the event 
+         */
+        name?: string,
+        /**
+         * object map to use when mapping properties
+         */
+        paramsMap?: any,
+        /**
+         * when the via is set to component 
+         * the event that is raised
+         **/
+        component?: string
+
+        [key: string]: any
+      }
+
+      export interface IMaterialTableConfirmationDialogProps {
+        key: string
+        
+        icon?: string
+        iconProps?: {
+          style?: React.CSSProperties
+          [key: string]: any
+        }
+        
+        title: string
+        titleProps?: {
+          style?: React.CSSProperties
+          [key: string]: any
+        }
+
+        content: string,
+        contentProps?: {
+          style?: React.CSSProperties          
+          [key: string]: any
+        }
+        
+        acceptTitle: string
+        confirmProps?: {
+          variant: string
+          style?: React.CSSProperties
+          [key: string]: any
+        }
+        
+        cancelTitle: string
+        cancelProps?: {
+          variant: string
+          style?: React.CSSProperties
+          [key: string]: any
+        }
+
+        /**
+         * Mutation to execute
+         */
+        mutation?: string
+        /**
+         * variable map to use for mapping
+         * properties to mutation params.
+         */
+        variables?: any,
+        /**
+         * The result map to use (will se the default on associated with )
+         */
+        resultMap?: any,
+
+        /**
+         * The action to execute on completion
+         */
+        resultAction?: string | "refresh" 
+      }
+
+      /**
+       * Row action
+       */
+      export interface IMaterialTableWidgetAction {
+        /**
+         * icon to use for row action
+         */
+        icon?: string,
+        /**
+         * the tooltip to display
+         */
+        tooltip?: string,
+        /**
+         * if a free action the action will display in the toolbar
+         */
+        isFreeAction?: boolean,
+        /**
+         * the key for the action
+         */
+        key: string
+        /**
+         * Material Table Widget Action
+         */
+        event?: IMaterialTableWidgetActionEvent
+
+        /**
+         * When defined it will render the component
+         */
+        componentFqn?: string,
+
+        /**
+         * The property map to use for the component
+         */
+        propsMap?: any,
+
+        /**
+         * The name of the mutation to invoke.
+         */
+        mutation?: string
+
+        /**
+         * The confirmation dialog properties
+         */
+        confirmation?: IMaterialTableConfirmationDialogProps
+                
+        [key: string]: any
+      }
+
+      /**
+       * Options interface for the Reactory Material Table Widget
+       * 
+       */
+      export interface IMaterialTableWidgetOptions {
+        /**
+         * If set to showLabel is set to false
+         */
+        showLabel?: boolean,
+        /**
+         * Allow Add. When set to true, the table will provide an add interface for the grid.
+         */
+        allowAdd?: boolean,
+
+        /**
+         * Allow delete. When set to true the table will provide interfcae for the deleting of records.
+         */
+        allowDelete?: boolean,
+
+        /**
+         * Delete button properties
+         */
+        deleteButtonProps?: {
+          icon?: string,
+          tooltip?: string,
+          color?: string,
+          onClick?: string,
+          onClickPropsMap?: any,
+          onClickProps?: any
+          [key: string]: any
+        }
+
+        /**
+         * Add button properies
+         */
+        addButtonProps?: {
+          icon?: string,
+          tooltip?: string,
+          color?: string,
+          onClick?: string,
+          onClickPropsMap?: any,
+          onClickProps?: any
+          [key: string]: any
+        }
+        
+        /**
+         * Column definition
+         */
+        columns: MaterialTableWidgetColumnDefinition[],
+        /**
+         * Is the data provided via remote query
+         */
+        remoteData?: boolean,
+        /**
+         * query name
+         */
+        query?: string,
+        /**
+         * localization options
+         */
+        localization?: any,
+
+        /**
+         * Refresh Events 
+         */
+        refreshEvents?: { name: string }[]
+         
+        /**
+         * The options for the the table interface
+         */        
+        options?: {
+          /**
+           * Enables or disables grouping
+           */
+          grouping?: boolean,
+          /**
+           * Group by fields
+           */
+          groupBy?: string[],
+
+          /**
+           * Enable search in toolbar
+           */
+          search?: boolean,
+          /**
+           * Show title in field
+           */
+          showTitle?: boolean,
+          /**
+           * Show or hide toolbar
+           */
+          toolbar?: boolean
+          /**
+           * Enable or disable selection
+           */
+          selection?: boolean
+          /**
+           * Page size 
+           */
+          pageSize?: number,
+          /**
+           * Page size options
+           */
+          pageSizeOptions?: number[]
+          /**
+           * allow ordering
+           */
+          allowOrder?: boolean
+          /**
+           * The field that we want to use for ordering the result
+           */
+          orderField?: string,
+          /**
+           * Allow Sort
+           */
+          sortFields?: { field: string, direction?: "asc" | "desc" }[],
+
+          [key: string]: any,
+        },
+        /**
+         * The component map
+         */
+        componentMap?: {
+          DetailsPanel?: string,
+          Toolbar?: string
+        },
+        actions?: IMaterialTableWidgetAction[],
+        /**
+         * Toolbar static props
+         */
+        toolbarProps?: any,
+        /**
+         * Toolbar property map
+         */ 
+        toolbarPropsMap?: any,
+        /**
+         * Where to place the toolbar
+         */
+        toolbarPosition?: string | 'none' | 'top' | 'bottom',
+        /**
+         * 
+         */
+        detailPanelPropsMap?: any,
+        /**
+         * Static properties to pass to the detail panel
+         */
+        detailPanelProps?: any, 
+        /**
+         * 
+         */
+        resultMap?: any,
+        resultType?: string | 'array' | 'object',
+        resultKey?: string
+        variables: any
+        /**
+         * 
+         */
+        [key: string]: any
+      }
+
+
+      export type SupportTicket = (props: { reference: string, mode: "view" | "edit" | "new" }) => JSX.Element
     }
 
     export namespace ReactNative {
@@ -1192,6 +1774,9 @@ declare namespace Reactory {
       icon?: string
     }
 
+    /**
+     * 
+     */
     export interface IUISchemaMenuItem {
       id: string,
       title: string,
@@ -1201,7 +1786,14 @@ declare namespace Reactory {
       uiSchema: Schema.IFormUISchema,
       //used to override the graphql definitions for that view type
       graphql?: IFormGraphDefinition,
-      modes?: string
+      modes?: string,
+      /**
+       * a regex pattern that matches the 
+       * connecting client. This is to ensure
+       * we only provide uiSchemas that are 
+       * compatible with the target device / app 
+       */
+      userAgents?: string[]
     }
 
     export interface IReactoryComponentDefinition {
@@ -1309,24 +1901,52 @@ declare namespace Reactory {
        * 
        */
       tags?: string[],
+
       /**
-       * 
+       * avatar image for the form
+       */
+      avatar?: string
+
+      /**
+       * icon to use when representing the form
+       */
+      icon?: string
+
+      /**
+       * provides a schema when requiring input parameters to execute a graph action 
+       */
+      argsSchema?: Schema.AnySchema | Schema.TServerSchemaResolver | Schema.TClientSchemaResolver,
+      /**
+       * provides a ui schema when require input parameters to execute a graph action
+       */
+      argsUiSchema?: Schema.IFormUISchema | Schema.IUISchema | Schema.TServerUISchemaResolver | Schema.TClientUISchemaResolver,
+
+      /**
+       * provides the component id / fully qualified name to use for parameter input
+       * The component FQN should take precendence over the argSchema and argUiSchema
+       */
+      argsComponentFqn?: string,
+
+      /**
+       * A list of help topics associated with the form.
        */
       helpTopics?: string[]
       /**
-       * 
+       * The schema that represents the form
        */
       schema: Schema.AnySchema | Schema.TServerSchemaResolver | Schema.TClientSchemaResolver,
       /**
-       * 
+       * A sanitzation schema. This schema will ensure that the data
+       * produced by the form input conforms to a given standard.
        */
       sanitizeSchema?: Schema.AnySchema,
       /**
-       * 
+       * The default uiSchema to use
        */
       uiSchema?: Schema.IFormUISchema | Schema.IUISchema | Schema.TServerUISchemaResolver | Schema.TClientUISchemaResolver,
       /**
-       * 
+       * uiSchemas this is a list of uiSchemas that is available
+       * to the connecting client.
        */
       uiSchemas?: IUISchemaMenuItem[],
       /**
@@ -3007,6 +3627,34 @@ declare namespace Reactory {
      * Array of themed UX meta
      */
     export type ThemedUXMetaArray = IThemedUXMeta[]
+
+    export interface IDropDownMenuItem {
+      id: string,
+      key?: string,
+      title?: string,
+      icon?: string,
+      iconProps?: any,
+      disabled?: boolean,
+      selected?: boolean
+      style?: any
+      [key: string]: any
+    }
+
+    export interface IDataDropDownMenuItem<T> extends IDropDownMenuItem {
+      data: T
+    }
+
+    export interface IDropDownMenuProps { 
+      menus: Reactory.UX.IDropDownMenuItem[], 
+      id?: any, 
+      propertyMap?: any, 
+      tooltip?: string,
+      onSelect?: (evt: React.SyntheticEvent, menu: IDropDownMenuItem) => void 
+      style?: any,
+      size?: "small" | "medium" | "large",
+      iconStyle?: any,
+      icon?: string,
+    }
   }
 
   export namespace Routing {
@@ -4353,6 +5001,21 @@ declare namespace Reactory {
       },
     }
 
+    export interface UISchemaGridLayout {
+      style?: any,
+      [key: string]: {
+        xs?: number,
+        sm?: number,
+        md?: number,
+        lg?: number,
+        xl?: number,
+        doShow?: (e: { formData?: any, formContext?: any }) => boolean,
+        rowProps?: {
+          [key: string]: any
+        },
+        render?: (props: any) => JSX.Element
+      }
+    }
     export interface IFormUISchema {
       'ui:form'?: IFormUIOptions,
       /**
@@ -4365,6 +5028,7 @@ declare namespace Reactory {
        */
       'ui:field'?: string | "GridLayout" | "TabbedLayout" | "AccordionLayout" | "SteppedLayout",
       'ui:widget'?: string,
+      'ui:grid-layout'? : UISchemaGridLayout[]
 
       [key: string]: IUISchema | any
     }
