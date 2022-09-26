@@ -561,7 +561,7 @@ declare namespace Reactory {
       /***
        * Returns the routes for the application
        */
-      getRoutes(): any[];
+      getRoutes(): Reactory.Routing.IReactoryRoute[];
       
       /**
        * Returns the roles available for this application
@@ -3268,6 +3268,27 @@ declare namespace Reactory {
       socials: IReactorySocialReference[]
     }
 
+
+    /**
+ * Defines a standard demographic type
+ */
+    export interface IOrganizationDemographicSettings {
+      id?: any
+      organization: string | ObjectId | IOrganization,
+      age: boolean,
+      gender: boolean,
+      race: boolean,
+      region: boolean,
+      operationalGroup: boolean,
+      position: boolean,
+      businessUnit: boolean,
+      teams: boolean,
+      deleted: boolean
+    }
+
+    export interface IOrganizationDemographicSettingsDocument extends Document, IOrganizationDemographicSettings {
+    }
+
   }
 
   /**
@@ -3673,6 +3694,11 @@ declare namespace Reactory {
       id?: string
 
       /**
+       * Human readable title for the route
+       */
+      title?: string
+
+      /**
        * A unique key for client reference
        * will default to id if no key is given.
        */
@@ -3698,12 +3724,20 @@ declare namespace Reactory {
       /**
        * The arguments for the route
        */
-      args: IKeyValuePair<string, any>[]
+      args?: IKeyValuePair<string, any>[]
+
+      /**
+       * Properties to pass to the component
+       */
+      props?: {
+        [key: string]: any
+      }
+
       /**
        * indicates if the path should be 
        * an exact match
        */
-      exact: boolean
+      exact?: boolean
       /**
        * If set then this path will redirect to a different path
        */
@@ -3711,7 +3745,7 @@ declare namespace Reactory {
       /**
        * Component array that needs to be bound to the route.
        */
-      component: UX.IReactoryComponent[]
+      components?: { componentFqn: string, props?: { [key: string]: any}  }[]
     }
 
     /**
