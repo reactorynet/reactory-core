@@ -192,6 +192,11 @@ declare namespace Reactory {
        * utility function that injects css and script resources into the application
        */
       injectResources: (sources: Forms.IReactoryFormResource[]) => void,
+
+      /***
+       * Helper utility to return the component name, namespace and version from a full or partial component FQN
+       */
+      componentPartsFromFqn: (fqn: string) => { name: string, nameSpace: string, version: string }
       /**
        * Function that will return a fqn string of a reactory component FQN.
        */
@@ -358,6 +363,33 @@ declare namespace Reactory {
       }
     }
 
+    /**
+     * Api Status Request options paramaters 
+     * interface definition
+     */
+    export interface IApiStatusRequestOptions {
+      /**
+       * If true, the reactory api wil emit the 
+       * onLogin event and provide the user api 
+       * status object back.
+       */
+      emitLogin?: boolean
+      /**
+       * If true then user will be forcefully 
+       * logged out in the event that the API 
+       * doesn't return a successful status call
+       */
+      forceLogout?: boolean
+      /**
+       * A theme key
+       */
+      theme?: string
+      /**
+       * The theme mode
+       */
+      mode?: string
+    }
+
     export interface IReactoryApi {
       history: any;
       queries: any;
@@ -490,7 +522,7 @@ declare namespace Reactory {
        * @param props 
        * @param target 
        */
-      loadComponent(Component: ValidComponent, props: any, target: any): void;
+      loadComponent(Component: ValidComponent<unknown, unknown, unknown>, props: any, target: any): void;
 
       /**
        * 
@@ -566,14 +598,14 @@ declare namespace Reactory {
       /**
        * Returns the roles available for this application
        */
-      getApplicationRoles(): any[];
+      getApplicationRoles(): string[];
       
       /**
        * Set the "User" object. This user object is technically an API response object that is 
        * constructed from the logged in user.
        * @param user
        */
-      setUser(user: any): void;
+      setUser(user: Models.IApiStatus): void;
       
       /**
        * Set the authorization token for the user
@@ -640,20 +672,20 @@ declare namespace Reactory {
        * 
        * @param notFoundComponentFqn Returns a component to use a 
        */
-      getNotFoundComponent(notFoundComponentFqn: string): ValidComponent;
+      getNotFoundComponent(notFoundComponentFqn: string): ValidComponent<any,any,any>;
 
-      getNotAllowedComponent(notAllowedComponentFqn: string): ValidComponent;
+      getNotAllowedComponent(notAllowedComponentFqn: string): ValidComponent<any, any, any>;
 
-      mountComponent(ComponentToMount: ValidComponent,
-        props: any, domNode: any, theme: any, callback: Function): void;
+      mountComponent(ComponentToMount: ValidComponent<any, any, any>,
+        props: any, domNode: any, theme?: boolean, callback?: () => void): void;
 
       showModalWithComponentFqn(componentFqn: string, title: string, props: any,
         modalProps: any, domNode: any, theme: any, callback: Function): void;
 
-      showModalWithComponent(title: string, ComponentToMount: ValidComponent,
+      showModalWithComponent(title: string, ComponentToMount: ValidComponent<any, any, any>,
         props: any, modalProps: any, domNode: any, theme: any, callback: Function): void;
 
-      createElement(ComponentToCreate: ValidComponent, props: any): any;
+      createElement(ComponentToCreate: ValidComponent<any, any, any>, props: any): any;
 
       unmountComponent(node: any): boolean;
 
@@ -698,7 +730,7 @@ declare namespace Reactory {
        * Calls the API Status graph endpoint
        * @param options 
        */
-      status(options: any): Promise<Models.IApiStatus>;
+      status(options?: IApiStatusRequestOptions): Promise<Models.IApiStatus>;
 
       validateToken(token: string): any;
 
@@ -1321,6 +1353,11 @@ declare namespace Reactory {
 
 
       export type SupportTicket = (props: { reference: string, mode: "view" | "edit" | "new" }) => JSX.Element
+      
+      /**
+       * ReactoryForm component type alias.
+       */
+      export type ReactoryForm = React.FunctionComponent<Reactory.Client.IReactoryFormProps>
     }
 
     export namespace ReactNative {
@@ -1604,24 +1641,64 @@ declare namespace Reactory {
     }
 
     export interface IReactoryFormGraphElement {
+
+      /**
+       * The name of the graph data element
+       */
       name: string,
+      /**
+       * The text that represent the mutation / query
+       */
       text: string,
+      /**
+       * The map that is used to map the resulting data to 
+       * the correct data object.
+       */
       resultMap?: Object,
+      /**
+       * The data type that is represented by the data result. The allowed 
+       * values are.
+       * - string
+       * - number
+       * - date
+       * - object
+       * - array
+       */
       resultType?: string,
       /**
-       * Used when only want to extract a single value from the data result
+       * Used when only want to extract a single value from the data result.
        */
       resultKey?: string;
-
+      /**
+       * Any static data we want included in the data response or that 
+       * may be needed data transformations.
+       */
       formData?: any,
+      /**
+       * A variable mapping object that maps data values to a query params.
+       */
       variables?: Object,
-
+      /**
+       * On success method handling type. This is generally used after executing
+       * a mutation thart changes the data.
+       */
       onSuccessMethod?: string | "redirect" | "notification" | "function",
+      /**
+       * The event handler information that provides additional
+       * on sucess handling strategies.
+       */
       onSuccessEvent?: IReactoryEvent | undefined,
-
+      /**
+       * How we wnt to handle the data merging. We can merge, replace or use a custom function.
+       */
       mergeStrategy?: string | "merge" | "replace" | "function",
+      /**
+       * A FQN of a function that will be used to perform the merge
+       */
       mergeFunction?: string
-
+      /**
+       * 
+       */
       onError?: IReactoryFormQueryErrorHandlerDefinition,
 
       options?: any,
@@ -1856,49 +1933,84 @@ declare namespace Reactory {
      * Reactory Form Resource structure
      */
     export interface IReactoryFormResource {
+      /**
+       * A unique id for the ui resource. This has to be unqiue for the runtime of the 
+       * application. When a UI resource is injected into the client, it will check the client
+       * whether or not the resource has been injected / delivered.
+       */
       id?: string
+      /**
+       * The name of the Form UI resource. This is a human readable name
+       */
       name: string
-      type: string | "css" | "script"
+      /**
+       * The type of asset / resource. Common types are css, script, image video and audio. Addition
+       * types provided are wasm, module, certificate and data. Other types may be used for for custom 
+       * code ingestors.
+       */
+      type: string | "css" | "script" | "image" | "video" | "audio" | "wasm" | "module" | "certificate" | "data"
+      /**
+       * Indicates if the form resource is required
+       */
       required?: boolean
+      /**
+       * A string template that can be used to evaluate if the component is 
+       * already installed / available on the target container / window / form.
+       * 
+       * An example could be checking if a module is already loaded in the component registery
+       * ${reactory.componentRegister["core.MyModule@1.0.0"] !== undefined && reactory.componentRegister["core.MyModule@1.0.0"] !== null}
+       */
       expr?: string
+      /**
+       * Indicates whetther or not the resource is signed.
+       */
       signed?: boolean
+      /**
+       * Indicator of how this resource is signed
+       */
       signature?: string
+      /**
+       * Text indicator of how this resource is signed
+       */
       signatureMethod?: string
-      crossOrigin?: string
+      /**
+       * Indicate whether or not this resource is being taken from a 3rd party domain.
+       */
+      crossOrigin?: boolean
+      /**
+       * The uniform resource identifier for this UI Resource item.  For a web client this would be
+       * a https://your.resource.com/package/script.js or for css https://your.resource.com/package/css.js
+       * For a native client this would be a resource identifier for a library include that can be a react-native 
+       * package, an android external module or an ios external module. 
+       */
       uri: string
     }
 
-
-
-    /**
-    * The main interface for the data structure that represents the Reactory Form.
-    * Most properties are optional as the form only requires a schema and a few other basic
-    * properties in order to run as a reactory form / component.
-    */
-    export interface IReactoryForm {
+    export interface IReactoryFormBase {
       /**
        * A unique id for the form. This id, allows the form to be found
        * via the reactory.form(id)
        */
       id: string,
       /**
-       * 
+       * The uiFramework to use for this form.
        */
-      uiFramework?: string,
+      uiFramework?: string | "material" | "bootstrap" | "blueprint" | "office",
       /**
-       * 
+       * uiSupport that is availanle for this form
        */
       uiSupport?: string[],
       /**
-       * 
+       * The uiResources that is required for the form to render.
        */
-      uiResources?: any[],
+      uiResources?: IReactoryFormResource[],
       /**
-       * 
+       * The title for the form. This is a human readable string or it can be a 
+       * i18n language key
        */
       title?: string,
       /**
-       * 
+       * The tags for the resource
        */
       tags?: string[],
 
@@ -1910,11 +2022,19 @@ declare namespace Reactory {
       /**
        * icon to use when representing the form
        */
-      icon?: string
+      icon?: string,
 
       /**
-       * provides a schema when requiring input parameters to execute a graph action 
+       * A list of help topics associated with the form.
        */
+      helpTopics?: string[]
+
+    }
+
+    export interface IReactoryFormArgs {
+      /**
+      * provides a schema when requiring input parameters to execute a graph action 
+      */
       argsSchema?: Schema.AnySchema | Schema.TServerSchemaResolver | Schema.TClientSchemaResolver,
       /**
        * provides a ui schema when require input parameters to execute a graph action
@@ -1926,11 +2046,9 @@ declare namespace Reactory {
        * The component FQN should take precendence over the argSchema and argUiSchema
        */
       argsComponentFqn?: string,
+    }
 
-      /**
-       * A list of help topics associated with the form.
-       */
-      helpTopics?: string[]
+    export interface IReactoryFormSchemas {
       /**
        * The schema that represents the form
        */
@@ -1950,95 +2068,115 @@ declare namespace Reactory {
        */
       uiSchemas?: IUISchemaMenuItem[],
       /**
-       * 
+       * The default UI Schema Key
        */
       defaultUiSchemaKey?: string
+    }
+
+    export interface IReactoryFormRuntime {
       /**
-       * 
+       * Indicate whether or not to use this form as a component?
        */
       registerAsComponent?: boolean,
       /**
-       * 
+       * The nameSpace for the form.
        */
       nameSpace: string,
       /**
-       * 
+       * The name for the form.
        */
       name: string,
       /**
-       * 
+       * The description for the form.
        */
       description?: string,
       /**
-       * 
+       * The version number for the form.
        */
       version: string,
       /**
-       * 
+       * The roles that are allowed access this form.
        */
       roles?: string[],
       /**
-       * 
+       * The components that this form uses / requires.
        */
       components?: string[],
+    }
+
+    export interface IReactoryFormGraph {
+
+    }
+
+    /**
+    * The main interface for the data structure that represents the Reactory Form.
+    * Most properties are optional as the form only requires a schema and a few other basic
+    * properties in order to run as a reactory form / component.
+    */
+    export interface IReactoryForm extends 
+      IReactoryFormBase, 
+      IReactoryFormArgs, 
+      IReactoryFormSchemas,
+      IReactoryFormRuntime {      
+      
       /**
-       * 
+       * The graph definition for the form
        */
       graphql?: IFormGraphDefinition,
       /**
-       * 
+       * Default value for the form
        */
       defaultFormValue?: any,
       /**
-       * 
+       * Default PDF Report entry to use when generating PDFs
        */
       defaultPdfReport?: IReactoryPdfReport,
       /**
-       * 
+       * Default Excel export definition to use when exporting excel
        */
       defaultExport?: IExport,
       /**
-       * 
+       * An array of reports associated with this form
        */
       reports?: IReactoryPdfReport[],
       /**
-       * 
+       * An array of export definitions assoacited with this form
        */
       exports?: IExport[],
       /**
-       * 
+       * TODO: investigate use of refresh property on Reactory Form 
        */
       refresh?: any,
       /**
-       * 
+       * The widget map used to map components to internal Widgets
        */
       widgetMap?: IWidgetMap[],
       /**
-       * 
+       * A field map used to map components to internal field
        */
       fieldMap?: IFieldMap[];
       /**
-       * 
+       * Indicates whether or not the back button must be displayed
        */
       backButton?: Boolean,
       /**
-       * 
+       * TODO: investigate use of the workflow
        */
       workflow?: Object,
       /**
-       * 
+       * boolean property for indicating Html5 validation 
        */
       noHtml5Validate?: boolean,
       /**
-       * 
+       * A form context data / properties that should be injected
        */
       formContext?: any,
       /**
-       * 
+       * fields for the form - TODO: investigate structure and use.
        */
       fields?: any,
       /**
-       * 
+       * Widgets for the form - TODO: investigate structure and use.
        */
       widgets?: any,
       /**
@@ -2080,8 +2218,40 @@ declare namespace Reactory {
       /**
        * Boolean flag stored on the form to indicate if the full 
        * schema has been fetched yet.
-       */
+       */      
       __complete__?: Boolean
+      /**
+       * The source is where form originates from or where it must 
+       * be published to.  If the source is null, it will automatically
+       * be assigned the __runtime__ value.
+       * 
+       * Modules that publish their forms need to provide the source
+       * location if editing the form is allowed via the editor.
+       */
+      source?: string,
+      /**
+       * If remote editing (client side) of form is allowed
+       * then this property has to be set to true. The default
+       * value is false.
+       */
+      allowEdit?: boolean,
+      /**
+       * Edit roles
+       */
+      editRoles?: string[],
+      /**
+       * Clone roles
+       */
+      cloneRoles?: string[],
+      /**
+       * Cloning / copying of forms default to false. 
+       * Has to be explicitly set to true
+       */      
+      allowClone?: boolean
+      /**
+       * If published is not set it will by default be set to true
+       */
+      published?: boolean
       [key: string]: any
     }
 
@@ -2329,13 +2499,23 @@ declare namespace Reactory {
       additional: IReactoryLoggedInContextAdditionalData[]
     }
 
+    export interface INavigationComponentDefinition {
+
+    }
 
     /**
    * Data structure that represents the Reactory Api Status
    */
     export interface IApiStatus {
+      /**
+       * a unique id
+       */
       id: string,
       when: Date,
+      /**
+       * The status for the server. If everything processed it
+       * should return with API-OK
+       */
       status: string,
       /**
        * @deprecated 
@@ -2354,6 +2534,8 @@ declare namespace Reactory {
        * Reactory menu entries for this user 
        */
       menus: ObjectId[] | UX.IReactoryMenuConfig[]
+
+      navigationComponents: INavigationComponentDefinition[]
       [key: string]: any
     }
 
@@ -3329,26 +3511,50 @@ declare namespace Reactory {
       blueprint = 'blueprint'
     }
 
+    export type NAMED_PALETTE =  'info' |  'warning' | 'error' | 'primary' | 'secondary'      
+
     export interface IPalette {
       light: string,
       main: string,
       dark: string,
-      contrastText: string
+      contrastText: string,
+      warning?: string,
+      error?: string,
+      info?: string,
+      /**
+       * Use the colors array for providing a list of 
+       */
+      colors: string[]
+      [key: string]: any
     }
 
     export interface IThemePalette {
-      primary1Color: string
+      mode: ApplicationThemeModeType
       primary: IPalette
       secondary: IPalette
-      report: IPalette
+      report?: IPalette      
+      info?: IPalette
+      warning?: IPalette
+      success?: IPalette
+      error?: IPalette
+
+      background?: {
+        paper?: string,
+        default?: string
+      }
+      [key: string]: any      
     }
 
+    export interface IReactoryColorSchemes {
+      primary: string[],
+      secondary: string[]
+    }
     export interface ITheme {
       type: string
       palette: IThemePalette
     }
 
-    /**
+  /**
   * Supported Theme Types.  
   * Other rendering libraries will be added over time and each will 
   * have their owne configuration schema
@@ -3362,7 +3568,7 @@ declare namespace Reactory {
      * than one theme mode available.
      */
     export type ApplicationThemeModeType = "light" | "dark" | "os"
-
+    
     /**
      * Theme modes
      */
@@ -3396,7 +3602,7 @@ declare namespace Reactory {
       /**
        *The options that is associated with this theme mode
       */
-      options: any
+      options: ITheme
     }
 
     export type ReactoryThemeAssetType = "script" | "image" | "css" | "json"
@@ -3428,10 +3634,7 @@ declare namespace Reactory {
       inherits?: string
     }
 
-    export interface IReactoryColorSchemes {
-      primary: string[],
-      secondary: string[]
-    }
+
 
     /**
      * The reactory theme wrapper is used to contain the theme 
@@ -3448,10 +3651,9 @@ declare namespace Reactory {
       modes?: IReactoryThemeMode[]
       options?: any
       assets?: IReactoryThemeAsset[]
-      layouts?: IReactoryLayout
+      layouts?: IReactoryLayout[]
       colorSchemes?: IReactoryColorSchemes
-      content?: any
-      il8n?: any
+      content?: any      
     }
 
 
@@ -3802,6 +4004,10 @@ declare namespace Reactory {
        * the load request
        */
       loader?: string
+      /**
+       * A valid mime type
+       */
+      mimeType?: string
       /**
        * The options associated with the plugin
        */
@@ -4207,22 +4413,30 @@ declare namespace Reactory {
       get(id: string): Promise<Reactory.Forms.IReactoryForm>;
 
       /**
-       * Persists the form to storage
-       * @param form 
+       * Persists the form to storage.
+       * @param form - The form definition that will be persisted
+       * @param options - options for persisting the form. If options.publish 
+       * 
        */
-      save(form: Reactory.Forms.IReactoryForm, user_options?: any): Reactory.Forms.IReactoryForm;
+      save(form: Reactory.Forms.IReactoryForm, options?: { publish: boolean, module?: string, git?: Reactory.Git.GitOptions }): Promise<Reactory.Forms.IReactoryForm>;
 
       /**
        * Delete a form from the data store
        * @param form 
        */
-      delete(form: Reactory.Forms.IReactoryForm): boolean
+      delete(form: Reactory.Forms.IReactoryForm): Promise<boolean>
 
-      /**
-       * 
+      /**       
        * @param form Returns an array of resources for the form
        */
       getResources(form: Reactory.Forms.IReactoryForm): Promise<Reactory.Forms.IReactoryFormResource[]>
+
+      /**
+       * Overrides a form with a newer version in the database
+       * @param form 
+       * @param overrides 
+       */
+      override(form: Reactory.Forms.IReactoryForm, overrides: Reactory.Forms.IReactoryForm): Promise<Reactory.Forms.IReactoryForm>
     }
 
     export interface IReactoryModuleCompilerService extends Reactory.Service.IReactoryDefaultService {
@@ -4526,16 +4740,57 @@ declare namespace Reactory {
       [key: string]: string | number | boolean
       NODE_PATH: string
       NODE_ENV: string
+      /**
+       * The application data root, is the mapped
+       * network drive that represents the CDN data root that
+       * the server uses to read and write CDN content to
+       */
       APP_DATA_ROOT: string
+      /**
+       * The mongoose connection string for the core backing DB
+       */
       MONGOOSE: string
+      /**
+       * mongoose connection details for workflow
+       */
       WORKFLOW_MONGO: string
+      /**
+       * The port number the server must run on
+       */
       API_PORT: number
+      /**
+       * Send grid API key - this will be moved to 
+       * a per client key configuration.
+       */
       SENDGRID_API_KEY: string
+      /**
+       * The URI root for the API, this represent the full
+       * root of server API, i.e. http://localhost:4000
+       */
       API_URI_ROOT: string
+      /**
+       * Intended for override the root of the 
+       * graph
+       */
       API_GRAPHQL_URI: string
+      /**
+       * CDN root as it will be used by connecting client
+       * devices.
+       */
       CDN_ROOT: string
+      /**
+       * The mode that the server is running under
+       * options are DEVELOP, QA, PRODUCTION
+       */
       MODE: string
+      /**
+       * The level of logging the application should use
+       */
       LOG_LEVEL: string
+      /**
+       * OAUTH SETTING TO BE MOVED TO PER 
+       * CONNECTING CLIENT.
+       */
       OAUTH_APP_ID: string
       OAUTH_APP_PASSWORD: string
       OAUTH_REDIRECT_URI: string
@@ -4544,6 +4799,28 @@ declare namespace Reactory {
       OAUTH_ID_METADATA: string
       OAUTH_AUTHORIZE_ENDPOINT: string
       OAUTH_TOKEN_ENDPOINT: string
+      /**
+       * Additional i18n namespaces to load.
+       * Can be a single namespace, i.e.: 
+       * `I18N_NS=foo`
+       * or you can provide a comma separated value, i.e.;
+       *  `I18N_NS=foo,bar,baz`
+       * and it will be interpreted as a string array
+       * Default namespaces are 'common', 'forms', 'models', 'services', 'workflow', 'schemas'
+       * The system will automatically add a namespace that matches the 
+       * the module key for an activated module.
+       */
+      I18N_NS?: string
+      /**
+       * The fallback language key to use
+       * when the translations are not available
+       */
+      I18N_FALLBACK?: string
+      /**
+       * The I18N languages that will be pre loaded into the 
+       * language provider
+       */
+      I18N_PRELOAD?: string
     }
 
 
@@ -4583,6 +4860,9 @@ declare namespace Reactory {
   * all code to be executed with a specific user / application context details.
   */
     export interface IReactoryContext {
+      /**
+       * Current Active Context Id
+       */
       id: string,
       /**
        * The user account that is associated with this execution 
@@ -4699,7 +4979,21 @@ declare namespace Reactory {
        */
       languages: string[],
 
+      /**
+       * The current active theme for this context
+       */
+      theme: Reactory.UX.IReactoryTheme
+
+      /**
+       * The current active palette for this context
+       */
+      palette: Reactory.UX.IThemePalette
+
       [key: string]: any
+    }
+
+    export interface IExecutionContextProvider {
+      getContext(currentContent: IReactoryContext): Promise<IReactoryContext>
     }
 
 
@@ -4904,39 +5198,322 @@ declare namespace Reactory {
 
     //export type ReactoryFields = string | "ArrayField" | "BooleanField" | "TitleField" | ""
 
+    /**
+     * place holder for Accordian layout
+     */
+    export interface IAccordionLayout {
+      [key: string]: any
+    }
+
+    /**
+     * Place holder interface
+     */
+    export interface IAccordionOptions {
+      [key: string]: any
+    }
+
+    /**
+     * Place holder interface
+     */
+    export interface ISteppedLayout {
+      [key: string]: any
+    }
+
+    /**
+     * Place holder interface
+     */
+    export interface ISteppedOptions {
+      [key: string]: any
+    }
+
+    /**
+     * Place holder interface
+     */
+    export interface IListLayout {
+      [key: string]: any
+    }
+
+    /**
+     * Place holder interface
+     */
+    export interface IListLayoutOptions {
+      [key: string]: any
+    }
+
+    /**
+     * Place holder interface
+     */
+    export interface IPagedLayout {
+      [key: string]: any
+    }
+
+    /**
+     * Place holder interface
+     */
+    export interface IPagedLayoutOptions {
+      [key: string]: any
+    }
+
+    /**
+     * Function type that provides a format string / format result based on a function
+     */
+    export type TUIFormatProvider = (schema: ISchema, uiSchema: IUISchema, formData?: any, form?: Reactory.Forms.IReactoryForm, context?: Reactory.Server.IReactoryContext) => string;
+    
+    /**
+     * Function type that provides a JSX structure for returning 
+     */
+    export type TUIJsxProvider = (schema: ISchema, uiSchema: IUISchema, formData?: any, form?: Reactory.Forms.IReactoryForm, context?: Reactory.Server.IReactoryContext) => any
+
+    /**
+     * 
+     */
+    export interface IUISchemaOptions {
+      [key: string]: any
+      /**
+       * special string formatting instruction / expression
+       */
+      format?: string | TUIFormatProvider,
+      /**
+       * JSX that can be used by the component for style rules
+       */
+      jsx?: any | TUIJsxProvider
+    }
+
+    /**
+     * Default field options that apply the number field
+     */
+    export interface IUINumberFieldUIOptions extends IUISchemaOptions {
+      type?: string | "int" | "float" | "double"
+      title?: string
+    }
+
+    export interface IUILabelWidgetOptions extends IUISchemaOptions {
+      /**
+       * Title string for the label widget. This value can contain
+       * a valid lodash template string.
+       */
+      title?: string,
+      /**
+       * Icon object
+       */
+      icon?: any,
+      iconType?: string,
+      iconPosition?: string | "left" | "right",
+      variant?: string | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" 
+        | "caption" | "button" | "overline" | "inherit"
+        | "subtitle1" | "subtitle2" | "body1" | "body2",
+      iconProps?: any,
+      renderHtml?: boolean,
+      titleProps?: any,
+      bodyProps?: any,
+      containerProps?: any,
+      componentFqn?: string
+      componentProps?: any,
+      componentPropsMap?: any,
+      launchProps?: any,
+      copyToClipboard?: boolean
+    }
+
+    export interface IUIUTextFieldOptions extends IUISchemaOptions {
+      multiline?: boolean
+      /**
+       * setting the renderer type html will render the text using an unsafe set html operation
+       * markdown will use a markdown renderer, richtext will be dependent on the platform
+       * provide the native richtext experience and text will be plain text.
+       */
+      renderer?: string | 'html' | 'markdown' | 'richtext' | 'text'
+    }
+
+    export interface IUIBooleanFieldOptions extends IUISchemaOptions {
+
+    }
+
+    export interface IUIDateFieldOptions extends IUISchemaOptions {
+
+    }
+
+    export interface IUIObjectFieldOptions extends IUISchemaOptions {
+
+    }
+
+    export interface IUIArrayFieldOptions extends IUISchemaOptions {
+
+    }
+
+    /**
+     * The standard field options for the Reactory UI engines / components.
+     */
+    export type TReactoryFieldOptions = IUIArrayFieldOptions | IUIObjectFieldOptions 
+    | IUIDateFieldOptions | IUIBooleanFieldOptions | IUIUTextFieldOptions
+    | IUINumberFieldUIOptions | IUISchemaOptions
+
+
+    /**
+     * Place holder interface
+     */
     export interface IUISchema {
+      /**
+       * The wiget tat will be used to render the data element. A widget definition takes priority over other configurations.
+       * The widget must be a widget that is registered in the FORM registry (this is different to the reactory component registry).
+       * Components can be mapped to widgets using the widget map property on the form.
+       */
       'ui:widget'?: string | "null",
-      'ui:options'?: object | "null",
-      'ui:field'?: string | "GridLayout" | "TabbedLayout" | "AccordionLayout" | "SteppedLayout",
+      /**
+       * This object is passed to the component that is rendering the element.  Each option element is unique to the data type / widget
+       * that is being used to render the schema element,
+       */
+      'ui:options'?: TReactoryFieldOptions | any | "null",
+      /**
+       * The ui:field property describes what layout field that is registered in the form registry.
+       * GridLayout will use a standard grid mechanism 
+       */
+      'ui:field'?: string | "GridLayout" | "TabbedLayout" | "AccordionLayout" | "SteppedLayout" | "ListLayout" | "PagedLayout",
+      /**
+       * The grid layout structure. This breaks down the distribtution of properties over a grid. This is generally the default layout
+       * for object types.
+       */
       'ui:grid-layout'?: IGridLayout[],
+      /**
+       * The options for the grid layout 
+       */
       'ui:grid-options'?: IGridOptions,
-      'ui:tab-layout'?: IGridLayout[],
-      'ui:tab-options'?: IGridOptions,
+      /**
+       * Provides a tabbed interface for a object type.
+       * properties can be mapped to tabs
+       */
+      'ui:tab-layout'?: ITabLayout[],
+      /**
+       * Options for the tabbed layout
+       */
+      'ui:tab-options'?: ITabOptions,
+      /**
+       * Layout options for the Accordion 
+       */
+      'ui:accordion-layout'?: IAccordionLayout[],
+      /**
+       * Accordion options
+       */
+      'ui:accordion-options'?: IAccordionOptions,
+      /**
+       * Stepped Layout - used where data properties are completed in steps
+       */
+      'ui:stepped-layout'?: ISteppedLayout[],
+      /**
+       * Stepped Layout options
+       */
+      'ui:stepped-options'?: ISteppedOptions,
+      /**
+       * List layout - used when object properties are displayed as list items
+       */
+      'ui:list-layout'?:IListLayout[],
+      /**
+       * List options
+       */
+      'ui:list-options'?: IListLayoutOptions,
+      /**
+       * Paged layout - used when object properties / array 
+       */
+      'ui:paged-layout'?: IPagedLayout[],
+      /**
+       * Paged options
+       */
+      'ui:paged-options'?: IPagedLayoutOptions
+      /**
+       * GraphQL form query overrides are used some widgets.
+       * Widgets that use this feature are:
+       * * core.LableComponent@1.0.0
+       */
+      'ui:graphql'?: Reactory.Forms.IReactoryFormQuery
       [key: string]: IUISchema | any,
     }
+
 
     export interface ISchemaObjectProperties {
       [key: string]: ISchema
     }
 
     export interface ISchema {
+      /**
+       * The type defines the field type of the Schema element.
+       * 
+       * Valid input types are string inputs that can be:
+       * - object
+       * - string
+       * - number
+       * - boolean
+       * - array
+       * - null
+       * - function
+       * - promise
+       * ### NOTE
+       * function | promise !!warning - experimental feature do not use unless trained in the 
+       * art of function types and promises. The function type will allow you to bind
+       * a function to an object using a FQN
+       */
       type: string | "object" | "string" | "number" | "boolean" | "array" | "null",
+      /**
+       * The title field for the schema object.
+       */
       title?: string | undefined,
+      /**
+       * Field description for the schema object
+       */
       description?: string | undefined,
+      /**
+       * default valueu for the schema element
+       */
       default?: any | undefined,
+      /**
+       * Required indicator. When true then the field has to have a value
+       */
       required?: any | undefined,
+      /**
+       * Schema Object Properties
+       */
       properties?: ISchemaObjectProperties | any | undefined,
+      /**
+       * dependencies for the object
+       */
       dependencies?: any | undefined,
+      /**
+       * Schema definitions
+       */
       definitions?: any,
+      /**
+       * items schema
+       */
       items?: ISchema,
+      /**
+       * format type
+       */
       format?: string | "email" | "password" | "date" | "date-time",
-      enum?: string[]
+      /**
+       * valid enum values
+       */
+      enum?: string[],
+      /**
+       * When readonly then the field should not allow updates
+       */
+      readonly?: boolean,
+      /**
+       * The fully qualified name for the field. When left blank the system 
+       * will complete this item.
+       * 
+       * eg: reactory.MyApplications@1.0.0/schema.applications.id
+       * 
+       * When your field type is set to function / promise the FQN has to resolve
+       * to the function id that must be bound to this object element.
+       */
+      fqn?: string 
     }
 
+    /**
+     * 
+     */
     export interface IStringSchema extends ISchema {
       type: string | "string",
       minLength?: number,
-      maxLength?: number
+      maxLength?: number,
     }
 
     export interface INumberSchema extends ISchema {
@@ -5050,21 +5627,11 @@ declare namespace Reactory {
         render?: (props: any) => JSX.Element
       }
     }
-    export interface IFormUISchema {
-      'ui:form'?: IFormUIOptions,
+    export interface IFormUISchema extends IUISchema {
       /**
        * "ui:form" is prefered method to set Form specific settting.
-       * 
        */
-      'ui:options'?: IFormUIOptions | any,
-      /**
-       * what field layout mechanism to use
-       */
-      'ui:field'?: string | "GridLayout" | "TabbedLayout" | "AccordionLayout" | "SteppedLayout",
-      'ui:widget'?: string,
-      'ui:grid-layout'? : UISchemaGridLayout[]
-
-      [key: string]: IUISchema | any
+      'ui:form'?: IFormUIOptions,            
     }
   }
 
@@ -5082,9 +5649,83 @@ declare namespace Reactory {
       autoStart?: boolean
       props?: any
     }
-
-
   }
 
+  export namespace Git {
+
+    export interface GitCredentials {      
+      /**
+       * The public key to use. This should represent a file on disk.
+       */
+      publicKey?: string
+      /**
+       * The username to use when submitting
+       */
+      username?: string,
+      /**
+       * The password to use when submitting
+       */
+      password?: string,
+      /**
+       * A token to use when submitting
+       */
+      token?: string,
+      /**
+       * Boolean indicator for ssh.
+       */
+      ssh?: boolean,
+    }
+
+    /**
+     * Defines a git command structure
+     */
+    export interface GitCommand {
+      /**
+       * The the git command name. this must be a valid git command. i.e.
+       * checkout develop,fetch origin develop, branch feature/featurename,commit  
+       */
+      command: string
+      /**
+       * If set to true command execution will stop if an error occurs
+       */
+      exitOnError?: boolean
+    }
+
+    /**
+     * The reactory git options 
+     */
+    export interface GitOptions {
+      /**
+       * The branch name to use
+       */
+      branch?: string,
+
+      /**
+       * The git commands to execute
+       */
+      commands?: any[]
+
+      /**
+       * Credentials object for the user
+       */
+      credentials?: GitCredentials
+      /**
+       * The credentials id for the logged in user
+       * to use for credentials. If this is set the properties
+       * on the crediential id will must support the 
+       * git credentials
+       */
+      credentialsId?: string
+      /**
+       * Credentials pin. When credentials are 
+       * persisted with a pin number, then only the user
+       * with the pin can access those credentials.
+       * 
+       * If no pin is set, the user credentials are encrypted
+       * using the default reactory encryption tools
+       */
+      credentialsPin?: string
+    }
+  }
 }
 
