@@ -4,7 +4,7 @@ import { MimeType } from 'chartjs-node-canvas';
 import fs from 'fs';
 import ExcelJS from 'exceljs';
 import { Stream } from "stream";
-import moment from "moment";
+import moment, { Moment } from "moment";
 import { v4 as uuid } from 'uuid';
 import { GraphQLSchema } from 'graphql';
 import classNames from 'classnames';
@@ -35,7 +35,7 @@ import * as MaterialIconsAlias from '@mui/icons-material'
 import * as ReactRouterAlias from 'react-router';
 import * as ReactRouterDomAlias from 'react-router-dom';
 import i18next from "i18next";
-import { JsxEmit } from "typescript";
+import { FilledInputProps, InputProps, OutlinedInputProps } from "@mui/material";
 
 /// <reference path="global.d.ts" />
 
@@ -52,12 +52,32 @@ declare namespace Reactory {
    */
   export type React = typeof ReactAlias;
 
-
-
+  
+  /**
+   * A basic key value pair interface
+   */
   export interface IKeyValuePair<K, V> {
     key: K,
     value: V
   }
+
+  /**
+   * FQN is an alias for string, but we use it to 
+   * indicate that the string represented needs to adhere
+   * to a fully qualified name for a reactory object.
+   * @example "namespace.ComponentName@1.0.0"
+   */
+  export type FQN = string
+
+  /**
+   * FQN Key Value Pair
+   */
+  export type FQNKVP<V> = IKeyValuePair<FQN,V>;
+
+  /**
+   * A valid date type.
+   */
+  export type ValidDate = Date | Moment | number | string
 
   /**
    * Object Transform object is used for fine grained control over an object data set.
@@ -813,15 +833,27 @@ declare namespace Reactory {
     }
 
     /**
+     * Widget error schema
+     */
+    export interface IWidgetErrorSchema {
+
+    }
+
+    /**
      * The base widget property set. Additional property type created 
      * by extending this interface for your specfic form type
      */
-    export interface IReactoryWidgetProps<T> extends IReactoryWiredComponent {
+    export interface IReactoryWidgetProps<
+      T = unknown,
+      TRoot = any, 
+      TSchema = Schema.ISchema,
+      TUISchema = Schema.IUISchema> extends IReactoryWiredComponent {
       formData: T,
-      schema: Schema.ISchema,
-      uiSchema: any,
-      idSchema: any,
-      formContext: Reactory.Client.IReactoryFormContext<T>,
+      schema: TSchema,
+      uiSchema: TUISchema,
+      idSchema: Schema.IDSchema,
+      formContext: Reactory.Client.IReactoryFormContext<TRoot>,
+      onChange: (newFormData: T, errorSchema: IWidgetErrorSchema) => void,
       [key: string]: any
     }
 
@@ -958,7 +990,7 @@ declare namespace Reactory {
           /**
            * Page size 
            */
-          pageSize?: 25,
+          pageSize?: number,
           /**
            * the variant will determine how the paging is managed
            */
@@ -1010,12 +1042,31 @@ declare namespace Reactory {
         listItemsComponent?: string,
 
         /**
-         * Secondary Action options
+         * Secondary Action options.
+         * 
+         * The secondary action item can be rendered with a default interpretation.
+         * Properties that apply to the default renderer
+         * * label
+         * * iconKey
+         * * link
+         * The secondary action can also be bound to a custom component
          */
         secondaryAction?: {
+          /**
+           * A label for the secondary action component.
+           */
           label?: string | MaterialListItemStringValueProvider,
+          /**
+           * The icon key that will be used for 
+           */
           iconKey?: string | MaterialListItemStringValueProvider,
+          /**
+           * The component fqn that gets bound to the object
+           */
           componentFqn?: string | MaterialListItemStringValueProvider,
+          /**
+           * 
+           */
           component?: MaterialListItemObjectValueProvider,
           action?: string | MaterialListItemStringValueProvider,
           actionData?: any | MaterialListItemObjectValueProvider,
@@ -1358,6 +1409,36 @@ declare namespace Reactory {
        * ReactoryForm component type alias.
        */
       export type ReactoryForm = React.FunctionComponent<Reactory.Client.IReactoryFormProps>
+
+      /**
+       * 
+       */
+      export interface IDateWidgetUISchema extends Reactory.Schema.IUISchema {
+        'ui:options'?: {
+          InputProps?: Partial<InputProps> | Partial<FilledInputProps> | Partial<OutlinedInputProps>
+          /**
+           * the format for the date string
+           */
+          format?: string,
+          /**
+           * controls whether or not the field renders fullwidth, the default is set to true
+           */
+          fullWidth?: boolean,
+          /**
+           * Input mask for the date
+           */
+          mask?: string
+        },
+      }
+
+      /**
+       * Represents a valid 
+       */
+      export type WiredDateWidgetProps = Reactory.Client.IReactoryWidgetProps<
+        ValidDate,
+        unknown,
+        IDateWidgetUISchema
+      >
     }
 
     export namespace ReactNative {
@@ -1680,9 +1761,11 @@ declare namespace Reactory {
       variables?: Object,
       /**
        * On success method handling type. This is generally used after executing
-       * a mutation thart changes the data.
+       * a mutation that changes the data.
+       * 
+       * Supports 
        */
-      onSuccessMethod?: string | "redirect" | "notification" | "function",
+      onSuccessMethod?: string | "redirect" | "notification" | "function" | "refresh",
       /**
        * The event handler information that provides additional
        * on sucess handling strategies.
@@ -1691,7 +1774,7 @@ declare namespace Reactory {
       /**
        * How we wnt to handle the data merging. We can merge, replace or use a custom function.
        */
-      mergeStrategy?: string | "merge" | "replace" | "function",
+      mergeStrategy?: string | "merge" | "replace" | "function" | "none",
       /**
        * A FQN of a function that will be used to perform the merge
        */
@@ -1732,20 +1815,63 @@ declare namespace Reactory {
     }
 
     export interface IReactoryFormMutation extends IReactoryFormGraphElement {
+      /**
+       * The name of the mutation. This should match the mutation name on your 
+       * graph server.
+       */
       name: string,
+      /**
+       * The full mutation text.
+       * @example 
+       * mutation Foo($input) {
+       *  Foo(input:$input) {
+       *    bar
+       *  }
+       * }
+       */
       text: string,
+      /**
+       * The message that will be displayed will the form is updating 
+       * in a minimal modal
+       */
       updateMessage?: string,
-
-
+      /**
+       * Any events that needs to be fired once the 
+       * the mutation has been executed.
+       */
       refreshEvents?: IReactoryEvent[] | undefined
+      /**
+       * A url that / url template that 
+       * will be used to redirect the user navigation.
+       */
       onSuccessUrl?: string,
+      /**
+       * The timeout in millis that the form will wait 
+       * before redirecting the user. 
+       * 
+       * The default value is 500
+       */
       onSuccessRedirectTimeout?: number,
-
-
+      /**
+       * A notification object
+       */
       notification?: any,
-      mergeStrategy?: string | "merge" | "replace" | "function",
-      mergeFunction?: string
+      /**
+       * Currently supported options are "merge" and "replace"
+       */
+      mergeStrategy?: "merge" | "replace" | "function" | "none",
+      /**
+       * The merge function that will be used to merge the current form data with 
+       * the incoming form data.
+       * 
+       * It can be either a string which must be a 
+       */
+      mergeFunction?: string | "(data: any) => any";
+      /**
+       * 
+       */
       handledBy?: string | 'onChange' | 'onSubmit'
+      
       objectMap?: boolean,
     }
 
@@ -5547,6 +5673,8 @@ declare namespace Reactory {
     export interface IObjectProperties {
       [field: string]: ISchema
     }
+
+
 
 
     export type AnySchema = ISchema | IObjectSchema | IArraySchema

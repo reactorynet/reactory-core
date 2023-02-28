@@ -1,4 +1,4 @@
-# reactory-core
+# Reactory Core
 
 This project is a core project that contains environment variables, defaults, types for different environment runtimes.
 
