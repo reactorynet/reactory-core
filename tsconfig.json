@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
+    "module": "ES6",
+    "sourceMap": true,
     "noImplicitAny": true,
     "removeComments": true,
     "moduleResolution": "node",
@@ -8,7 +9,8 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "allowJs": true,
-    "target": "ES2017",
+    "declaration": true,
+    "target": "ES6",
     "baseUrl": "./",
     "typeRoots": [
       "./node_modules/@types", 

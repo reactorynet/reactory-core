@@ -1,0 +1,21 @@
+{
+  "source": {
+    "includePattern": "\\.(jsx|js|ts|tsx)$",
+    "include": [
+      "src"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
+  },
+  "plugins": [
+    "plugins/markdown",
+    "node_modules/jsdoc-ts-utils",
+    "node_modules/better-docs/typescript"
+  ],
+  "opts": {    
+    "recurse": true,
+    "destination": "docs",
+    "template": "node_modules/better-docs"
+  }
+}

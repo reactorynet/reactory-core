@@ -3087,6 +3087,13 @@ declare namespace Reactory {
       avatarProvider?: string,
     }
 
+    export interface IAnonUser extends IUserBio {
+      id: number,
+      memberships: Reactory.Models.IMembership[] | Mongoose.Types.Array<Reactory.Models.IMembership>,
+      roles: string[],
+      anon: boolean
+    }
+
     export interface IUserContact {
       email?: string,
       mobileNumber?: string,
@@ -3375,7 +3382,7 @@ declare namespace Reactory {
       updatedDate: Date
       assignedTo: ObjectId | IUser | IUserDocument
       formId: string
-      comments: IReactoryComment[] | IReactoryCommentDocument
+      comments: IReactoryComment[] | IReactoryCommentDocument[]
       documents: IReactoryFile[] | IReactoryFileModel[]
     }
 
@@ -5289,6 +5296,43 @@ declare namespace Reactory {
 
   export namespace Schema {
 
+    export namespace Reflection {
+      type Primitive = string | number | boolean | null;
+
+      type JSONSchema =
+        | PrimitiveSchema
+        | ArraySchema
+        | ObjectSchema
+        | CombinedSchema
+        | ReferenceSchema;
+
+      interface PrimitiveSchema {
+        type: "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function";
+      }
+
+      interface ArraySchema {
+        type: "array";
+        items: JSONSchema;
+      }
+
+      interface ObjectSchema {
+        type: "object";
+        properties: { [key: string]: JSONSchema };
+        required?: string[];
+      }
+
+      interface CombinedSchema {
+        type: "string" | "number" | "integer" | "boolean";
+        enum: Primitive[];
+      }
+
+      interface ReferenceSchema {
+        $ref: string;
+      }
+    }
+    
+
+
     export interface IDSchema {
       $id: string,
     }
@@ -5576,7 +5620,11 @@ declare namespace Reactory {
        * art of function types and promises. The function type will allow you to bind
        * a function to an object using a FQN
        */
-      type: string | "object" | "string" | "number" | "boolean" | "array" | "null",
+      type: string | "object" | "string" | "number" | "boolean" | "array" | "null" | string[],
+      /**
+       * This value will be automatically generated when using the Reactor.reflectSchema
+       */
+      $type?: string
       /**
        * The title field for the schema object.
        */
@@ -5630,7 +5678,16 @@ declare namespace Reactory {
        * When your field type is set to function / promise the FQN has to resolve
        * to the function id that must be bound to this object element.
        */
-      fqn?: string 
+      fqn?: string
+      
+      
+    }
+
+    /**
+     * Reference schema elements
+     */
+    export interface IReferenceSchema {
+      $ref: string
     }
 
     /**
@@ -5640,29 +5697,32 @@ declare namespace Reactory {
       type: string | "string",
       minLength?: number,
       maxLength?: number,
+      pattern?: string | RegExp
     }
 
     export interface INumberSchema extends ISchema {
       type: "number",
-      min?: number,
-      max?: number
+      minimum?: number,
+      maximum?: number
     }
 
     export interface IDateSchema extends ISchema {
       type: string | "string",
       format: "date",
-      min?: number | string,
-      max?: number | string
+      minimum?: number | string,
+      maximum?: number | string
     }
 
     export interface IDateTimeSchema extends ISchema {
       type: "string",
       format: "date-time"
+      minimum?: number | string,
+      maximum?: number | string
     }
 
     export interface IObjectSchema extends ISchema {
       type: "object",
-      properties?: ISchemaObjectProperties,
+      properties?: ISchemaObjectProperties,      
     }
 
     export interface IArraySchema extends ISchema {
