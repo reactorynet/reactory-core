@@ -1,3 +1,4 @@
+![Build Anything Fast](/branding/reactory-logo.png)
 # Reactory Core
 
 This project is a core project that contains environment variables, defaults, types for different environment runtimes.
@@ -13,3 +14,12 @@ The reactory server, client and native client use these as reference and this mu
 
 To build and install the reactory-core library run the `npm run make-install` at the command prompt.
 
+Once you have the server and client components checked out you can run the `npm run deploy-local` which will copy the library to the server and client /lib folders and then install it into the respective projects.
+
+## Testing
+
+The core library has only two tests, one that checks and confirms the reflection tooling is working and the other simply checks the version.
+
+To run the test, run `npm run test`
+
+For more information on reactory check out the reactory docs project.

@@ -12,6 +12,7 @@
     "declaration": true,
     "target": "ES6",
     "baseUrl": "./",
+    "declarationDir": "./",
     "typeRoots": [
       "./node_modules/@types", 
       "src/types", 

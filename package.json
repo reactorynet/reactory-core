@@ -21,8 +21,8 @@
   "scripts": {
     "rollup": "rollup --config rollup.config.js",
     "package": "npm pack --pack-destination $REACTORY_PLUGINS/artifacts",
-    "make-install": "npm run rollup | npm run package",
-    "deploy::local": "NODE_PATH=./scripts npx babel-node ./scripts/deploy.js --presets @babel/env",
+    "make-install": "npm run rollup | npm run docs | npm run package",
+    "deploy-local": "NODE_PATH=./scripts npx babel-node ./scripts/deploy.js --presets @babel/env",
     "test": "jest",
     "lint": "eslint . --fix",
     "docs": "jsdoc -c jsdoc.json"
