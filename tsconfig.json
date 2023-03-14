@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "module": "ES6",
-    "sourceMap": true,
+    "module": "ESNext",
     "noImplicitAny": true,
     "removeComments": true,
     "moduleResolution": "node",
@@ -9,13 +8,11 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "allowJs": true,
-    "declaration": true,
-    "target": "ES6",
+    "target": "ES2017",
     "baseUrl": "./",
-    "declarationDir": "./",
     "typeRoots": [
-      "./node_modules/@types", 
-      "src/types", 
+      "./node_modules/@types",
+      "src/types",
       "./node_modules/localforage/typings"
     ],
     "paths": {
@@ -24,7 +21,7 @@
       ],
       "@reactory/reactory-core/*": [
         "src/*"
-      ],      
+      ],
       "test/*": [
         "test/*"
       ],
