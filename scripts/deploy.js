@@ -1,7 +1,11 @@
 import shell from 'shelljs';
 import fs from 'fs';
 
-const packageInfo = require("../package.json");
+const packageInfo = {
+  name: process.env.npm_package_name,
+  version: process.env.npm_package_version,
+};
+
 const plugins = shell.env["REACTORY_PLUGINS"];
 const client = shell.env["REACTORY_CLIENT"];
 const server = shell.env["REACTORY_SERVER"];

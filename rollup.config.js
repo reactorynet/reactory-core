@@ -10,11 +10,11 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 const outputFile = NODE_ENV === "production" ? "./lib/reactory.core.js" : "./lib/reactory.core.js";
 
 const options = {
-  input: "./src/Reactory.ts",
+  input: "./src/Reactor.ts",
   output: {
     file: outputFile,
     format: "umd",
-    name: "ReactoryCore",  
+    name: "ReactoryCore",
     sourcemap: true
     // globals: ['React', 'window'],
     //external: ['react', 'react-dom'],

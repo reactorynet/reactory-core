@@ -1,9 +1,7 @@
 'use strict'
 import { SERVER_ENVIRONMENT, VERSION } from './constants'
 import "reflect-metadata";
-import Reactory from 'types';
-
-
+import Reactory from './types';
 
 /**
 A decorator function that sets the fully qualified name(FQN) metadata for a class or property.
@@ -316,21 +314,33 @@ function getUISchema<T>(type: { new(): T }): Reactory.Schema.IFormUISchema {
 
 
 
-
+/**
+ * Reactory class is a container / static holder 
+ * for low level / core features.
+ */
 class Reactor {
   static REACTORY_VERSION = VERSION;
   static REACTORY_ENVIRONMENT = SERVER_ENVIRONMENT;
 
+  /**
+   * Some core forms that are part of the system
+   */
   static Forms = {
     
   }
   
+  /**
+   * Reflection tools.
+   */
   static Reflection = {
     reflectSchema: getTypeSchema,
     reflectUI: getUISchema,
     getInstance: createInstance,    
   }
 
+  /**
+   * Decorators
+   */
   static Decorators = {
     min,
     max,

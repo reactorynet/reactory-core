@@ -1,7 +1,7 @@
 
 import { format } from 'path';
-import Reactory from 'types';
-import ReactoryStatic, { title, min, max, nullable, pattern, defaultValue } from '../src/Reactory';
+import Reactory from '../src/types';
+import ReactoryStatic, { title, min, max, nullable, pattern, defaultValue } from '../src/Reactor';
 
 const staticJSON = {
   "$type": "MyUser",

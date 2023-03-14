@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "displayName": "Reactory Core",
   "description": "Reactory Core - shared across all platforms and services. Contains type definitions, constants and shared components for the reactory eco-system.",
-  "main": "main.ts",
+  "main": "src/Reactor.ts",
   "module": "reactory-core",
+  "type": "commonjs",
   "private": true,
   "author": {
     "name": "Werner Weber",
