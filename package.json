@@ -3,8 +3,14 @@
   "version": "1.0.0",
   "displayName": "Reactory Core",
   "description": "Reactory Core - shared across all platforms and services. Contains type definitions, constants and shared components for the reactory eco-system.",
-  "main": "src/Reactor.ts",
+  "main": "dist/reactory.core.js",
   "module": "reactory-core",
+  "typings": "dist/types/index.d.ts",
+  "files": [
+    "dist",
+    "docs",
+    "branding"
+  ],
   "type": "commonjs",
   "private": true,
   "author": {
@@ -107,6 +113,7 @@
     "react-router": "6.3.0",
     "react-router-dom": "6.3.0",
     "rollup": "2.75.6",
+    "rollup-copy-plugin": "^0.1.0",
     "rollup-plugin-jsx": "1.0.3",
     "shelljs": "0.8.5",
     "ts-jest": "^29.0.5",

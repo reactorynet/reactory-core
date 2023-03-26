@@ -3,6 +3,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import resolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import typescript from "@rollup/plugin-typescript";
+import copy from 'rollup-copy-plugin';
 const jsx = require('rollup-plugin-jsx');
 
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -10,15 +11,21 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 const outputFile = NODE_ENV === "production" ? "./lib/reactory.core.js" : "./lib/reactory.core.js";
 
 const options = {
-  input: "./src/Reactor.ts",
-  output: {
-    file: outputFile,
-    format: "umd",
-    name: "ReactoryCore",
-    sourcemap: true
-    // globals: ['React', 'window'],
-    //external: ['react', 'react-dom'],
-  },
+  input: "./src/Reactory.ts",
+  output: [
+    {
+      file: "dist/reactory.core.js",
+      format: "umd",
+      name: "ReactoryCore",
+      sourcemap: true    
+    },
+    {
+      file: "dist/reactory.core.esm.js",
+      format: "esm",
+      name: "ReactoryCore",
+      sourcemap: true
+    },
+  ],
 
   plugins: [
     replace({
@@ -29,13 +36,12 @@ const options = {
       include: 'node_modules/**',
       exclude: [
         'node_modules/process-es6/**',
-      ],
-      // namedExports: {
-      //   'node_modules/react/index.js': ['Component', 'PureComponent', 'Fragment', 'Children', 'createElement'],
-      //   'node_modules/react-dom/index.js': ['render']
-      // }
+      ],      
     }),
-    typescript({ sourceMap: true }),
+    typescript({ 
+      tsconfig: 'tsconfig.json',
+      sourceMap: true 
+    }),
     babel({
       exclude: 'node_modules/**',
       include: ['./src/**/*.ts', './src/**/*.js', './src/**/*.tsx'],
@@ -60,8 +66,14 @@ const options = {
       ],
       plugins: ["@babel/plugin-proposal-class-properties"],
     }),
-    jsx({ factory: 'React.createElement' }),
+    copy({
+      targets: [
+        { src: 'src/types/global.d.ts', dest: 'dist/types/global.d.ts'},
+        {src: 'src/types/index.d.ts', dest: 'dist/types/index.d.ts'},
+      ]
+    }),
     resolve(),
+    jsx({ factory: 'React.createElement' }),
   ],
 };
 

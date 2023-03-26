@@ -1,5 +1,4 @@
- 
-import ReactoryStatic from '../src/Reactor';
+import ReactoryStatic from '../src/Reactory';
 
 describe('Version Spec', ()=>{
   it('Checks that the version is 1.0.0', () => {    
