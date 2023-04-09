@@ -351,7 +351,7 @@ declare namespace Reactory {
     /**
     * Client utilities interface. Alias of IReactoryApiUtils
     */
-    export interface ClientUtils extends IReactoryApiUtils {}
+    export interface ClientUtils extends IReactoryApiUtils { }
 
     /**
      * Defines the interface definition for a component
@@ -1691,6 +1691,31 @@ declare namespace Reactory {
       },
     }
 
+    /**
+     * A generic paged data response
+     */
+    export type PagedDataResponse<TData, TQuery> = {
+      /**
+       * The paging information
+       */
+      paging: PagingResult
+      /**
+       * The columns or fields of the data to use for sorting
+       */
+      sort: string[]
+      /**
+       * The sort direction for each column / field
+       */
+      sortDirection: SortDirection[],
+      /**
+       * The query that was used to retrieve the data
+       */
+      query: TQuery
+      /**
+       * The data that was retrieved
+       */
+      data: TData[]
+    }
   }
 
   export namespace Forms {
@@ -4119,7 +4144,7 @@ declare namespace Reactory {
       /**
        * Properties to pass to the component
        */
-      props?: {
+      componentProps?: {
         [key: string]: any
       }
 
@@ -4705,44 +4730,91 @@ declare namespace Reactory {
     }
 
 
+    /**
+    * The IFetchService interface extends the IReactoryDefaultService interface.
+    * It represents a wrapper around the node-fetch module, providing methods
+    * to perform authenticated fetch requests in various forms (GET, POST, PUT, DELETE),
+    * as well as allowing for custom authentication and header providers.
+    */
     export interface IFetchService extends Reactory.Service.IReactoryDefaultService {
 
       /**
-       * 
-       * @param provider 
+       * Sets the authentication provider for this instance.
+       * @param provider - An implementation of the IFetchAuthenticationProvder interface.
        */
-      setAuthenticationProvider(provider: IFetchAuthenticationProvder): void
+      setAuthenticationProvider(provider: IFetchAuthenticationProvder): void;
 
       /**
-       * 
-       * @param provider 
+       * Sets the header provider for this instance.
+       * @param provider - An implementation of the IFetchHeaderProvider interface.
        */
       setHeaderProvider(provider: IFetchHeaderProvider): void;
 
+      /**
+       * Sends a GET request and returns the JSON response.
+       * @param url - The request URL.
+       * @param args - Optional additional arguments for the request.
+       * @param authenticate - Whether to authenticate the request. Default is false.
+       * @param charset - Optional character set for the request.
+       * @returns A Promise that resolves with the JSON response data.
+       */
       getJSON<T>(url: string,
         args?: any, authenticate?: boolean,
-        charset?: string): Promise<T>
+        charset?: string): Promise<T>;
 
+      /**
+       * Sends a POST request and returns the JSON response.
+       * @param url - The request URL.
+       * @param args - Optional additional arguments for the request.
+       * @param authenticate - Whether to authenticate the request. Default is false.
+       * @param charset - Optional character set for the request.
+       * @returns A Promise that resolves with the JSON response data.
+       */
       postJSON<T>(url: string,
         args?: any, authenticate?: boolean,
-        charset?: string): Promise<T>
+        charset?: string): Promise<T>;
 
+      /**
+       * Sends a PUT request and returns the JSON response.
+       * @param url - The request URL.
+       * @param args - Optional additional arguments for the request.
+       * @param authenticate - Whether to authenticate the request. Default is false.
+       * @param charset - Optional character set for the request.
+       * @returns A Promise that resolves with the JSON response data.
+       */
       putJSON<T>(url: string,
         args?: any, authenticate?: boolean,
-        charset?: string): Promise<T>
+        charset?: string): Promise<T>;
 
+      /**
+       * Sends a DELETE request and returns the JSON response.
+       * @param url - The request URL.
+       * @param args - Optional additional arguments for the request.
+       * @param authenticate - Whether to authenticate the request. Default is false.
+       * @param charset - Optional character set for the request.
+       * @returns A Promise that resolves with the JSON response data.
+       */
       deleteJSON<T>(url: string,
         args?: any, authenticate?: boolean,
-        charset?: string): Promise<T>
+        charset?: string): Promise<T>;
 
-
+      /**
+       * Sends a fetch request and returns the response.
+       * @param url - The request URL.
+       * @param args - Optional additional arguments for the request.
+       * @param authenticate - Whether to authenticate the request. Default is false.
+       * @param contentType - Optional content type for the request.
+       * @param defaultHeaders - Whether to include default headers. Default is true.
+       * @returns A Promise that resolves with the Response or JSON response data.
+       */
       fetch<T>(url: string,
         args?: any,
         authenticate?: boolean,
         contentType?: string,
         defaultHeaders?: boolean
-      ): Promise<Response | T>
+      ): Promise<Response | T>;
     }
+
 
 
     export interface IPDFStyleDefinition {
@@ -4920,6 +4992,164 @@ declare namespace Reactory {
     }
 
     export type TReactoryTranslationService = IReactoryTranslationService & IReactoryTranslationServiceStatic
+
+    /**
+     * Represents input data for a React-based content object.
+     */
+    export interface ReactoryContentInput {
+      /** The ID of the content object, if available. */
+      id?: string;
+      /** The slug of the content object, which is a unique identifier used in URLs. */
+      slug: string;
+      /** An array of topic strings associated with the content object. */
+      topics?: string[];
+      /** The title of the content object. */
+      title: string;
+      /** A short description of the content object. */
+      description?: string;
+      /** The content of the object, usually in the form of HTML. */
+      content: string;
+      /** The locale of the content, such as "en-US". */
+      locale?: string;
+      /** Whether or not the content should use a template. */
+      template?: boolean;
+      /** The rendering engine to use, such as "react" or "vue". */
+      engine?: string;
+      /** The input form to use for previewing the content. */
+      previewInputForm?: string;
+      /** The version of the content object. */
+      version?: string;
+      /** The date and time the content object was created. */
+      createdAt?: Date;
+      /** The date and time the content object was last updated. */
+      updatedAt?: Date;
+      /** The date and time the content object was published. */
+      publishedDate?: Date;
+      /** The ID of the user who created the content object. */
+      createdBy?: Models.IUser;
+      /** The ID of the user who last updated the content object. */
+      updatedBy?: Models.IUser;
+      /** Whether or not the content object is published. */
+      published?: boolean;
+    }
+
+    /**
+    * Represents the arguments for converting an SVG to an image.
+    */
+    export interface IReactorySvgToImageArgs {
+      /**
+       * The folder where the image file will be saved.
+       */
+      folder: string;
+      /**
+       * The name of the image file.
+       */
+      filename: string;
+      /**
+       * The SVG content to convert to an image.
+       */
+      svg: string;
+      /**
+       * The width of the resulting image, in pixels.
+       */
+      width: number;
+      /**
+       * The height of the resulting image, in pixels.
+       */
+      height: number;
+    }
+
+    /**
+     * Represents the response returned from saving image data.
+     */
+    export interface IReactorySaveImageDataResponse {
+      /**
+       * Whether or not the image data was successfully saved.
+       */
+      success: boolean;
+      /**
+       * The URL of the PNG image, if available.
+       */
+      pngURL?: string;
+      /**
+       * The URL of the SVG image, if available.
+       */
+      svgURL?: string;
+    }
+
+
+    /**
+ * Represents a service for managing React-based content objects.
+ */
+    export interface IReactoryContentService extends Reactory.Service.IReactoryDefaultService {
+      /**
+       * Retrieves a content object by its slug.
+       * @param slug The slug of the content object to retrieve.
+       * @returns A promise that resolves to the retrieved content object.
+       */
+      getContentBySlug(slug: string): Promise<Models.IReactoryContent>;
+
+      /**
+       * Retrieves a content object by its ID.
+       * @param id The ID of the content object to retrieve.
+       * @returns A promise that resolves to the retrieved content object.
+       */
+      getContentById(id: string): Promise<Models.IReactoryContent>;
+
+      /**
+       * Returns a list of content objects by their tags.
+       * @param tags The tags to search for 
+       * @param paging The paging information
+       */
+      getContentByTags(tags: string[], paging: Data.PagingRequest): Promise<Data.PagedDataResponse<Models.IReactoryContent, String[]>>;
+
+      /**
+       * Retrieves a content object by its slug and locale.
+       * @param slug The slug of the content object to retrieve.
+       * @param locale The locale of the content object to retrieve.
+       * @returns A promise that resolves to the retrieved content object.
+       */
+      getContentBySlugAndLocale(slug: string, locale: string): Promise<Models.IReactoryContent>;
+
+      /**
+       * Retrieves a content object by its ID and locale.
+       * @param id The ID of the content object to retrieve.
+       * @param locale The locale of the content object to retrieve.
+       * @returns A promise that resolves to the retrieved content object.
+       */
+      getContentByIdAndLocale(id: string, locale: string): Promise<Models.IReactoryContent>;
+
+      /**
+       * Retrieves a content object by its slug and client.
+       * @param slug The slug of the content object to retrieve.
+       * @param client The client associated with the content object.
+       * @returns A promise that resolves to the retrieved content object.
+       */
+      getContentBySlugAndClient(slug: string, client: Models.TReactoryClient): Promise<Models.IReactoryContent>;
+
+      /**
+       * Retrieves a list of content objects that match the specified query and paging criteria.
+       * @param query The query parameters to filter the results by.
+       * @param paging The paging criteria to use.
+       * @returns A promise that resolves to a paged response containing the matching content objects.
+       */
+      listContent<TQuery>(query: TQuery, paging: Reactory.Data.PagingRequest): Promise<Reactory.Data.PagedDataResponse<Models.IReactoryContent, TQuery>>;
+
+      /**
+       * Creates a new content object.
+       * @param content The input data for the content object.
+       * @returns A promise that resolves to the created content object.
+       */
+      createContent(content: ReactoryContentInput): Promise<Models.IReactoryContent>;
+
+      /**
+       * Saves image data in the specified folder and filename.
+       * @param image The SVG image data to save.
+       * @returns A promise that resolves to a response object containing the URLs of the saved images.
+       */
+      saveImageData(image: IReactorySvgToImageArgs): Promise<IReactorySaveImageDataResponse>;
+    }
+
   }
 
   export namespace Server {
@@ -5205,7 +5435,12 @@ declare namespace Reactory {
       /**
        * Lastname for the user
        */
-      lastName: string
+      lastName: string,
+      /**
+       * Password for the user, if left blank the 
+       * system will generate a strong password
+       */
+      password?: string
     }
 
 
@@ -5599,7 +5834,7 @@ declare namespace Reactory {
     @property {any} formContext - The form context for the component.
     @property {(formData: AutoCompleteFormData) => void} onChange - The callback function for when the form data changes.
     */
-    export interface IAutoCompleteWidgetProps<T extends unknown, 
+    export interface IAutoCompleteWidgetProps<T extends unknown,
       TSchema extends ISchema,
       TUISchema extends IUISchema,
       TContext extends Client.IReactoryFormContext<unknown>> {

@@ -3,7 +3,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import resolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import typescript from "@rollup/plugin-typescript";
-import copy from 'rollup-copy-plugin';
+import copy from './rollup/copy';
 const jsx = require('rollup-plugin-jsx');
 
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -66,14 +66,12 @@ const options = {
       ],
       plugins: ["@babel/plugin-proposal-class-properties"],
     }),
-    copy({
-      targets: [
-        { src: 'src/types/global.d.ts', dest: 'dist/types/global.d.ts'},
-        {src: 'src/types/index.d.ts', dest: 'dist/types/index.d.ts'},
-      ]
-    }),
     resolve(),
     jsx({ factory: 'React.createElement' }),
+    copy({
+      'src/types/global.d.ts': 'dist/types/global.d.ts',
+      'src/types/index.d.ts': 'dist/types/index.d.ts',
+    }),
   ],
 };
 
