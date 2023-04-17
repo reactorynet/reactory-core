@@ -2524,6 +2524,198 @@ declare namespace Reactory {
     }
   }
 
+  export namespace I18n {
+    /**
+     * ISO 639-1 language codes with country names.
+     */
+    export enum Languages {
+      aa = "aa", // Afar
+      ab = "ab", // Abkhazian
+      ae = "ae", // Avestan
+      af = "af", // Afrikaans
+      ak = "ak", // Akan
+      am = "am", // Amharic
+      an = "an", // Aragonese
+      ar = "ar", // Arabic
+      as = "as", // Assamese
+      av = "av", // Avaric
+      ay = "ay", // Aymara
+      az = "az", // Azerbaijani
+      ba = "ba", // Bashkir
+      be = "be", // Belarusian
+      bg = "bg", // Bulgarian
+      bh = "bh", // Bihari languages
+      bi = "bi", // Bislama
+      bm = "bm", // Bambara
+      bn = "bn", // Bengali
+      bo = "bo", // Tibetan
+      br = "br", // Breton
+      bs = "bs", // Bosnian
+      ca = "ca", // Catalan; Valencian
+      ce = "ce", // Chechen
+      ch = "ch", // Chamorro
+      co = "co", // Corsican
+      cr = "cr", // Cree
+      cs = "cs", // Czech
+      cu = "cu", // Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic
+      cv = "cv", // Chuvash
+      cy = "cy", // Welsh
+      da = "da", // Danish
+      de = "de", // German
+      dv = "dv", // Divehi; Dhivehi; Maldivian
+      dz = "dz", // Dzongkha
+      ee = "ee", // Ewe
+      el = "el", // Greek, Modern (1453-)
+      en = "en", // English
+      eo = "eo", // Esperanto
+      es = "es", // Spanish; Castilian
+      et = "et", // Estonian
+      eu = "eu", // Basque
+      fa = "fa", // Persian
+      ff = "ff", // Fulah
+      fi = "fi", // Finnish
+      fj = "fj", // Fijian
+      fo = "fo", // Faroese
+      fr = "fr", // French
+      fy = "fy", // Western Frisian
+      ga = "ga", // Irish
+      gd = "gd", // Gaelic; Scottish Gaelic
+      gl = "gl", // Galician
+      gn = "gn", // Guarani
+      gu = "gu", // Gujarati
+      gv = "gv", // Manx
+      ha = "ha", // Hausa
+      he = "he", // Hebrew
+      hi = "hi", // Hindi
+      ho = "ho", // Hiri Motu
+      hr = "hr", // Croatian
+      ht = "ht", // Haitian; Haitian Creole
+      hu = "hu", // Hungarian
+      hy = "hy", // Armenian
+      hz = "hz", // Herero
+      ia = "ia", // Interlingua (International Auxiliary Language Association)
+      id = "id", // Indonesian
+      ie = "ie", // Interlingue; Occidental
+      ig = "ig", // Igbo
+      ii = "ii", // Sichuan Yi; Nuosu
+      ik = "ik", // Inupiaq
+      io = "io", // Ido
+      is = "is", // Icelandic
+      it = "it", // Italian
+      iu = "iu", // Inuktitut
+      ja = "ja", // Japanese
+      jv = "jv", // Javanese
+      ka = "ka", // Georgian
+      kg = "kg", // Kongo
+      ki = "ki", // Kikuyu; Gikuyu
+      kj = "kj", // Kuanyama; Kwanyama
+      kk = "kk", // Kazakh
+      kl = "kl", // Kalaallisut; Greenlandic
+      km = "km", // Central Khmer
+      kn = "kn", // Kannada
+      ko = "ko", // Korean
+      kr = "kr", // Kanuri
+      ks = "ks", // Kashmiri
+      ku = "ku", // Kurdish
+      kv = "kv", // Komi
+      kw = "kw", // Cornish
+      ky = "ky", // Kirghiz; Kyrgyz
+      la = "la", // Latin
+      lb = "lb", // Luxembourgish; Letzeburgesch
+      lg = "lg", // Ganda
+      li = "li", // Limburgan; Limburger; Limburgish
+      ln = "ln", // Lingala
+      lo = "lo", // Lao
+      lt = "lt", // Lithuanian
+      lu = "lu", // Luba-Katanga
+      lv = "lv", // Latvian
+      mg = "mg", // Malagasy
+      mh = "mh", // Marshallese
+      mi = "mi", // Maori
+      mk = "mk", // Macedonian
+      ml = "ml", // Malayalam
+      mn = "mn", // Mongolian
+      mr = "mr", // Marathi
+      ms = "ms", // Malay
+      mt = "mt", // Maltese
+      my = "my", // Burmese
+      na = "na", // Nauru
+      nb = "nb", // Bokmål, Norwegian; Norwegian Bokmål
+      nd = "nd", // Ndebele, North; North Ndebele
+      ne = "ne", // Nepali
+      ng = "ng", // Ndonga
+      nl = "nl", // Dutch; Flemish
+      nn = "nn", // Norwegian Nynorsk; Nynorsk, Norwegian
+      no = "no", // Norwegian
+      nr = "nr", // Ndebele, South; South Ndebele
+      nv = "nv", // Navajo; Navaho
+      ny = "ny", // Chichewa; Chewa; Nyanja
+      oc = "oc", // Occitan (post 1500)
+      oj = "oj", // Ojibwa
+      om = "om", // Oromo
+      or = "or", // Oriya
+      os = "os", // Ossetian; Osset
+      pa = "pa", // Panjabi; Punjabi
+      pi = "pi", // Pali
+      pl = "pl", // Polish
+      ps = "ps", // Pushto; Pashto
+      pt = "pt", // Portuguese
+      qu = "qu", // Quechua
+      rm = "rm", // Romansh
+      rn = "rn", // Rundi
+      ro = "ro", // Romanian; Moldavian; Moldovan
+      ru = "ru", // Russian
+      rw = "rw", // Kinyarwanda
+      sa = "sa", // Sanskrit
+      sc = "sc", // Sardinian
+      sd = "sd", // Sindhi
+      se = "se", // Northern Sami
+      sg = "sg", // Sango
+      si = "si", // Sinhala; Sinhalese
+      sk = "sk", // Slovak
+      sl = "sl", // Slovenian
+      sm = "sm", // Samoan
+      sn = "sn", // Shona
+      so = "so", // Somali
+      sq = "sq", // Albanian
+      sr = "sr", // Serbian
+      ss = "ss", // Swati
+      st = "st", // Southern Sotho
+      su = "su", // Sundanese
+      sv = "sv", // Swedish
+      sw = "sw", // Swahili
+      ta = "ta", // Tamil
+      te = "te", // Telugu
+      tg = "tg", // Tajik
+      th = "th", // Thai
+      ti = "ti", // Tigrinya
+      tk = "tk", // Turkmen
+      tl = "tl", // Tagalog
+      tn = "tn", // Tswana
+      to = "to", // Tonga (Tonga Islands)
+      tr = "tr", // Turkish
+      ts = "ts", // Tsonga
+      tt = "tt", // Tatar
+      tw = "tw", // Twi
+      ty = "ty", // Tahitian
+      ug = "ug", // Uighur; Uyghur
+      uk = "uk", // Ukrainian
+      ur = "ur", // Urdu
+      uz = "uz", // Uzbek
+      ve = "ve", // Venda
+      vi = "vi", // Vietnamese
+      vo = "vo", // Volapük
+      wa = "wa", // Walloon
+      wo = "wo", // Wolof
+      xh = "xh", // Xhosa
+      yi = "yi", // Yiddish
+      yo = "yo", // Yoruba
+      za = "za", // Zhuang; Chuang
+      zh = "zh", // Chinese
+      zu = "zu", // Zulu
+    }
+  }
+
   export namespace Models {
 
     export type TUser = Reactory.Models.IUser | Reactory.Models.IUserDocument
@@ -2910,49 +3102,255 @@ declare namespace Reactory {
 
     }
 
+    /**
+ * Represents the various types of content flags for user-generated content.
+ */
+    export enum IContentFlagTypes {
+      Nudity = "Nudity",
+      Violence = "Violence",
+      HateSpeech = "Hate Speech",
+      SexualContent = "Sexual Content",
+      Spam = "Spam",
+      MinorAbuse = "Minor Abuse",
+      Harassment = "Harassment",
+      Misinformation = "Misinformation",
+      IntellectualProperty = "Intellectual Property",
+    }
+
+    /**
+     * Represents a content flag for a user-generated content.
+     */
+    export interface IContentFlag {
+      /**
+       * The unique identifier of the content flag.
+       */
+      id?: any;
+
+      /**
+       * The user who flagged the content.
+       * Could be either an ObjectId or a user object.
+       */
+      user: ObjectId | IUser | IUserDocument;
+
+      /**
+       * The flag types associated with the content flag.
+       */
+      flagTypes: IContentFlagTypes[]
+
+      /**
+       * The reason for flagging the content.
+       */
+      reason: string;
+    }
+
+    /**
+     * A Reactory Comment Object.
+     */
     export interface IReactoryComment {
       id?: any,
-      user: ObjectId | IUser | IUserDocument,
-      text: string,
-      context: string,
-      contextId: String,
-      createdAt: string
-      published: boolean,
-      flagged: boolean,
+      /**
+       * The user that created the comment
+       */
+      user: ObjectId | IUser | IUserDocument
+      /**
+       * The user that moderated the comment
+       */
+      moderatedBy?: ObjectId | IUser | IUserDocument
+      /**
+       * The text of the comment
+       */
+      text: string
+      /**
+       * The context of the comment. The context
+       * is a string that identifies the context of the comment.
+       * For example, if the comment is on a blog post, the context
+       * could be "blog" and the contextId could be the id of the blog post.
+       */
+      context: string
+      /**
+       * The id of the context of the comment. The context
+       * is a string that identifies the context of the comment.
+       */
+      contextId: String
+      /**
+       * The date and time the comment was created
+       */
+      createdAt: Date
+      /**
+       * Indicates if the comment has been published
+       * */
+      published: boolean
+      /**
+       * The content flags that has been raised against the comment
+       */
+      flags: IContentFlag[]
+      /**
+       * Indicates if the comment has been flagged
+       */
+      flagged: boolean
+      /**
+       * The users that upvoted the comment
+       */
       upvoted: ObjectId[] | IUser[] | IUserDocument[]
-      upvotes: number,
-      downvoted: ObjectId[] | IUser[] | IUserDocument[],
+      /**
+       * Total number of upvotes
+       */
+      upvotes: number
+      /**
+       * The users that downvoted the comment
+       */
+      downvoted: ObjectId[] | IUser[] | IUserDocument[]
+      /**
+       * Total number of downvotes
+       */
       downvotes: number,
-      favorite: ObjectId[] | IUser[] | IUserDocument[],
-      favorites: number,
+      /**
+       * The users that favorited the comment
+       */
+      favorite: ObjectId[] | IUser[] | IUserDocument[]
+      /**
+       * Total number of favorites
+       */
+      favorites: number
     }
 
     export interface IReactoryCommentDocument extends Mongoose.Document<IReactoryComment> {
 
     }
 
+    /**
+     * A Reactory Content Translation Object.
+     * Used to store translations of content.
+     */
+    export interface IReactoryContentTranslation {
+      /**
+       * The language code for the translation
+       */
+      lang: I18n.Languages,
+      /**
+       * The title of the content
+       */
+      title: string,
+      /*
+       * The description of the content
+       */
+       description: string,
+      /**
+       * The translated content
+       */
+       content: string,
+    }
+
+    /**
+     * A Reactory Content Object.
+     * The content object is the base object for all content in the system.
+     */
     export interface IReactoryContent {
       id?: any,
+      /**
+       * Slug must be unique and is used to identify the content
+       */
       slug: string,
+      /**
+       * Optional title for the content
+       */
       title?: string,
+      /**
+       * Optional description for the content.
+       */
       description?: string,
+      /**
+       * The default language for the content
+       */
       content: string,
+      /**
+       * Translations for the content
+       */
+      translations?: IReactoryContentTranslation[],
+      /**
+       * Topics tags for the content
+       */
       topics?: string[],
-
+      /**
+       * If true the content is treated
+       * as a template
+       */
       template?: boolean,
+      /**
+       * Which engine to use to render the content.
+       * You can use lodash, or ejs or javascript template strings.
+       */
       engine?: string,
+      /**
+       * Provide a form fqn to use as input form for 
+       * the properties when testing the content.
+       */
       previewInputForm?: string,
-
+      /**
+       * The date the content was created
+       */
       createdAt: Date,
+      /**
+       * The user that created the content
+       */
       createdBy: ObjectId | IUser | IUserDocument
-
+      /**
+       * The date the content was last updated
+       */
       updatedAt: Date,
+      /**
+       * The user that last updated the content
+       */
       updatedBy: ObjectId | IUser | IUserDocument
-
+      /**
+       * The version of the content
+       */
       version?: string
+      /**
+       * indicates if the content is published
+       */
       published: boolean
-
+      /**
+       * A list of roles that can access the content
+       * If null then it is assumed all users can access this content.
+       */
+      roles?: string[]
+      /**
+       * If true comments will be enabled for the content.
+       * Default will be false if null.
+       */
+      commentsAllowed?: boolean
+      /**
+       * A list of comments associated with the content.
+       */
       comments?: ObjectId[] | IReactoryComment | IReactoryCommentDocument
+      /**
+       * A list of roles that can comment on the content.
+       */
+      commentRoles?: string[]
+      /**
+       * The partner that owns the content. 
+       * If null the content is accessible by all partners.
+       */
+      partner?: IReactoryClient | IReactoryClientDocument | ObjectId
+      /**
+       * The organization that owns the content.
+       * If null the content is accessible to all organizations within the partner
+       */
+      organization?: IOrganization | IOrganizationDocument | ObjectId
+      /**
+       * The business unit that owns the content.
+       * If null the content is accessible to all business units within the partner
+       */
+      businessUnit?: IBusinessUnit | IBusinessUnitDocument | ObjectId
+      /**
+       * The content flags that has been raised against the comment
+       */
+      flags?: IContentFlag[]
+      /**
+       * Indicates if the comment has been flagged
+       */
+      flagged?: boolean
     }
 
     export interface IReactoryContentDocument extends Mongoose.Document, IReactoryContent {
@@ -3225,25 +3623,107 @@ declare namespace Reactory {
       dateTimeFormat?: string
     }
 
-    export interface IUser extends IUserBio,
-      IUserContact,
-      IUserHelpers {
+    /**
+     * Represents a user in the application.
+     *
+     * @interface
+     * @extends {IUserBio}
+     * @extends {IUserContact}
+     * @extends {IUserHelpers}
+     */
+    export interface IUser extends IUserBio, IUserContact, IUserHelpers {
+      /**
+       * The username of the user.
+       *
+       * @type {(string | undefined)}
+       */
+      username?: string;
 
-      username?: string,
-      salt?: string,
-      password?: string,
-      organization?: ObjectId | Reactory.Models.IOrganizationDocument,
-      memberships?: Reactory.Models.IMembership[] | Mongoose.Types.Array<Reactory.Models.IMembership>,
-      sessionInfo?: Reactory.Models.ISessionInfo,
-      authentications?: Reactory.Models.IAuthentication<any>[],
-      deleted?: boolean,
-      createdAt?: Date,
-      updatedAt?: Date,
-      il8n?: IUserIl8n
-      meta?: Reactory.Models.IRecordMeta<any>,
+      /**
+       * The salt used for password hashing.
+       *
+       * @type {(string | undefined)}
+       */
+      salt?: string;
 
-      [key: string]: any
+      /**
+       * The hashed password of the user.
+       *
+       * @type {(string | undefined)}
+       */
+      password?: string;
+
+      /**
+       * The organization the user belongs to.
+       *
+       * @type {(ObjectId | Reactory.Models.IOrganizationDocument | undefined)}
+       */
+      organization?: ObjectId | Reactory.Models.IOrganizationDocument;
+
+      /**
+       * An array of memberships the user belongs to.
+       *
+       * @type {(Reactory.Models.IMembership[] | Mongoose.Types.Array<Reactory.Models.IMembership> | undefined)}
+       */
+      memberships?: Reactory.Models.IMembership[] | Mongoose.Types.Array<Reactory.Models.IMembership>;
+
+      /**
+       * An array of session information for the user.
+       *
+       * @type {(Reactory.Models.ISessionInfo[] | undefined)}
+       */
+      sessionInfo?: Reactory.Models.ISessionInfo[];
+
+      /**
+       * An array of authentication information for the user.
+       *
+       * @type {(Reactory.Models.IAuthentication<any>[] | undefined)}
+       */
+      authentications?: Reactory.Models.IAuthentication<any>[];
+
+      /**
+       * Indicates whether the user has been deleted.
+       *
+       * @type {(boolean | undefined)}
+       */
+      deleted?: boolean;
+
+      /**
+       * The date and time the user was created.
+       *
+       * @type {(Date | undefined)}
+       */
+      createdAt?: Date;
+
+      /**
+       * The date and time the user was last updated.
+       *
+       * @type {(Date | undefined)}
+       */
+      updatedAt?: Date;
+
+      /**
+       * An object containing internationalization information for the user.
+       *
+       * @type {(IUserIl8n | undefined)}
+       */
+      il8n?: IUserIl8n;
+
+      /**
+       * An object containing metadata information for the user.
+       *
+       * @type {(Reactory.Models.IRecordMeta<any> | undefined)}
+       */
+      meta?: Reactory.Models.IRecordMeta<any>;
+
+      /**
+       * An object containing additional properties that may be defined for the user.
+       *
+       * @type {Object}
+       */
+      [key: string]: any;
     }
+
 
     /**
    * Defines a standard demographic type
