@@ -1,12 +1,15 @@
 import { ObjectId } from "mongodb";
 import Mongoose from "mongoose";
 import { MimeType } from 'chartjs-node-canvas';
+import { Request, Application } from 'express';
+import core from 'express-serve-static-core';
 import fs from 'fs';
 import ExcelJS from 'exceljs';
 import { Stream } from "stream";
 import moment, { Moment } from "moment";
 import { v4 as uuid } from 'uuid';
 import { GraphQLSchema } from 'graphql';
+import { Strategy } from 'passport';
 import classNames from 'classnames';
 import ObjectMapper from 'object-mapper';
 import HumanNumner from 'human-number';
@@ -3234,11 +3237,11 @@ declare namespace Reactory {
       /*
        * The description of the content
        */
-       description: string,
+      description: string,
       /**
        * The translated content
        */
-       content: string,
+      content: string,
     }
 
     /**
@@ -5634,9 +5637,15 @@ declare namespace Reactory {
 
   export namespace Server {
 
-    export interface ReactoryEnvironment {
-      [key: symbol]: string | number | boolean
+  
+    export interface ReactoryBaseEnvironment {
+      /**
+       * The path to the node_modules folder
+       */
       NODE_PATH: string
+      /**
+       * The environment the server is running in
+       */
       NODE_ENV: string
       /**
        * The application data root, is the mapped
@@ -5655,12 +5664,7 @@ declare namespace Reactory {
       /**
        * The port number the server must run on
        */
-      API_PORT: number
-      /**
-       * Send grid API key - this will be moved to 
-       * a per client key configuration.
-       */
-      SENDGRID_API_KEY: string
+      API_PORT: string | number
       /**
        * The URI root for the API, this represent the full
        * root of server API, i.e. http://localhost:4000
@@ -5685,18 +5689,65 @@ declare namespace Reactory {
        * The level of logging the application should use
        */
       LOG_LEVEL: string
+    }
+
+    /**
+    * Utility type for extending the environment with additional properties
+    */
+    type ExtendedEnvironment<Additional extends any[]> = NodeJS.ProcessEnv & Additional[number];
+
+    export interface ReactoryEmailEnvironment {
       /**
-       * OAUTH SETTING TO BE MOVED TO PER 
-       * CONNECTING CLIENT.
+       * Send grid API key - this will be moved to 
+       * a per client key configuration.
        */
+      SENDGRID_API_KEY: string
+      /**
+       * The default method to use for sending email
+       */
+      REACTORY_EMAIL_SEND_VIA?: string | 'sendgrid' | 'smtp' | 'microsoft' | 'google'
+    }
+
+    /**
+     * Represents the environment variables for the server application
+     * specifically the variables that relate to Azure AD / O365 authentication
+     */
+    export interface ReactoryAzureEnvironment {
+      /**
+      * The Azure AD tenant id
+      */
       OAUTH_APP_ID: string
+      /**
+       * The Azure AD application id
+       */
       OAUTH_APP_PASSWORD: string
+      /**
+       * The Azure AD redirect URI
+       */
       OAUTH_REDIRECT_URI: string
+      /**
+       * The Azure AD scopes
+       */
       OAUTH_SCOPES: string
+      /**
+       * The Azure AD authority
+       * */
       OAUTH_AUTHORITY: string
+      /**
+       * The Azure AD metadata
+       * */
       OAUTH_ID_METADATA: string
+      /**
+       *  The Azure AD authorize endpoint
+       * */
       OAUTH_AUTHORIZE_ENDPOINT: string
+      /**
+       * The Azure AD token endpoint
+       */
       OAUTH_TOKEN_ENDPOINT: string
+    }
+
+    export interface ReactoryI18NEnvironment {
       /**
        * Additional i18n namespaces to load.
        * Can be a single namespace, i.e.: 
@@ -5721,6 +5772,46 @@ declare namespace Reactory {
       I18N_PRELOAD?: string
     }
 
+    export interface ReactoryDefaultClientEnvironment {
+      /**
+       * The username the use for the reactory default client
+       * application
+       */
+      REACTORY_APPLICATION_USERNAME: string
+      /**
+       * The password to use for the reactory default client
+       */
+      REACTORY_APPLICATION_EMAIL: string
+      /**
+       * The password to use for the reactory default client
+       */
+      REACTORY_APPLICATION_PASSWORD: string
+      /**
+       * The url to use for the reactory default site
+       */
+      REACTORY_SITE_URL: string
+      /**
+       * The reactory native application uri
+       */
+      REACTORY_NATIVEAPP_URI: string
+      /**
+       * The whitelist for the default reactory site 
+       **/
+      REACTORY_APP_WHITELIST: string
+    }
+
+    /**
+     * The environment that the server is running in
+     */
+    export type ReactoryEnvironment = ExtendedEnvironment<
+      [
+        ReactoryBaseEnvironment,
+        ReactoryEmailEnvironment,
+        ReactoryAzureEnvironment,
+        ReactoryI18NEnvironment,
+        ReactoryDefaultClientEnvironment
+      ]>
+
 
     export interface IReactoryModuleDefinition {
       id: string
@@ -5733,23 +5824,76 @@ declare namespace Reactory {
     }
 
     /**
-  * The module data structure represents a collection of all the services, 
-  * workflows, forms, pdf definition 
-  */
+     * The module data structure represents a collection of all the services,
+     * workflows, forms, and PDF definitions.
+     */
     export interface IReactoryModule {
-      nameSpace: string
-      name: string
-      version: string
-      dependencies?: string[]
-      priority: number,
-      graphDefinitions?: Graph.IGraphDefinitions,
-      workflows?: Workflow.IWorkflow[],
-      forms?: Forms.IReactoryForm[],
-      pdfs?: Pdf.IReactoryPdfComponent[]
-      services?: Service.IReactoryServiceDefinition[],
-      clientPlugins?: Platform.IReactoryPluginDefinition,
-      translations?: Models.IReactoryTranslations[]
+      /**
+       * The namespace of the module.
+       */
+      nameSpace: string;
+
+      /**
+       * The name of the module.
+       */
+      name: string;
+
+      /**
+       * The version of the module.
+       */
+      version: string;
+
+      /**
+       * The dependencies of the module.
+       */
+      dependencies?: string[];
+
+      /**
+       * The priority of the module.
+       */
+      priority: number;
+
+      /**
+       * The graph definitions of the module.
+       */
+      graphDefinitions?: Graph.IGraphDefinitions;
+
+      /**
+       * The workflows of the module.
+       */
+      workflows?: Workflow.IWorkflow[];
+
+      /**
+       * The forms of the module.
+       */
+      forms?: Forms.IReactoryForm[];
+
+      /**
+       * The PDF definitions of the module.
+       */
+      pdfs?: Pdf.IReactoryPdfComponent[];
+
+      /**
+       * The service definitions of the module.
+       */
+      services?: Service.IReactoryServiceDefinition[];
+
+      /**
+       * The client plugins of the module.
+       */
+      clientPlugins?: Platform.IReactoryPluginDefinition;
+
+      /**
+       * The translations of the module.
+       */
+      translations?: Models.IReactoryTranslations[];
+
+      /**
+       * The PassportJS providers of the module.
+       */
+      passportProviders?: ReactoryPassportProviders;
     }
+
 
 
     /**
@@ -6062,6 +6206,56 @@ declare namespace Reactory {
 
     }
 
+    /**
+     * Represents an Express Request with additional properties
+     */
+    export interface ReactoryExpressRequest<
+      P = core.ParamsDictionary,
+      ResBody = any,
+      ReqBody = any,
+      ReqQuery = core.Query,
+      Locals extends Record<string, any> = Record<string, any>
+    > extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
+      /**
+       * The current active partner / client for this request
+       */
+      partner?: Reactory.Models.IReactoryClientDocument
+      /**
+       * The current active user for this request
+       */
+      user?: Reactory.Models.IUserDocument,
+      /**
+       * The current active reactory context for this request
+       */
+      context?: Reactory.Server.IReactoryContext
+    }
+
+    /**
+     * Represents a reactory passport provider
+     */
+    export interface IReactoryPassportProvider {
+      /**
+       * The name of the provider
+       */
+      name: string,
+      /**
+       * The strategy for the provider
+       */
+      strategy: Strategy
+      /**
+       * Configure the express application 
+       * with route handlers etc.
+       * @param app - Express Application
+       * @returns void
+       */
+      configure?: (app: Application) => void
+      [key: string]: unknown
+    }
+
+    /**
+     * Represents a reactory passport provider array
+     */
+    export type ReactoryPassportProviders = IReactoryPassportProvider[];
   }
 
   export namespace Schema {
