@@ -140,6 +140,19 @@ declare namespace Reactory {
 
   export namespace Client {
 
+    export namespace Models {
+
+      export interface IUser extends 
+        Reactory.Models.IUserBio,
+        Reactory.Models.IUserContact,
+        Reactory.Models.IUserDemographics
+      {
+        id?: string
+      }
+
+      export type ReactoryUser = Partial<IUser>;
+
+    }
     export interface LoadashTemplateExecutor {
       (data?: object): string;
       source: string;
@@ -179,6 +192,11 @@ declare namespace Reactory {
 
     export type ValidModule = AnyValidComponent | Object | Module;
 
+    export type ReactoryFC<P extends IReactoryComponentProps> = React.FunctionComponent<P>;
+
+    export type ReactoryComponent<P extends IReactoryComponentProps,S,SS> = React.Component<P,S,SS>;
+
+    export type ReactoryPureComponent<P extends IReactoryComponentProps, S, SS> = React.PureComponent<P, S, SS>
     export interface IReactoryImports {
       [key: string]: ValidModule
     }
@@ -3635,6 +3653,11 @@ declare namespace Reactory {
      * @extends {IUserHelpers}
      */
     export interface IUser extends IUserBio, IUserContact, IUserHelpers {
+      /**
+       * depending on whether or not the model is client side or server side      
+       */
+      id?: string
+
       /**
        * The username of the user.
        *
