@@ -1521,6 +1521,23 @@ declare namespace Reactory {
 
     }
 
+    export type ImageUploaderHookProps<TData extends any> = {
+      formData: TData,
+      onChange: (data: TData) => void,
+      schema: Reactory.Schema.AnySchema,
+      uiSchema: Reactory.Schema.IUISchema,
+      idSchema: Reactory.Schema.IDSchema,
+      formContext: Reactory.Forms.ReactoryFormContext<TData, any[]>,
+      reactory: Reactory.Client.IReactoryApi,
+    };
+
+    export type ImageUploaderHook<TData extends any> = (props: ImageUploaderHookProps<TData>) => {
+      upload: (base64: string, file: File, id: string) => Promise<string>
+      uploadBase64: (base64: string) => Promise<string>
+      uploadStatus: "idle" | "uploading" | "done" | "error",
+      uploadError: Error | null,
+    }
+
   }
 
   export namespace Excel {
@@ -2482,6 +2499,24 @@ declare namespace Reactory {
       [key: string]: any
     }
 
+    export type ReactoryFormContext<TData extends unknown, 
+      TAdditional extends Array<any>> = {
+        signature: string,
+        version: number,
+        formDef: IReactoryForm,
+        formData: TData,
+        query: any,
+        formInstanceId: string,
+        setFormData: (data: TData, callback?: () => void) => void,
+        refresh: () => void
+        graphql: Reactory.Forms.IFormGraphDefinition,
+        getData: (input?: Partial<TData>) => Promise<void>,
+        reset: () => void,
+        i18n: typeof i18n,
+        reactory: Reactory.Client.IReactoryApi,
+        screenBreakPoint: string | "xs" | "sm" | "md" | "lg" | "xl"
+        [key: string]: any
+    } & TAdditional;
   }
 
   export namespace Graph {
