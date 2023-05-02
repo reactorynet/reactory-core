@@ -2869,8 +2869,8 @@ declare namespace Reactory {
 
 
     export interface CoreSimpleResponse {
-      success: Boolean
-      message: String
+      success: boolean
+      message: string
       payload?: any
     }
 
@@ -5206,20 +5206,21 @@ declare namespace Reactory {
 
       createUser(userInput: Reactory.Models.IUserCreateParams): Promise<Reactory.Models.IUserDocument>;
 
-      updateUser(userInput: Reactory.Models.IUser): Promise<Reactory.Models.IUserDocument>
-
       findUserWithEmail(email: string): Promise<Reactory.Models.IUserDocument>
-
-      findUserById(id: string | number | ObjectId): Promise<Reactory.Models.IUserDocument>
-
-      getUserPeers(id: string | number | ObjectId, organization_id: string | ObjectId): Promise<Reactory.Models.IOrganigramDocument>
-
+      
+      findUserById(id: string | ObjectId): Promise<Reactory.Models.IUserDocument>
+      
+      getUserPeers(id: string | ObjectId, organization_id: string | ObjectId): Promise<Reactory.Models.IOrganigramDocument>
+      
+      removeUserMembership(userId: string | ObjectId, id: string | ObjectId): Promise<Reactory.Models.CoreSimpleResponse>
+      
       setUserPeers(user: Models.IUserDocument, peers: any, organization: Models.IOrganizationDocument, allowEdit: boolean, confirmedAt?: Date): Promise<Models.IOrganigramDocument>
-
+      
       setUserDemographics(userId: string, organisationId: string, membershipId?:
         string, dob?: Date, businessUnit?: string, gender?: string, operationalGroup?: string,
         position?: string, race?: string, region?: string, team?: string): Promise<Reactory.Models.IUserDemographics | Reactory.Models.IUserDemographicDocument>
-
+        
+      updateUser(userInput: Reactory.Models.IUser): Promise<Reactory.Models.IUserDocument>
     }
 
     export interface IReactoryUserDemographicsService extends Reactory.Service.IReactoryDefaultService {
