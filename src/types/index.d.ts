@@ -3159,8 +3159,8 @@ declare namespace Reactory {
     }
 
     /**
- * Represents the various types of content flags for user-generated content.
- */
+     * Represents the various types of content flags for user-generated content.
+     */
     export enum IContentFlagTypes {
       Nudity = "Nudity",
       Violence = "Violence",
@@ -4223,6 +4223,78 @@ declare namespace Reactory {
     }
 
     export interface IOrganizationDemographicSettingsDocument extends Document, IOrganizationDemographicSettings {
+    }
+
+    /**
+     * Defines the natural language processing output for a tokenized 
+     * string input.
+     */
+    export interface INaturalTokenizedInput {
+      /**
+       * The language of the input
+       */
+      lang: string
+      /**
+       * The input string
+       */
+      input: string
+      /**
+       * The tokens that was extracted from the input string
+       */
+      tokens: string[]
+      /**
+       * The tokenizer results
+       */
+      tokenizer: string
+    }
+
+    /**
+     * Object representing the sentiment analysis of a given input
+     * @interface
+     * @property {string} lang - the ISO 639-1 language code used for analysis
+     * @property {string} input - the input text that was analyzed
+     * @property {number} score - a numerical score representing the sentiment
+     * @property {NaturalSentimentVote} vote - a sentiment vote based on the score
+     */
+    export interface INaturalSentiment {
+      lang: string;
+      input: string;
+      score: number;
+      vote: string;
+    }
+
+    /**
+     * Object representing a spell check correction for a misspelled word
+     * @interface
+     * @property {string} word - the misspelled word that was corrected
+     * @property {string[]} suggestions - an array of suggested corrections for the word
+     */
+    export interface INaturalSpellCheckCorrection {
+      word: string;
+      suggestions: string[];
+    }
+
+    /**
+     * Object representing the results of a spell check on a given input
+     * @interface
+     * @property {string} lang - the ISO 639-1 language code used for analysis
+     * @property {string} input - the input text that was checked for spelling
+     * @property {boolean} correct - a boolean indicating whether the input is spelled correctly
+     * @property {INaturalSpellCheckCorrection[]} corrections - an array of spelling corrections for any misspelled words
+     */
+    export interface INaturalSpellCheckResult {
+      lang: string;
+      input: string;
+      correct: boolean;
+      corrections: INaturalSpellCheckCorrection[];
+    }
+
+    /**
+     * Interface for a frequency map object, mapping string tokens to frequency counts
+     * @interface
+     */
+    export interface INaturalFrequencyMap {
+      [token: string]: number;
     }
 
   }
@@ -5692,6 +5764,384 @@ declare namespace Reactory {
       saveImageData(image: IReactorySvgToImageArgs): Promise<IReactorySaveImageDataResponse>;
     }
 
+    export interface FrequencyDistribution {
+      /**
+       * Returns an array of all unique tokens in the distribution
+       */
+      keys(): string[];
+
+      /**
+       * Returns the frequency count for a given token
+       * @param token - the token to get the frequency count for
+       */
+      count(token: string): number;
+
+      /**
+       * Returns the total number of tokens in the distribution
+       */
+      N(): number;
+
+      /**
+       * Returns the frequency of a given token
+       * @param token - the token to get the frequency of
+       */
+      frequency(token: string): number;
+
+      /**
+       * Returns the most common n tokens in the distribution
+       * @param n - the number of tokens to return, defaults to 10
+       */
+      mostCommon(n?: number): [string, number][];
+
+      /**
+       * Returns the frequency distribution as an object
+       */
+      get(): { [token: string]: number };
+
+      /**
+       * Updates the frequency count for a given token
+       * @param token - the token to update the frequency count for
+       * @param count - the new frequency count for the token
+       */
+      increment(token: string, count?: number): void;
+
+      /**
+       * Updates the frequency distribution with a list of new tokens
+       * @param tokens - the list of new tokens to add to the distribution
+       * @param update - a boolean indicating whether to update the frequency count for existing tokens, defaults to true
+       */
+      add(tokens: string[], update?: boolean): void;
+    }
+
+    /**
+ * An object containing the results of various Natural language processing functions
+ */
+    export interface INaturalPackageForInput {
+
+      /**
+       * An array of tokens generated from the input text
+       */
+      tokens: Models.INaturalTokenizedInput;
+
+      /**
+       * The stemmed version of the input text
+       */
+      stem: string;
+
+      /**
+       * An array of n-grams generated from the input text
+       */
+      ngrams: string[];
+
+      /**
+       * The Jaccard index between two given strings
+       */
+      jaccardIndex: number;
+
+      /**
+       * The Jaro-Winkler distance between two given strings
+       */
+      jaroWinklerDistance: number;
+
+      /**
+       * The Dice coefficient between two given strings
+       */
+      diceCoefficient: number;
+
+      /**
+       * The overlap coefficient between two given strings
+       */
+      overlapCoefficient: number;
+
+      /**
+       * The Levenshtein distance between two given strings
+       */
+      levenshteinDistance: number;
+
+      /**
+       * An array of tokens with part of speech tags generated from the input text
+       */
+      posTags: string[];
+
+      /**
+       * An object containing sentiment analysis results for the input text
+       */
+      sentiment: Models.INaturalSentiment;
+
+      /**
+       * An object containing spelling correction results for the input text
+       */
+      spellcheck: Models.INaturalSpellCheckResult;
+
+      /**
+       * An array of synonyms for a given word
+       */
+      synonyms: string[];
+
+      /**
+       * An array of antonyms for a given word
+       */
+      antonyms: string[];
+
+      /**
+       * An array of hypernyms for a given word
+       */
+      hypernyms: string[];
+
+      /**
+       * An array of hyponyms for a given word
+       */
+      hyponyms: string[];
+
+      /**
+       * An array of meronyms for a given word
+       */
+      meronyms: string[];
+
+      /**
+       * An array of holonyms for a given word
+       */
+      holonyms: string[];
+
+      /**
+       * A truncated version of the input text
+       */
+      truncatedText: string;
+
+      /**
+       * A normalized version of the input text
+       */
+      normalizedText: string;
+
+      /**
+       * A boolean indicating whether two given strings are equal, ignoring case and diacritics
+       */
+      equals: boolean;
+
+      /**
+       * A randomly generated string of specified length and character set
+       */
+      randomString: string;
+
+      /**
+       * A hash generated from the input text
+       */
+      hash: string;
+
+      /**
+       * An object containing the frequency distribution of tokens in the input text
+       */
+      frequencyDistribution: Models.INaturalFrequencyMap;
+    }
+
+    export type PackageOptions = {
+      tokenizer?: string;
+      stemmingLang?: string;
+      ngramSize?: number;
+      posLang?: string;
+      customDictionary?: string[];
+      wordnetPos?: string;
+      wordnetLang?: string;
+      truncateLength?: number;
+      truncateEllipsis?: string;
+      randomLength?: number;
+      randomCharset?: string;
+      hashAlgorithm?: string;
+      hashEncoding?: string;
+    }
+
+    /**
+     * Represents a service for performing natural language processing tasks.
+     */
+    export interface INaturalService extends 
+      Reactory.Service.IReactoryDefaultService {
+
+      /**
+       * Tokenizes a given text string using a specified tokenizer and returns an array of tokens
+       * @param text - the text to tokenize
+       * @param tokenizer - the name of the tokenizer to use, defaults to "WordTokenizer"
+       * @returns an array of tokens
+       */
+      tokenize(text: string, tokenizer?: string): Models.INaturalTokenizedInput;
+
+      /**
+       * Stems a word using a specified language and algorithm
+       * @param word - the word to stem
+       * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
+       * @returns the stemmed word
+       */
+      stem(word: string, lang?: string): string;
+
+      /**
+       * Generates an array of n-grams from a given text string
+       * @param text - the text to generate n-grams from
+       * @param n - the size of each n-gram
+       * @returns an array of n-grams
+       */
+      ngrams(text: string, n: number): string[];
+
+      /**
+       * Calculates the Jaro-Winkler distance between two given strings
+       * @param s1 - the first string
+       * @param s2 - the second string
+       * @returns the Jaro-Winkler distance between s1 and s2
+       */
+      jaroWinklerDistance(s1: string, s2: string): number;
+
+      /**
+       * Calculates the Dice coefficient between two given strings
+       * @param s1 - the first string
+       * @param s2 - the second string
+       * @returns the Dice coefficient between s1 and s2
+       */
+      diceCoefficient(s1: string, s2: string): number;
+
+      /**
+       * Calculates the Levenshtein distance between two given strings
+       * @param s1 - the first string
+       * @param s2 - the second string
+       * @returns the Levenshtein distance between s1 and s2
+       */
+      levenshteinDistance(s1: string, s2: string): number;
+
+      /**
+       * Tags a given text string with parts of speech using a specified language
+       * @param text - the text to tag
+       * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
+       * @returns an array of tokens with part of speech tags
+       */
+      tag(text: string, lang?: string): string[];
+
+      /**
+       * Analyzes the sentiment of a given text string using a specified language
+       * @param text - the text to analyze
+       * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
+       * @returns an object with sentiment analysis results
+       */
+      sentiment(text: string, lang?: string): Models.INaturalSentiment;
+
+      /**
+       * Checks the spelling of a given text string using a specified language and custom dictionary
+       * @param text - the text to check
+       * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
+       * @param customDictionary - an optional array of custom dictionary words
+       * @returns an array of spelling results for each word in the input text
+       */
+      spellcheck(text: string, lang?: string, customDictionary?: string[]): Models.INaturalSpellCheckResult;
+
+      /**
+       * Gets the synonyms of a given word from WordNet using a specified language and part of speech
+       * @param word - the word to get synonyms for
+       * @param pos - the part of speech to limit the results to, defaults to "n" (noun)
+       * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
+       * @returns a promise that resolves to an array of synonyms for the given word
+       */
+      getSynonyms(word: string, pos?: string, lang?: string): Promise<string[]>;
+
+      /**
+       * Gets the antonyms of a given word from WordNet using a specified language and part of speech
+       * @param word - the word to get antonyms for
+       * @param pos - the part of speech to limit the results to, defaults to "n" (noun)
+       * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
+       * @returns a promise that resolves to an array of antonyms for the given word
+       */
+      getAntonyms(word: string, pos?: string, lang?: string): Promise<string[]>;
+
+      /**
+       * Gets the hypernyms of a given word from WordNet using a specified language and part of speech
+       * @param word - the word to get hypernyms for
+       * @param pos - the part of speech to limit the results to, defaults to "n" (noun)
+       * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
+       * @returns a promise that resolves to an array of hypernyms for the given word
+       */
+      getHypernyms(word: string, pos?: string, lang?: string): Promise<string[]>;
+
+      /**
+       * Gets the hyponyms of a given word from WordNet using a specified language and part of speech
+       * @param word - the word to get hyponyms for
+       * @param pos - the part of speech to limit the results to, defaults to "n" (noun)
+       * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
+       * @returns a promise that resolves to an array of hyponyms for the given word
+       */
+      getHyponyms(word: string, pos?: string, lang?: string): Promise<string[]>;
+
+
+      /**
+       * Gets the meronyms of a given word from WordNet using a specified language and part of speech
+       * @param word - the word to get meronyms for
+       * @param pos - the part of speech to limit the results to, defaults to "n" (noun)
+       * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
+       * @returns a promise that resolves to an array of meronyms for the given word
+       */
+      getMeronyms(word: string, pos?: string, lang?: string): Promise<string[]>;
+
+      /**
+       * Gets the holonyms of a given word from WordNet using a specified language and part of speech
+       * @param word - the word to get holonyms for
+       * @param pos - the part of speech to limit the results to, defaults to "n" (noun)
+       * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
+       * @returns a promise that resolves to an array of holonyms for the given word
+       */
+      getHolonyms(word: string, pos?: string, lang?: string): Promise<string[]>;
+
+      /**
+       * Truncates a given text string to a specified length, adding an ellipsis if necessary
+       * @param text - the text to truncate
+       * @param length - the maximum length of the truncated text, defaults to 100
+       * @param ellipsis - the string to use as an ellipsis, defaults to "..."
+       * @returns the truncated text
+       */
+      truncate(text: string, length?: number, ellipsis?: string): string;
+
+      /**
+       * Normalizes a given text string by converting it to lowercase and removing diacritics
+       * @param text - the text to normalize
+       * @returns the normalized text
+       */
+      normalize(text: string): string;
+
+      /**
+       * Compares two strings for equality, ignoring case and diacritics
+       * @param s1 - the first string to compare
+       * @param s2 - the second string to compare
+       * @returns true if the strings are equal, false otherwise
+       */
+      equals(s1: string, s2: string): boolean;
+
+      /**
+       * Generates a random string of a specified length and character set
+       * @param length - the length of the random string to generate, defaults to 8
+       * @param charset - the character set to use for generating the string, defaults to alphanumeric
+       * @returns a random string
+       */
+      randomString(length?: number, charset?: string): string;
+
+      /**
+       * Generates a hash for a given text string using a specified algorithm
+       * @param text - the text to hash
+       * @param algorithm - the hashing algorithm to use, defaults to "sha256"
+       * @param encoding - the encoding of the hash output, defaults to "hex"
+       * @returns the hash of the input text
+       */
+      hash(text: string, algorithm?: string, encoding?: string): string;
+
+      /**
+       * Calculates the frequency distribution of a given list of tokens
+       * @param tokens - the tokens to calculate the frequency distribution of
+       * @returns an object with token frequencies
+       */
+      frequencyDistribution(tokens: string[]): FrequencyDistribution;
+
+      /**
+       * Creates a packaged output object for a given input text
+       * !Use with caution as this is a very expensive operation!
+       * @param input 
+       * @param lang 
+       * @param options 
+       * @returns 
+       */
+      packageForInput(input: string, compare?: string, lang?: string, options?: Partial<PackageOptions>): INaturalPackageForInput;
+    }
   }
 
   export namespace Server {
