@@ -89,7 +89,12 @@ declare namespace Reactory {
    */
   export interface ObjectTransform {
     key: string;
-    transform<T>(sourceObject: unknown, sourceKey: string, targetObject: unknown, targetKey: string): T;
+    transform<T>(
+      sourceObject: unknown,
+      sourceKey: string,
+      targetObject: unknown,
+      targetKey: string,
+    ): T;
     default: () => unknown | string | number;
   }
   /**
@@ -590,7 +595,7 @@ declare namespace Reactory {
      * interface for the component register
      */
     export interface IReactoryComponentRegister {
-      [key: string]: IReactoryComponentRegistryEntry<any>;
+      [key: string]: IReactoryComponentRegistryEntry<unknown>;
     }
 
     export interface ILoginResult {
@@ -694,7 +699,10 @@ declare namespace Reactory {
        * @param title Central notification api call
        * @param notificationProperties
        */
-      createNotification(title: string, notificationProperties: NotificationProperties | unknown): void;
+      createNotification(
+        title: string,
+        notificationProperties: NotificationProperties | unknown,
+      ): void;
 
       /**
        *
@@ -820,7 +828,7 @@ declare namespace Reactory {
        */
       forms(): void;
 
-      raiseFormCommand(commandId: string, commandDef: unknown, formData: unknown): Promise<any>;
+      raiseFormCommand(commandId: string, commandDef: unknown, formData: unknown): Promise<unknown>;
 
       startWorkFlow(workFlowId: string, data: unknown): void;
 
@@ -949,12 +957,14 @@ declare namespace Reactory {
        *
        * @param notFoundComponentFqn Returns a component to use a
        */
-      getNotFoundComponent(notFoundComponentFqn: string): ValidComponent<any, unknown, unknown>;
+      getNotFoundComponent(notFoundComponentFqn: string): ValidComponent<unknown, unknown, unknown>;
 
-      getNotAllowedComponent(notAllowedComponentFqn: string): ValidComponent<any, unknown, unknown>;
+      getNotAllowedComponent(
+        notAllowedComponentFqn: string,
+      ): ValidComponent<unknown, unknown, unknown>;
 
       mountComponent(
-        ComponentToMount: ValidComponent<any, unknown, unknown>,
+        ComponentToMount: ValidComponent<unknown, unknown, unknown>,
         props: unknown,
         domNode: unknown,
         theme?: boolean,
@@ -973,7 +983,7 @@ declare namespace Reactory {
 
       showModalWithComponent(
         title: string,
-        ComponentToMount: ValidComponent<any, unknown, unknown>,
+        ComponentToMount: ValidComponent<unknown, unknown, unknown>,
         props: unknown,
         modalProps: unknown,
         domNode: unknown,
@@ -981,7 +991,10 @@ declare namespace Reactory {
         callback: (args: unknown | unknown[]) => unknown,
       ): void;
 
-      createElement(ComponentToCreate: ValidComponent<any, unknown, unknown>, props: unknown): unknown;
+      createElement(
+        ComponentToCreate: ValidComponent<unknown, unknown, unknown>,
+        props: unknown,
+      ): unknown;
 
       unmountComponent(node: unknown): boolean;
 
@@ -993,9 +1006,9 @@ declare namespace Reactory {
 
       getUser(): Reactory.Models.IApiStatus;
 
-      saveUserLoginCredentials(provider: string, props: unknown): Promise<any>;
+      saveUserLoginCredentials(provider: string, props: unknown): Promise<unknown>;
 
-      getUserLoginCredentials(provider: string): Promise<any>;
+      getUserLoginCredentials(provider: string): Promise<unknown>;
 
       /**
        * Stores an Object With a Key
@@ -1018,7 +1031,11 @@ declare namespace Reactory {
        * @param indexDB - boolean flag to indicate whether or not to use index db
        * @param cb  - callback for error handling
        */
-      readObjectWithKey(key: string, indexDB?: boolean, cb?: (err: unknown) => void): Promise<any>;
+      readObjectWithKey(
+        key: string,
+        indexDB?: boolean,
+        cb?: (err: unknown) => void,
+      ): Promise<unknown>;
 
       /**
        * deletes an object from local storage
@@ -1026,7 +1043,11 @@ declare namespace Reactory {
        * @param indexDB - boolean to indicate if the key is indexDB
        * @param cb - callback for error handling
        */
-      deleteObjectWithKey(key: string, indexDB?: boolean, cb?: (err: unknown) => void): Promise<void>;
+      deleteObjectWithKey(
+        key: string,
+        indexDB?: boolean,
+        cb?: (err: unknown) => void,
+      ): Promise<void>;
 
       /**
        * Calls the API Status graph endpoint
@@ -1988,13 +2009,13 @@ declare namespace Reactory {
         [key: string]: (
           insertCommand: unknown | SQLInsert,
           request_context: Reactory.Server.IReactoryContext,
-        ) => Promise<any>;
+        ) => Promise<unknown>;
       };
       Read: {
         [key: string]: (
           queryCommand: unknown | SQLQuery,
           request_context: Reactory.Server.IReactoryContext,
-        ) => Promise<any>;
+        ) => Promise<unknown>;
       };
       Update: {
         [key: string]: SQLUpdate;
@@ -2006,7 +2027,7 @@ declare namespace Reactory {
         [key: string]: SQLProcedure;
       };
       Install?: {
-        [key: string]: (context: Reactory.Server.IReactoryContext) => Promise<any>;
+        [key: string]: (context: Reactory.Server.IReactoryContext) => Promise<unknown>;
       };
     }
 
@@ -2307,7 +2328,7 @@ declare namespace Reactory {
     }
 
     export interface IObjectMap {
-      [key: string]: string | Array<any> | object;
+      [key: string]: string | Array<unknown> | object;
     }
 
     export interface IUISchemaMenuItem {
@@ -2450,7 +2471,7 @@ declare namespace Reactory {
        */
       roles?: string[];
       fileType?: string;
-      components?: Client.IReactoryComponentRegistryEntry<any>[];
+      components?: Client.IReactoryComponentRegistryEntry<unknown>[];
     }
 
     /**
@@ -2793,7 +2814,7 @@ declare namespace Reactory {
       [key: string]: unknown;
     }
 
-    export type ReactoryFormContext<TData, TAdditional extends Array<any>> = {
+    export type ReactoryFormContext<TData, TAdditional extends Array<unknown>> = {
       signature: string;
       version: number;
       formDef: IReactoryForm;
@@ -2818,7 +2839,7 @@ declare namespace Reactory {
       params: unknown,
       context: Reactory.Server.IReactoryContext,
       info: unknown,
-    ) => Promise<any>;
+    ) => Promise<unknown>;
     export type ReactoryResolverSync = (
       parent: unknown,
       params: unknown,
@@ -2838,7 +2859,7 @@ declare namespace Reactory {
           params: unknown,
           context: Reactory.Server.IReactoryContext,
           info: unknown,
-        ) => Promise<any>;
+        ) => Promise<unknown>;
       };
       Mutation?: {
         [key: symbol]: (
@@ -2846,7 +2867,7 @@ declare namespace Reactory {
           params: unknown,
           context: Reactory.Server.IReactoryContext,
           info: unknown,
-        ) => Promise<any>;
+        ) => Promise<unknown>;
       };
       Subscription?: {
         [key: symbol]: (
@@ -2854,7 +2875,7 @@ declare namespace Reactory {
           params: unknown,
           context: Reactory.Server.IReactoryContext,
           info: unknown,
-        ) => Promise<any>;
+        ) => Promise<unknown>;
       };
     }
 
@@ -3107,7 +3128,7 @@ declare namespace Reactory {
       | Reactory.Models.IOrganization
       | Reactory.Models.IOrganizationDocument;
 
-    export type TObjectID = string | ObjectId | null;
+    export type TObjectID = string | ObjectId | number;
 
     /**
      * Defines all the known reactory core model types that are shipped with the
@@ -3135,30 +3156,38 @@ declare namespace Reactory {
     /**
      *
      */
-    export interface IReactoryModelMetaHistory {
+    export interface IReactoryModelMetaHistory<T> {
       when: Date;
+      modelBefore?: T;
+      modelAfter?: T;
       description: string;
       outcome?: string;
       errors?: string[];
+      user?: TUser;
+      activity: string;
     }
 
-    export interface IReactoryModelMeta<T extends ReactoryKnownModel> {
+    /**
+     * Defines the meta data model that can be used to track
+     * changes to a model.
+     */
+    export interface IReactoryModelMeta<TMetaModel> {
       id?: TObjectID;
 
       /**
-       * The known model for associated with this entry
+       * The meta data model for the model
        */
-      model: T;
+      meta: TMetaModel;
 
       /**
        * The version number for the model
        */
-      version: string;
+      version?: string;
 
       /**
        * audit of changes
        */
-      history: IReactoryModelMetaHistory[];
+      history?: IReactoryModelMetaHistory<TMetaModel>[];
 
       /**
        * The date in utc when the model was firdst created
@@ -3167,14 +3196,14 @@ declare namespace Reactory {
       /***
        * The time in utc when the record was updated
        */
-      updated: Date;
+      updated?: Date;
     }
 
     /**
      * Defines the base model type, to ensure we have certain
      * fields on all our data models.
      */
-    export interface IReactoryModel<T extends ReactoryKnownModel> {
+    export interface IReactoryModel<TMeta> {
       id?: TObjectID;
       /**
        * The date in utc when the record was created
@@ -3196,7 +3225,7 @@ declare namespace Reactory {
       /**
        * The model meta data for item
        */
-      modelMeta?: IReactoryModelMeta<T>;
+      modelMeta?: IReactoryModelMeta<TMeta>;
     }
 
     export interface CoreSimpleResponse {
@@ -3422,7 +3451,7 @@ declare namespace Reactory {
     export type TReactoryClient = IReactoryClient | IReactoryClientDocument;
 
     export interface IReactoryTask {
-      id?: unknown;
+      id?: string | ObjectId | number;
       title: string;
       description?: string;
       assignedTo?: string | ObjectId | IUser | IUserDocument;
@@ -3441,7 +3470,13 @@ declare namespace Reactory {
       updatedAt?: Date;
     }
 
-    export interface IReactoryTaskDocument extends Mongoose.Document, IReactoryTask {}
+    export class ReactoryTaskDocument extends Mongoose.Document<ObjectId, unknown, IReactoryTask> {
+      constructor(task?: Partial<IReactoryTask>);
+    }
+    export interface IReactoryTaskDocument
+      extends Mongoose.Document<ObjectId, unknown, IReactoryTask> {
+      new (): ReactoryTaskDocument;
+    }
 
     export type TReactoryTask = IReactoryTask | IReactoryTaskDocument;
 
@@ -3746,7 +3781,17 @@ declare namespace Reactory {
       flagged?: boolean;
     }
 
-    export interface IReactoryContentDocument extends Mongoose.Document, IReactoryContent {}
+    export class ReactoryContentDocument extends Mongoose.Document<
+      ObjectId,
+      unknown,
+      IReactoryContent
+    > {
+      constructor(content?: Partial<IReactoryContent>);
+    }
+    export interface IReactoryContentDocument
+      extends Mongoose.Document<ObjectId, unknown, IReactoryContent> {
+      new (): ReactoryContentDocument;
+    }
 
     export interface IContentTemplate {
       id: string;
@@ -3813,7 +3858,14 @@ declare namespace Reactory {
       owner?: Reactory.Models.IUser | Reactory.Models.IUserDocument;
     }
 
-    export interface IBusinessUnitDocument extends Mongoose.Document, IBusinessUnit {}
+    export class BusinessUnitDocument extends Mongoose.Document<ObjectId, unknown, IBusinessUnit> {
+      constructor(businessUnit?: Partial<IBusinessUnit>);
+    }
+
+    export interface IBusinessUnitDocument
+      extends Mongoose.Document<ObjectId, unknown, IBusinessUnit> {
+      new (): BusinessUnitDocument;
+    }
 
     export type TBusinessUnit = IBusinessUnit | IBusinessUnitDocument;
 
@@ -3844,7 +3896,13 @@ declare namespace Reactory {
       roles: string[];
     }
 
-    export interface IMembershipDocument extends Mongoose.Types.Subdocument, IMembership {}
+    export class MembershipDoucment extends Mongoose.Types.Subdocument<ObjectId> {
+      constructor(membership: Partial<IMembership>);
+    }
+
+    export interface IMembershipDocument extends Mongoose.Types.Subdocument<ObjectId> {
+      new (): MembershipDoucment;
+    }
 
     export type TMembership = IMembership | IMembershipDocument;
     export interface ISessionInfo {
@@ -3872,7 +3930,7 @@ declare namespace Reactory {
       link: string;
       createdAt: Date;
       read: boolean;
-      details: {};
+      details: unknown;
     }
 
     export interface IRegion {
@@ -3898,8 +3956,12 @@ declare namespace Reactory {
       title: string;
     }
 
-    export interface IRegionDocument extends Mongoose.Document, IRegion {
-      new (): IRegionDocument;
+    export class RegionDocument extends Mongoose.Document<ObjectId, unknown, IRegion> {
+      constructor();
+    }
+
+    export interface IRegionDocument extends Mongoose.Document<ObjectId, unknown, IRegion> {
+      new (): RegionDocument;
       AddRegion(region: IRegion): void;
     }
 
@@ -3912,7 +3974,12 @@ declare namespace Reactory {
       deleted: boolean;
     }
 
-    export interface ITeamDocument extends Mongoose.Document, ITeam {}
+    export class TeamDocument extends Mongoose.Document<ObjectId, unknown, ITeam> {
+      constructor();
+    }
+    export interface ITeamDocument extends Mongoose.Document<ObjectId, unknown, ITeam> {
+      new (): TeamDocument;
+    }
 
     export interface IProject {
       id?: unknown;
@@ -3929,9 +3996,21 @@ declare namespace Reactory {
       deleted: boolean;
     }
 
-    export interface IProjectDocument extends Mongoose.Document, IProject {}
+    export class ProjectDocument extends Mongoose.Document<ObjectId, unknown, IProject> {
+      constructor();
+    }
+    export interface IProjectDocument extends Mongoose.Document<ObjectId, unknown, IProject> {
+      new (): ProjectDocument;
+    }
 
-    export interface IOperationalGroupDocument extends Mongoose.Document, IRegion {}
+    export class OperationalGroup extends Mongoose.Document<ObjectId, unknown, IOperationalGroup> {
+      constructor();
+    }
+
+    export interface IOperationalGroupDocument
+      extends Mongoose.Document<ObjectId, unknown, IOperationalGroup> {
+      new (): OperationalGroup;
+    }
 
     export interface IReactoryLoginResponse {
       token: string;
@@ -3991,7 +4070,7 @@ declare namespace Reactory {
         organizationId?: string | ObjectId,
         businessUnitId?: string | ObjectId,
       ): IMembershipDocument;
-      setLocale(locale: string): Promise<any>;
+      setLocale(locale: string): Promise<unknown>;
     }
 
     /**
@@ -4069,7 +4148,9 @@ declare namespace Reactory {
       /**
        * An array of memberships the user belongs to.
        *
-       * @type {(Reactory.Models.IMembership[] | Mongoose.Types.Array<Reactory.Models.IMembership> | undefined)}
+       * @type {(Reactory.Models.IMembership[] |
+       * Mongoose.Types.Array<Reactory.Models.IMembership>|
+       * undefined)}
        */
       memberships?:
         | Reactory.Models.IMembership[]
@@ -4085,9 +4166,9 @@ declare namespace Reactory {
       /**
        * An array of authentication information for the user.
        *
-       * @type {(Reactory.Models.IAuthentication<any>[] | undefined)}
+       * @type {(Reactory.Models.IAuthentication<unknown>[] | undefined)}
        */
-      authentications?: Reactory.Models.IAuthentication<any>[];
+      authentications?: Reactory.Models.IAuthentication<unknown>[];
 
       /**
        * Indicates whether the user has been deleted.
@@ -4120,9 +4201,9 @@ declare namespace Reactory {
       /**
        * An object containing metadata information for the user.
        *
-       * @type {(Reactory.Models.IRecordMeta<any> | undefined)}
+       * @type {(Reactory.Models.IRecordMeta<unknown> | undefined)}
        */
-      meta?: Reactory.Models.IRecordMeta<any>;
+      meta?: Reactory.Models.IRecordMeta<unknown>;
 
       /**
        * An object containing additional properties that may be defined for the user.
@@ -4157,9 +4238,16 @@ declare namespace Reactory {
 
     export type IAgeDemographicDocument = Mongoose.Document<ObjectId, unknown, IAgeDemographic>;
 
-    export interface IDemographicDocument extends Mongoose.Document, IDemographic {}
+    export class DemographicDocument extends Mongoose.Document<ObjectId, unknown, IDemographic> {
+      constructor(demographic?: Partial<IDemographic>);
+    }
 
-    export interface IUserDocument extends Mongoose.Document, IUser {
+    export interface IDemographicDocument
+      extends Mongoose.Document<ObjectId, unknown, IDemographic> {
+      new (): DemographicDocument;
+    }
+
+    export interface IUserDocument extends Mongoose.Document<ObjectId, unknown, IUser> {
       memberships: Mongoose.Types.Array<Reactory.Models.IMembershipDocument>;
     }
 
@@ -4290,7 +4378,18 @@ declare namespace Reactory {
       revisions: IReactoryTranslationRevision[];
     }
 
-    export interface IReactoryTranslationDocument extends Mongoose.Document, IReactoryTranslation {}
+    export class ReactoryTranslationDocument extends Mongoose.Document<
+      ObjectId,
+      unknown,
+      IReactoryTranslation
+    > {
+      constructor();
+    }
+
+    export interface IReactoryTranslationDocument
+      extends Mongoose.Document<ObjectId, unknown, IReactoryTranslation> {
+      new (): ReactoryTranslationDocument;
+    }
 
     export interface IReactoryI18nResource {
       id: string;
@@ -4345,9 +4444,18 @@ declare namespace Reactory {
       documents: IReactoryFile[] | IReactoryFileModel[];
     }
 
+    export class ReactorySupportDocument extends Mongoose.Document<
+      ObjectId,
+      unknown,
+      IReactorySupportTicket
+    > {
+      constructor();
+    }
+
     export interface IReactorySupportTicketDocument
-      extends Mongoose.Document,
-        IReactorySupportTicket {}
+      extends Mongoose.Document<ObjectId, unknown, IReactorySupportTicket> {
+      new (): ReactorySupportDocument;
+    }
 
     export interface IPagedReactorySupportTickets {
       paging: IPagingResult;
@@ -4620,7 +4728,8 @@ declare namespace Reactory {
      * @property {string} lang - the ISO 639-1 language code used for analysis
      * @property {string} input - the input text that was checked for spelling
      * @property {boolean} correct - a boolean indicating whether the input is spelled correctly
-     * @property {INaturalSpellCheckCorrection[]} corrections - an array of spelling corrections for unknown misspelled words
+     * @property {INaturalSpellCheckCorrection[]} corrections - an array of spelling
+     * corrections for unknown misspelled words
      */
     export interface INaturalSpellCheckResult {
       lang: string;
@@ -4645,20 +4754,34 @@ declare namespace Reactory {
     /**
      * Project Mongoose model interface
      */
-    export type IReactoryModelMetaDocument<T extends Models.ReactoryKnownModel> =
-      Models.IReactoryModelMeta<T>;
+    export type IReactoryModelMetaDocument<T> = Models.IReactoryModelMeta<T>;
 
     /**
      * Interface definitions for instance functions for the IResourceManagerProject
      */
-    export interface IResourceManagerProjectDocumentFunctions {}
+    export interface IReactoryModelMetaDocumenFunctions<TMeta> {
+      /**
+       * Updates the meta data for the given model
+       * */
+      updateMeta(meta: Models.IReactoryModelMeta<TMeta>): Promise<Models.IReactoryModelMeta<TMeta>>;
+    }
 
-    export interface IResourceManagerProjectDocumentQueryHelpers {}
+    export interface IReactoryModelMetaDocumentQueryHelpers<TMeta> {
+      /**
+       * Returns the meta data for the given model
+       * */
+      getMeta(): Promise<Models.IReactoryModelMeta<TMeta>>;
+      /**
+       * Clears the meta data for the given model
+       * */
+      clearMeta(): Promise<void>;
+    }
 
-    export type ReactoryModelMetaDocument = Mongoose.Model<
-      IReactoryModelMetaDocument<"ReactoryModelMeta">,
-      IResourceManagerProjectDocumentQueryHelpers,
-      IResourceManagerProjectDocumentFunctions
+    export type ReactoryModelMetaDocument<TMeta> = Mongoose.Model<
+      ObjectId,
+      IReactoryModelMetaDocumenFunctions<TMeta>,
+      IReactoryModelMetaDocumentQueryHelpers<TMeta>,
+      IReactoryModelMetaDocument<TMeta>
     >;
   }
 
@@ -5209,8 +5332,8 @@ declare namespace Reactory {
       key: string;
       name: string;
       description: string;
-      content: (params: unknown, context: Server.IReactoryContext) => Promise<any>;
-      resolver: (params: unknown, context: Server.IReactoryContext) => Promise<any>;
+      content: (params: unknown, context: Server.IReactoryContext) => Promise<unknown>;
+      resolver: (params: unknown, context: Server.IReactoryContext) => Promise<unknown>;
       props: {
         meta: {
           title: string;
@@ -5250,7 +5373,7 @@ declare namespace Reactory {
        * @param params - of unknown type, the processor itself has to be able to interpret the input
        * @param next - if the
        */
-      process(params: unknown, next?: IProcessor): Promise<any>;
+      process(params: unknown, next?: IProcessor): Promise<unknown>;
     }
 
     export interface IReactoryImportPackageManager extends Service.IReactoryContextAwareService {
@@ -5262,12 +5385,12 @@ declare namespace Reactory {
        * @param file_ids
        * @param processors
        */
-      start(workload_id: string, file_ids: string[], processors: string[]): Promise<any>;
-      stop(workload_id: string, file_ids: string[]): Promise<any>;
-      delete(workload_id: string): Promise<any>;
-      addFile(workload_id: string, file: Models.IReactoryFileModel): Promise<any>;
-      removeFile(workload_id: string, file_id: string): Promise<any>;
-      previewFile(workload_id: string, file_id: string, processors: string[]): Promise<any>;
+      start(workload_id: string, file_ids: string[], processors: string[]): Promise<unknown>;
+      stop(workload_id: string, file_ids: string[]): Promise<unknown>;
+      delete(workload_id: string): Promise<unknown>;
+      addFile(workload_id: string, file: Models.IReactoryFileModel): Promise<unknown>;
+      removeFile(workload_id: string, file_id: string): Promise<unknown>;
+      previewFile(workload_id: string, file_id: string, processors: string[]): Promise<unknown>;
 
       /**
        * Returns the next processor if the service is started.
@@ -5381,10 +5504,16 @@ declare namespace Reactory {
       stream?: Stream;
     }
 
+    export class ReactoryService {
+      constructor(props: IReactoryServiceProps, context: Server.IReactoryContext);
+    }
+
     export interface IReactoryService {
       name: string;
       nameSpace: string;
       version: string;
+
+      new (): ReactoryService;
     }
 
     /**
@@ -5801,10 +5930,10 @@ declare namespace Reactory {
     }
 
     export interface IReactoryWorkflowService extends Reactory.Service.IReactoryDefaultService {
-      startWorkflow(workflow_id: string, input: unknown): Promise<any>;
-      stopWorkflow(worflow_id: string, instance: string): Promise<any>;
-      workflowStatus(worflow_id: string, instance: string): Promise<any>;
-      clearWorkflows(): Promise<any>;
+      startWorkflow(workflow_id: string, input: unknown): Promise<unknown>;
+      stopWorkflow(worflow_id: string, instance: string): Promise<unknown>;
+      workflowStatus(worflow_id: string, instance: string): Promise<unknown>;
+      clearWorkflows(): Promise<unknown>;
     }
 
     export interface IFetchAuthenticationProvder {
@@ -5820,7 +5949,7 @@ declare namespace Reactory {
        * Authenticates a fetch request asynchronously
        * @param request
        */
-      authenticateRequest(request?: unknown): Promise<any>;
+      authenticateRequest(request?: unknown): Promise<unknown>;
     }
 
     export interface IFetchHeaderProvider {
@@ -5834,7 +5963,7 @@ declare namespace Reactory {
        * decorates a fetch request with custom headers asynch
        * @param request
        */
-      decorateRequestHeader(request: unknown): Promise<any>;
+      decorateRequestHeader(request: unknown): Promise<unknown>;
     }
 
     /**
@@ -5874,7 +6003,12 @@ declare namespace Reactory {
        * @param charset - Optional character set for the request.
        * @returns A Promise that resolves with the JSON response data.
        */
-      postJSON<T>(url: string, args?: unknown, authenticate?: boolean, charset?: string): Promise<T>;
+      postJSON<T>(
+        url: string,
+        args?: unknown,
+        authenticate?: boolean,
+        charset?: string,
+      ): Promise<T>;
 
       /**
        * Sends a PUT request and returns the JSON response.
@@ -5894,7 +6028,12 @@ declare namespace Reactory {
        * @param charset - Optional character set for the request.
        * @returns A Promise that resolves with the JSON response data.
        */
-      deleteJSON<T>(url: string, args?: unknown, authenticate?: boolean, charset?: string): Promise<T>;
+      deleteJSON<T>(
+        url: string,
+        args?: unknown,
+        authenticate?: boolean,
+        charset?: string,
+      ): Promise<T>;
 
       /**
        * Sends a fetch request and returns the response.
@@ -5966,7 +6105,7 @@ declare namespace Reactory {
      * Pdf service that generates PDFs using PDF make
      */
     export interface IReactoryPdfService extends Reactory.Service.IReactoryDefaultService {
-      generate(definition: unknown, stream: unknown): Promise<any>;
+      generate(definition: unknown, stream: unknown): Promise<unknown>;
 
       pdfDefinitions(): Reactory.Pdf.IReactoryPdfComponent;
     }
@@ -5997,8 +6136,11 @@ declare namespace Reactory {
       ): Promise<Models.IPagedReactorySupportTickets>;
     }
 
+    export class ReactorySupportServiceStatic {
+      constructor();
+    }
     export interface IReactorySupportServiceStatic {
-      new (): IReactorySupportServiceStatic;
+      new (): ReactorySupportServiceStatic;
       reactory: IReactoryServiceDefinition;
     }
 
@@ -6035,13 +6177,13 @@ declare namespace Reactory {
        * @param query
        * @param variables
        */
-      query(query: string, variables: unknown): Promise<any>;
+      query(query: string, variables: unknown): Promise<unknown>;
       /**
        * Run a graphql mutation against the graph.
        * @param query
        * @param variables
        */
-      mutate(mutation: string, variables: unknown): Promise<any>;
+      mutate(mutation: string, variables: unknown): Promise<unknown>;
     }
 
     export interface IReactoryTranslationService extends Reactory.Service.IReactoryDefaultService {
@@ -6084,13 +6226,13 @@ declare namespace Reactory {
        * Creates a object from the key structure
        * @param translation
        */
-      getResource(translation: Models.IReactoryTranslation): Promise<any>;
+      getResource(translation: Models.IReactoryTranslation): Promise<unknown>;
 
       /**
        * Creates an object from all the items in translations set
        * @param translations
        */
-      getResources(translations: Models.IReactoryTranslations): Promise<any>;
+      getResources(translations: Models.IReactoryTranslations): Promise<unknown>;
 
       /**
        * Set translations package for a given languge. If present it must replace
@@ -6327,7 +6469,8 @@ declare namespace Reactory {
       /**
        * Updates the frequency distribution with a list of new tokens
        * @param tokens - the list of new tokens to add to the distribution
-       * @param update - a boolean indicating whether to update the frequency count for existing tokens, defaults to true
+       * @param update - a boolean indicating whether to update the frequency
+       * count for existing tokens, defaults to true
        */
       add(tokens: string[], update?: boolean): void;
     }
@@ -6550,7 +6693,8 @@ declare namespace Reactory {
       ): Models.INaturalSpellCheckResult;
 
       /**
-       * Gets the synonyms of a given word from WordNet using a specified language and part of speech
+       * Gets the synonyms of a given word from WordNet using a specified language and part
+       * of speech
        * @param word - the word to get synonyms for
        * @param pos - the part of speech to limit the results to, defaults to "n" (noun)
        * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
@@ -6559,7 +6703,8 @@ declare namespace Reactory {
       getSynonyms(word: string, pos?: string, lang?: string): Promise<string[]>;
 
       /**
-       * Gets the antonyms of a given word from WordNet using a specified language and part of speech
+       * Gets the antonyms of a given word from WordNet using a specified language and part
+       * of speech
        * @param word - the word to get antonyms for
        * @param pos - the part of speech to limit the results to, defaults to "n" (noun)
        * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
@@ -6568,7 +6713,8 @@ declare namespace Reactory {
       getAntonyms(word: string, pos?: string, lang?: string): Promise<string[]>;
 
       /**
-       * Gets the hypernyms of a given word from WordNet using a specified language and part of speech
+       * Gets the hypernyms of a given word from WordNet using a specified language and
+       * part of speech
        * @param word - the word to get hypernyms for
        * @param pos - the part of speech to limit the results to, defaults to "n" (noun)
        * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
@@ -6577,7 +6723,8 @@ declare namespace Reactory {
       getHypernyms(word: string, pos?: string, lang?: string): Promise<string[]>;
 
       /**
-       * Gets the hyponyms of a given word from WordNet using a specified language and part of speech
+       * Gets the hyponyms of a given word from WordNet using a specified language and
+       * part of speech
        * @param word - the word to get hyponyms for
        * @param pos - the part of speech to limit the results to, defaults to "n" (noun)
        * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
@@ -6586,7 +6733,8 @@ declare namespace Reactory {
       getHyponyms(word: string, pos?: string, lang?: string): Promise<string[]>;
 
       /**
-       * Gets the meronyms of a given word from WordNet using a specified language and part of speech
+       * Gets the meronyms of a given word from WordNet using a specified language
+       * zand part of speech
        * @param word - the word to get meronyms for
        * @param pos - the part of speech to limit the results to, defaults to "n" (noun)
        * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
@@ -6595,7 +6743,8 @@ declare namespace Reactory {
       getMeronyms(word: string, pos?: string, lang?: string): Promise<string[]>;
 
       /**
-       * Gets the holonyms of a given word from WordNet using a specified language and part of speech
+       * Gets the holonyms of a given word from WordNet using a specified language
+       * and part of speech
        * @param word - the word to get holonyms for
        * @param pos - the part of speech to limit the results to, defaults to "n" (noun)
        * @param lang - the ISO 639-1 language code to use, defaults to "en" (English)
@@ -6630,7 +6779,8 @@ declare namespace Reactory {
       /**
        * Generates a random string of a specified length and character set
        * @param length - the length of the random string to generate, defaults to 8
-       * @param charset - the character set to use for generating the string, defaults to alphanumeric
+       * @param charset - the character set to use for generating the string, defaults
+       *  to alphanumeric
        * @returns a random string
        */
       randomString(length?: number, charset?: string): string;
@@ -6949,10 +7099,12 @@ declare namespace Reactory {
        */
       partner: Reactory.Models.IReactoryClientDocument;
       /**
-       * Service activator function that creates / returns a service with the given fqn (fully qualified name)
+       * Service activator function that creates / returns a service with the given
+       * fqn (fully qualified name)
        * @param fqn - the FQN for the service to activate.
        * @param props - unknown properties to pass to the service if required.
-       * @param context - a specific context if you want to execute as different user, otherwise current context is used
+       * @param context - a specific context if you want to execute as different user,
+       * otherwise current context is used
        * @param lifeCycle - the lifecycle type for the service, either instance or singleton
        */
       getService<T extends Reactory.Service.IReactoryService>(
@@ -7564,8 +7716,9 @@ declare namespace Reactory {
     @property {Reactory.Schema.ISchema} schema - The JSON schema for the component.
     @property {Reactory.Schema.IDSchema} idSchema - The ID schema for the component.
     @property {Reactory.Schema.IUISchema} uiSchema - The UI schema for the component.
-    @property {any} formContext - The form context for the component.
-    @property {(formData: AutoCompleteFormData) => void} onChange - The callback function for when the form data changes.
+    @property {unknown} formContext - The form context for the component.
+    @property {(formData: AutoCompleteFormData) => void} onChange - The callback function 
+    for when the form data changes.
     */
     export interface IAutoCompleteWidgetProps<
       T,
@@ -7600,13 +7753,16 @@ declare namespace Reactory {
      */
     export interface IUISchema {
       /**
-       * The wiget tat will be used to render the data element. A widget definition takes priority over other configurations.
-       * The widget must be a widget that is registered in the FORM registry (this is different to the reactory component registry).
+       * The wiget tat will be used to render the data element. A widget definition takes priority
+       * over other configurations. The widget must be a widget that is registered in the FORM
+       * registry (this is different to the reactory component registry).
        * Components can be mapped to widgets using the widget map property on the form.
        */
       "ui:widget"?: string | "null";
       /**
-       * This object is passed to the component that is rendering the element.  Each option element is unique to the data type / widget
+       * This object is passed to the component that is rendering the element.
+       * Each option element is unique
+       * to the data type / widget
        * that is being used to render the schema element,
        */
       "ui:options"?: TReactoryFieldOptions | unknown | "null";
@@ -7623,7 +7779,8 @@ declare namespace Reactory {
         | "ListLayout"
         | "PagedLayout";
       /**
-       * The grid layout structure. This breaks down the distribtution of properties over a grid. This is generally the default layout
+       * The grid layout structure. This breaks down the distribtution of properties over a grid.
+       * This is generally the default layout
        * for object types.
        */
       "ui:grid-layout"?: IGridLayout[];
