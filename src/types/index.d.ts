@@ -3436,12 +3436,12 @@ declare namespace Reactory {
       //deafult user accounts to create at startup
       updatedAt?: Date;
       colorScheme: (colorvalue: string) => string[];
-      getSetting: (
+      getSetting: <T>(
         name: string,
-        defaultValue?: unknown,
+        defaultValue?: T,
         create?: boolean,
         componentFqn?: string,
-      ) => unknown;
+      ) => { data: T };
       getDefaultUserRoles: () => string[];
       setPassword: (password: string) => void;
     }
@@ -7078,6 +7078,15 @@ declare namespace Reactory {
        * The PassportJS providers of the module.
        */
       passportProviders?: ReactoryPassportProviders;
+
+      /**
+       * A list of command line interface applications that
+       * the module provides.
+       *
+       * These can be executed from the command line using the
+       * `reactory-cli` nameSpace.name --arg1 --arg2=value
+       */
+      cli?: Reactory.IReactoryComponentDefinition<(kwargs: string[]) => Promise<void>>[];
     }
 
     /**
