@@ -4249,6 +4249,7 @@ declare namespace Reactory {
 
     export interface IUserDocument extends Mongoose.Document<ObjectId, unknown, IUser> {
       memberships: Mongoose.Types.Array<Reactory.Models.IMembershipDocument>;
+      validatePassword: (password: string) => Promise<boolean>;
     }
 
     export interface IUserDemographics {
@@ -7067,7 +7068,7 @@ declare namespace Reactory {
       /**
        * The client plugins of the module.
        */
-      clientPlugins?: Platform.IReactoryPluginDefinition;
+      clientPlugins?: Reactory.Platform.IReactoryApplicationPlugin[];
 
       /**
        * The translations of the module.
