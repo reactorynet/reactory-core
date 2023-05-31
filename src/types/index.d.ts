@@ -128,8 +128,7 @@ declare namespace Reactory {
     nameSpace: string;
     name: string;
     version: string;
-    toString?: (includeVersion?: boolean) => string;
-    [key: string]: unknown;
+    toString?(includeVersion?: boolean): string;
   }
 
   /**
@@ -4115,7 +4114,7 @@ declare namespace Reactory {
       /**
        * depending on whether or not the model is client side or server side
        */
-      id?: string;
+      id?: any;
 
       /**
        * The username of the user.
@@ -4247,7 +4246,7 @@ declare namespace Reactory {
       new (): DemographicDocument;
     }
 
-    export interface IUserDocument extends Mongoose.Document<ObjectId, unknown, IUser> {
+    export interface IUserDocument extends Mongoose.Document<ObjectId>, IUser {
       memberships: Mongoose.Types.Array<Reactory.Models.IMembershipDocument>;
       validatePassword: (password: string) => Promise<boolean>;
     }
@@ -5505,16 +5504,22 @@ declare namespace Reactory {
       stream?: Stream;
     }
 
-    export class ReactoryService {
-      constructor(props: IReactoryServiceProps, context: Server.IReactoryContext);
+    export interface IReactoryService extends IComponentFqnDefinition {
+      description?: string;
+      tags?: string[];
     }
 
-    export interface IReactoryService {
-      name: string;
-      nameSpace: string;
-      version: string;
+    export type TProps<T> = IReactoryServiceProps & T;
+    export type TContext<T> = Server.IReactoryContext & T;
 
-      new (): ReactoryService;
+    export class ReactoryService<TP, TC> implements IReactoryService {
+      constructor(props: TProps<TP>, context: TContext<TC>);
+      [key: string]: unknown;
+      nameSpace: string;
+      name: string;
+      version: string;
+      props: TP;
+      toString?: (includeVersion?: boolean) => string;
     }
 
     /**
@@ -5546,15 +5551,30 @@ declare namespace Reactory {
     /**
      * Base interface for a Context Aware Reactory Service.
      */
-    export interface IReactoryContextAwareService extends IReactoryService {
-      context: Server.IReactoryContext;
+    export interface IReactoryContextAwareService<TC = Server.IReactoryContext>
+      extends IReactoryService {
+      context: TC;
       getExecutionContext(): Server.IReactoryContext;
       setExecutionContext(executionContext: Server.IReactoryContext): void;
     }
 
-    export interface IReactoryDefaultService
+    export interface IReactoryDefaultService<TC = Server.IReactoryContext>
       extends IReactoryStartupAwareService,
-        IReactoryContextAwareService {}
+        IReactoryContextAwareService<TC> {}
+
+    export class ReactoryDefaultService<TP, TC>
+      extends ReactoryService<TP, TC>
+      implements IReactoryDefaultService<TC>
+    {
+      props: TP;
+      context: TC;
+      description?: string;
+      tags?: string[];
+      getExecutionContext(): Server.IReactoryContext;
+      setExecutionContext(executionContext: Server.IReactoryContext): void;
+      onStartup(): Promise<void>;
+      onShutdown(): Promise<void>;
+    }
 
     export interface IReactoryDefaultServiceStatic {
       new (props: IReactoryServiceProps, context: Server.IReactoryContext): IReactoryDefaultService;
@@ -7123,6 +7143,12 @@ declare namespace Reactory {
         context?: Server.IReactoryContext,
         lifeCycle?: Service.SERVICE_LIFECYCLE,
       ): T;
+
+      /**
+       * An array of all the services that are available to the current context
+       */
+      services: Reactory.Service.IReactoryService[];
+
       /**
        * Logging method to write logs.
        * @param message - the message to log
