@@ -1,8 +1,8 @@
-'use strict'
-import { SERVER_ENVIRONMENT, VERSION } from './constants'
+"use strict";
+import { SERVER_ENVIRONMENT, VERSION } from "./constants";
 
 /**
- * Reactory class is a container / static holder 
+ * Reactory class is a container / static holder
  * for low level / core features.
  */
 class Reactory {
@@ -12,9 +12,7 @@ class Reactory {
   /**
    * Some core forms that are part of the system
    */
-  static Forms = {
-    
-  }
+  static Forms = {};
 }
 
-export default Reactory
+export default Reactory;
