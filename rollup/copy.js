@@ -1,8 +1,10 @@
 /* eslint-disable no-console */
-import { createReadStream, createWriteStream } from 'fs';
+import { createReadStream, createWriteStream, existsSync, mkdirSync } from 'fs';
 
 export default function copy(options = {}) {
   const copyFile = (source, target) => {
+    const targetDir = target.split('/').slice(0, -1).join('/');
+    if (!existsSync(targetDir)) mkdirSync(targetDir, { recursive: true });
     const rd = createReadStream(source);
     const wr = createWriteStream(target);
     return new Promise(((resolve, reject) => {
