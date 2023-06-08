@@ -140,38 +140,53 @@ declare namespace Reactory {
   export type FqnDecorator = (nameSpace: string, name: string, version?: string) => void;
 
   /**
-   * A component domain is a string that is used to identify the
+   * A component domain is an enum that is used to identify the
    * domain of function for the component
    */
-  export type ComponentDomain =
-    | string
-    | "model"
-    | "service"
-    | "component"
-    | "plugin"
-    | "module"
-    | "function"
-    | "object"
-    | "enum"
-    | "interface"
-    | "type"
-    | "directive"
-    | "schema"
-    | "query"
-    | "mutation"
-    | "subscription"
-    | "resolver"
-    | "action"
-    | "event"
-    | "eventHandler"
-    | "eventListener"
-    | "eventEmitter"
-    | "eventDispatcher"
-    | "eventSubscriber"
-    | "eventPublisher"
-    | "eventProducer"
-    | "eventConsumer"
-    | "eventConsumer";
+  export enum ComponentDomain {
+     "model",
+     "service",
+     "component",
+     "plugin",
+     "module",
+     "function",
+     "object",
+     "enum",
+     "interface",
+     "type",
+     "directive",
+     "schema",
+     "query",
+     "mutation",
+     "subscription",
+     "resolver",
+     "action",
+     "event",
+     "eventHandler",
+     "eventListener",
+     "eventEmitter",
+     "eventDispatcher",
+     "eventSubscriber",
+     "eventPublisher",
+     "eventProducer",
+     "eventConsumer",
+  }
+
+  /**
+   * A feature type
+   */
+  export enum FeatureType {
+    "string",
+     "number",
+     "boolean",
+     "date", 
+     "object", 
+     "array", 
+     "function", 
+     "symbol", 
+     "bigint"
+  }
+
   /**
    * Defines a model feature for a given model
    */
@@ -198,27 +213,58 @@ declare namespace Reactory {
     /**
      * The type of the feature.  This can be used to provide additional information
      * */
-    featureType:
-      | string
-      | "string"
-      | "number"
-      | "boolean"
-      | "date"
-      | "object"
-      | "array"
-      | "function"
-      | "symbol"
-      | "bigint";
+    featureType: FeatureType
   }
 
   /**
-   * Defines a model definition for unknown model that
-   * the system would like to use.
+   * Describes a activator keyword argument.
    */
-  export interface IReactoryComponentDefinition<T> extends IComponentFqnDefinition {
+  export interface IActivationKwarg {
     /**
-     * Provides a description for the model
+     * the key for the parameter
      */
+    key: string, 
+    /**
+     * A human friendly name for the argument
+    */
+    name: string,
+    /**
+     * indicates if the argument is required
+     */
+    required?: boolean,
+    /**
+     * A description of the argument
+     */
+    description?: string,
+    /**
+     * The type of the argument
+     */
+    type?: string,
+    /**
+     * A default value for the argument
+     */
+    default?: unknown
+    /**
+     * An async provider for the argument
+     * @returns 
+     */
+    provider?: () => Promise<unknown>
+  }
+
+  /**
+   * IReactoryComponentDefintion<T> is the interface definition for a reactory component
+   * that is being registered within the reactory eco system.
+   * 
+   * Generic Paramter T is the type of the component that is 
+   * being defined.
+   */
+  export interface IReactoryComponentDefinition<T = unknown> extends IComponentFqnDefinition {
+    /**
+    * Longer description, what does the component do.
+    * i.e. BackupFileservice is a specific service for persisting uploaded files to a
+    * backup folder. The service will also provide a mechanism for retrieving files
+    * from the backup folder that can be used by restore service.
+    */
     description?: string;
     /**
      * A string array of that can used to identify the model
@@ -229,9 +275,22 @@ declare namespace Reactory {
      */
     stem?: string;
     /**
-     * The component type
+     * The component reference. 
+     * Use these when using React components etc which will be activated
+     * using the <Component /> syntax.
      */
-    component: T;
+    component?: T;
+    /**
+     * A component activator function that can be used to activate the component.
+     * @param kwargs 
+     * @returns 
+     */
+    activate?: (kwargs: { key: string, value: unknown }) => T;
+    /**
+     * activation kwargs descriptors
+     */
+    activateKwargs?: [];
+
     /**
      * Provides a list of features for the component.  This can be used to
      * provide additional information about the component.
@@ -4246,6 +4305,7 @@ declare namespace Reactory {
       new (): DemographicDocument;
     }
 
+    //@ts-ignore
     export interface IUserDocument extends Mongoose.Document<ObjectId>, IUser {
       memberships: Mongoose.Types.Array<Reactory.Models.IMembershipDocument>;
       validatePassword: (password: string) => Promise<boolean>;
@@ -5413,26 +5473,158 @@ declare namespace Reactory {
       $services: IReactoryServiceRegister;
     }
 
-    export type ReactoryServiceTypes =
-      | "file"
-      | "data"
-      | "iot"
-      | "user"
-      | "organization"
-      | "businessunit"
-      | "email"
-      | "notification"
-      | "workflow"
-      | "devops"
-      | "plugin"
-      | "custom"
-      | "context"
-      | "integration"
-      | "report";
+    export enum FunctionalServiceTypes {
+      "file",             // File handling services
+      "data",             // Data services
+      "iot",              // Internet of Things related services
+      "email",            // Email related services
+      "notification",     // Notification services
+      "integration",      // Services used for integration
+      "authentication",   // Authentication services
+      "authorization",    // Authorization services
+      "billing",          // Billing or payment related services
+      "messaging",        // Messaging services (e.g. chat, SMS)
+      "logging",          // Logging services
+      "monitoring",       // Monitoring or observability services
+      "analytics",        // Analytics services
+      "search",           // Search related services
+      "database",         // Database related services
+      "cache",            // Caching services
+      "queue",            // Queue services
+      "stream",           // Stream processing services
+      "workflow",         // Workflow services
+      "network",          // Network related services
+      "storage",          // Storage services
+      "backup",           // Backup services
+      "scheduler",        // Scheduling services
+      "location",         // Location services
+      "security",         // Security related services
+      "reporting",        // Reporting services
+      "translation",      // Translation services
+      "ocr",              // Optical Character Recognition services
+      "ai",               // AI or Machine Learning services
+      "media",            // Media processing services (audio, video)
+      "cdn",              // Content Delivery Network services
+      "session",          // Session management services
+      "configuration",    // Configuration services
+      "rateLimiting",     // Rate limiting services
+      "abTesting",        // A/B testing services
+      "featureToggle",    // Feature toggle services
+      "event",            // Event related services
+      "custom",           // Custom services
+      "template"          // Template related services
+    }
+
+    
+
+    export enum LifecycleServiceTypes {
+      "development",     // Services used during development phase
+      "testing",         // Services used during testing phase
+      "staging",         // Services used during staging phase
+      "production",      // Services used during production phase
+      "maintenance",     // Services used for maintenance
+      "debugging",       // Services used for debugging
+      "monitoring",      // Services used for monitoring application health
+      "logging",         // Services used for logging
+      "deployment",      // Services used for deployment
+      "continuousIntegration", // Services used for continuous integration
+      "continuousDelivery",   // Services used for continuous delivery
+      "bugTracking",     // Services used for bug tracking
+      "issueTracking",   // Services used for issue tracking
+      "taskTracking",    // Services used for task tracking
+      "versionControl",  // Services used for version control
+      "codeReview",      // Services used for code review
+      "build",           // Services used for build process
+      "release",         // Services used for release process
+      "rollback",        // Services used for rollback process
+      "scaling",         // Services used for scaling (vertical, horizontal)
+      "loadBalancing",   // Services used for load balancing
+      "failover",        // Services used for failover process
+      "backupRestore",   // Services used for backup and restore process
+      "securityScanning", // Services used for security scanning
+      "performanceTuning", // Services used for performance tuning
+      "audit",           // Services used for auditing
+      "compliance",      // Services used for compliance
+      "documentation",   // Services used for documentation
+    }
+
+
+    export enum OrganizationalServiceTypes {
+      "user",           // Services intended for regular users
+      "admin",          // Services intended for administrators
+      "superAdmin",     // Services intended for super administrators
+      "support",        // Services intended for support teams
+      "developer",      // Services intended for developers
+      "productOwner",   // Services intended for product owners
+      "stakeholder",    // Services intended for stakeholders
+      "businessAnalyst",// Services intended for business analysts
+      "qa",             // Services intended for QA teams
+      "hr",             // Services intended for human resources
+      "finance",        // Services intended for finance teams
+      "marketing",      // Services intended for marketing teams
+      "sales",          // Services intended for sales teams
+      "legal",          // Services intended for legal teams
+      "operation",      // Services intended for operations teams
+      "security",       // Services intended for security teams
+      "auditor",        // Services intended for auditors
+      "compliance",     // Services intended for compliance teams
+      "training",       // Services intended for training or education
+      "projectManagement",  // Services intended for project management teams
+      "executive",      // Services intended for executive users
+      "customer",       // Services intended for customers
+      "partner",        // Services intended for partners or third-party collaborators
+      "supplier",       // Services intended for suppliers
+      "vendor",         // Services intended for vendors
+      "consultant",     // Services intended for consultants
+    }
+
+
+    export enum DomainServiceTypes {
+      "customerManagement",   // Services for customer management
+      "productManagement",    // Services for product management
+      "inventoryManagement",  // Services for inventory management
+      "salesManagement",      // Services for sales management
+      "orderManagement",      // Services for order management
+      "paymentProcessing",    // Services for payment processing
+      "shipmentManagement",   // Services for shipment management
+      "accountManagement",    // Services for account management
+      "subscriptionManagement", // Services for subscription management
+      "contractManagement",   // Services for contract management
+      "projectManagement",    // Services for project management
+      "taskManagement",       // Services for task management
+      "resourceManagement",   // Services for resource management
+      "documentManagement",   // Services for document management
+      "contentManagement",    // Services for content management
+      "knowledgeBase",        // Services for knowledge base or FAQ
+      "reporting",            // Services for reporting
+      "analytics",            // Services for analytics
+      "marketingAutomation",  // Services for marketing automation
+      "crm",                  // Services for Customer Relationship Management
+      "erp",                  // Services for Enterprise Resource Planning
+      "hr",                   // Services for human resources operations
+      "financial",            // Services for financial operations
+      "manufacturing",        // Services for manufacturing operations
+      "logistics",            // Services for logistics operations
+      "supplyChain",          // Services for supply chain operations
+      "eCommerce",            // Services for e-commerce operations
+      "healthCare",           // Services for healthcare operations
+      "education",            // Services for education operations
+      "realEstate",           // Services for real estate operations
+      "legal",                // Services for legal operations
+      "itManagement",         // Services for IT management operations
+      "custom"                // Custom domain-specific services
+    }
+
+
+    export type ReactoryServiceTypes = FunctionalServiceTypes | 
+      LifecycleServiceTypes | 
+      OrganizationalServiceTypes | 
+      DomainServiceTypes;
+
 
     export interface IReactoryServiceDependency {
       /**
-       * The full service id
+       * The full service id that is required
        */
       id: string;
       /**
@@ -5444,23 +5636,26 @@ declare namespace Reactory {
     export type ServiceDependency = string | IReactoryServiceDependency;
 
     export type ReactoryServiceDependencies = ServiceDependency[];
-    export interface IReactoryServiceDefinition {
+
+    /**
+     * A service type can be a string or one of the pre-defined ReactoryServiceTypes
+     * The service type is used by the reactory system to dynamically find and load
+     * services based on the type.
+     */
+    export type ValidServiceType = string | ReactoryServiceTypes;
+
+    /**
+     * A service definition is used to define a service that can be loaded
+     * by the reactory system as well as activated by the system.
+     */
+    export interface IReactoryServiceDefinition<T extends IReactoryService> extends IReactoryComponentDefinition<T>      
+      {
       /**
-       * The service id is similar to a component FQN,
-       * so ids, will be used as nameSpace.name@version
-       */
-      id: string;
-      /**
-       * A easy to ready name.
-       * i.e. My Fileservice
-       */
-      name: string;
-      /**
-       * Longer description, what does the service do.
-       * i.e. My Fileservice is a specific handler for persisting uploaded files to a
-       * backup folder.
-       */
-      description: string;
+       * The ID is the full FQN of the service
+       * - this property will be deprecated in the future and replaced with the nameSpace, name and version properties
+       * */
+      id?: string;
+  
       /***
        * A function that returns an instance of the service.  Your service
        * can either run per execution or can run in the context of the service as a singleton
@@ -5470,21 +5665,36 @@ declare namespace Reactory {
        * So using singleton instances should be done with care and it is advised to run all services
        * in the execution context of the user where possible.
        */
-      service(props: IReactoryServiceProps, context: unknown): unknown;
+      service(props: IReactoryServiceProps, context: Reactory.Server.IReactoryContext): T;
       /**
-       * An optional type definition
+       * Primary service type that is used to classify the service.
        */
-      serviceType?: ReactoryServiceTypes;
+      serviceType: ValidServiceType;
+      /**
+       * Secondary service types that is used to classify the service.
+       */
+      secondaryTypes?: ValidServiceType[];
       /**
        * Depenency array
        * @example
-       * ['core.FileService@1.0.0', { id: 'core.UserService@1.0.0', alias: 'myUserService' }]
+       * [
+       *    // safe - will use the fqn to find the service and will 
+       *    // will use setFileService to set the service instance
+       *    'core.FileService@1.0.0',  
+       *    // safe - will use the fqn to find the service and will
+       *    // use the alias name to determine setter, in this instance 
+       *    // it would be setMyUserSerivce
+       *    { id: 'core.UserService@1.0.0', alias: 'myUserService' }
+       *    // unsafe - will use nlp service to find the service and will 
+       *    // createa a camel cased setter name based on the input
+       *    'report service'
+       * ]
        */
       dependencies?: ReactoryServiceDependencies;
     }
 
     export interface IReactoryServiceRegister {
-      [key: string]: IReactoryServiceDefinition;
+      [key: string]: IReactoryServiceDefinition<IReactoryService>;
     }
 
     export interface IExcelReaderService {
@@ -5578,7 +5788,7 @@ declare namespace Reactory {
 
     export interface IReactoryDefaultServiceStatic {
       new (props: IReactoryServiceProps, context: Server.IReactoryContext): IReactoryDefaultService;
-      reactory: IReactoryServiceDefinition;
+      reactory: IReactoryServiceDefinition<IReactoryService>;
     }
     /**
      * Reactory Model Registry Service is a service that is used to register models
@@ -6162,7 +6372,7 @@ declare namespace Reactory {
     }
     export interface IReactorySupportServiceStatic {
       new (): ReactorySupportServiceStatic;
-      reactory: IReactoryServiceDefinition;
+      reactory: IReactoryServiceDefinition<IReactorySupportService>;
     }
 
     export type TReactorySupportService = IReactorySupportService & IReactorySupportServiceStatic;
@@ -6273,7 +6483,7 @@ declare namespace Reactory {
 
     export interface IReactoryTranslationServiceStatic {
       new (): IReactorySupportServiceStatic;
-      reactory: IReactoryServiceDefinition;
+      reactory: IReactoryServiceDefinition<IReactoryTranslationService>;
     }
 
     export type TReactoryTranslationService = IReactoryTranslationService &
@@ -7078,7 +7288,7 @@ declare namespace Reactory {
       /**
        * The service definitions of the module.
        */
-      services?: Service.IReactoryServiceDefinition[];
+      services?: Service.IReactoryServiceDefinition<Service.IReactoryService>[];
 
       /**
        * The models of the module provided by the module
