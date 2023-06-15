@@ -37,12 +37,11 @@ const log = s => logout.push(s);
 dest.forEach((target) => {
   shell.cd(target);
   shell.echo(`Deploying lib to ${target}`);
+  if (!fs.existsSync(`${target}/lib`)) fs.mkdirSync(`${target}/lib`, { recursive: true });
   log(shell.exec(`rm -rf ${target}/node_module/@reactory`));
-  log(shell.exec(`cp ${source} ${target}/lib/${filename}`));  
+  log(shell.exec(`cp ${source} ${target}/lib/${filename}`));
   log(shell.exec(`npm i ${target}/lib/${filename} --save ${verbose ? '' : '--silent'}`));
 });
-
-
 
 if(verbose === true) {
   logout.forEach(s => console.log(s));
