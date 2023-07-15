@@ -6,6 +6,7 @@ import { Request, Application } from "express";
 import core from "express-serve-static-core";
 import fs from "fs";
 import ExcelJS from "exceljs";
+import EventEmitter from 'eventemitter3';
 import { Stream } from "stream";
 import moment, { Moment } from "moment";
 import { v4 as uuid } from "uuid";
@@ -15,7 +16,7 @@ import classNames from "classnames";
 import ObjectMapper from "object-mapper";
 import HumanNumner from "human-number";
 import HumanDate from "human-date";
-import i18n from "i18next";
+import i18n, { i18n } from "i18next";
 import {
   ApolloClient,
   ApolloQueryResult,
@@ -173,18 +174,18 @@ declare namespace Reactory {
   }
 
   /**
-   * A feature type
-   */
+  * A feature type
+  */
   export enum FeatureType {
     "string",
-     "number",
-     "boolean",
-     "date", 
-     "object", 
-     "array", 
-     "function", 
-     "symbol", 
-     "bigint"
+    "number",
+    "boolean",
+    "date",
+    "object",
+    "array",
+    "function",
+    "symbol",
+    "bigint"
   }
 
   /**
@@ -691,18 +692,116 @@ declare namespace Reactory {
       mode?: string;
     }
 
+    interface IWindowSizeSpec {
+      innerWidth: number;
+      innerHeight: number;
+      outerWidth: number;
+      outerHeight: number;
+      resolution: {
+        width: number;
+        height: number;
+      };
+      ratio: number;
+      view: "landscape" | "portrait";
+      size: "xl" | "lg" | "md" | "sm" | "xs";
+    }
+
+    
+
+    /**
+     * Reactory API interface definition. This interface defines the reactory
+     * api that is available to the client. The client api is a singleton 
+     * instance that is available to the client via the window / global object. 
+     */
     export interface IReactoryApi {
+      /**
+       * Constains the navigation history object. This object is used to
+       * navigate the application. 
+       * Future use of this object is not certain and may be removed in future.
+       */
       history: unknown;
+
+      /**
+       * Navigation function that can be used to navigate the application.
+       */
+      navigation: ReactRouterAlias.NavigateFunction;
+
+      location: ReactRouterAlias.Location;
+      /**
+       * Contains register queries, this will be deprecated in future.
+       * 
+       * @deprecated - use of this object is not recommended.
+       * */
       queries: unknown;
+      /**
+       * Contains register mutations, this will be deprecated in future.
+       * 
+       */
       mutations: unknown;
+      /**
+       * Window size internal state.
+       */
+      $windowSize: IWindowSizeSpec; 
+      /**
+       * Input props passed to the constructor
+       */
       props: unknown;
+      /**
+       * The application container
+       */
       componentRegister: IReactoryComponentRegister;
+      /**
+       * The apollo client connection
+       * */
       client: ApolloClient<NormalizedCacheObject>;
+
+      /**
+       * Initializer function that is used to initialize the reactory api.
+       * @returns 
+       */
+      init: () => Promise<void>
+
+      /**
+       * Returns the current window size specification.
+       * @returns 
+       */
+      getSizeSpec: () => IWindowSizeSpec;
+
+      /**
+       * Provides login access to the reactory api using a username and password.
+       * @param email 
+       * @param password 
+       * @returns 
+       */
       login: (email: string, password: string) => Promise<ILoginResult>;
+      /**
+       * Provides a simple register function that can be used to register a user
+       * @param username 
+       * @param password 
+       * @returns 
+       */
       register: (username: string, password: string) => void;
+      /**
+       * Provides a simple reset function that can be used to reset a user password
+       * @param email 
+       * @param password 
+       * @returns 
+       */
       reset: (email: string, password: string) => void;
+      /***
+       * Triggers a password reset email to be sent to the user.
+       */
       forgot: (email: string) => void;
+
+      /**
+       * Provides a simple logout function that can be used to logout a user
+       */
       utils: IReactoryApiUtils;
+      /**
+       * Gets company with a predefined id.
+       * @param id 
+       * @returns 
+       */
       companyWithId: (id: string) => Promise<Reactory.Models.IOrganization>;
       $func: {
         [key: string]: (kwargs: unknown[]) => unknown | Promise<unknown>;
@@ -740,12 +839,12 @@ declare namespace Reactory {
       publishingStats: boolean;
       reduxStore: unknown;
       muiTheme: MaterialCoreAlias.Theme;
-      queryObject: unknown;
+      queryObject: { [key: string]: string };
       queryString: string;
       objectToQueryString: (obj: unknown) => string;
       i18n: typeof i18next;
 
-      [key: string | symbol]: unknown;
+      // [key: string | symbol]: unknown;
 
       /**
        * Clears local application cache.
@@ -886,12 +985,39 @@ declare namespace Reactory {
        */
       forms(): void;
 
+      /**
+       * Loads a form with a gven id
+       * @param id 
+       * @param onFormUpdated 
+       */
+      form(id: string, onFormUpdated?: (form: Forms.IReactoryForm, error?: Error) => void): Forms.IReactoryForm;
+      
+      /**
+       * 
+       * @param commandId
+       * */
       raiseFormCommand(commandId: string, commandDef: unknown, formData: unknown): Promise<unknown>;
 
+      /**
+       * starts a workflow
+       * */
       startWorkFlow(workFlowId: string, data: unknown): void;
-
+      
+      /**
+       * 
+       * @param commandId 
+       * @param func 
+       */
       onFormCommandEvent(commandId: string, func: (args: unknown | unknown[]) => unknown): void;
-
+      
+      /**
+       * Checks user roles against the given roles
+       * @param itemRoles 
+       * @param userRoles 
+       * @param organization 
+       * @param business_unit 
+       * @param userMembership 
+       */
       hasRole(
         itemRoles: string[],
         userRoles?: string[],
@@ -915,8 +1041,10 @@ declare namespace Reactory {
       ): boolean;
 
       getMenus(target: unknown): unknown[];
-
-      getTheme(): unknown;
+      /**
+       * Returns the current theme
+       */
+      getTheme(): Theme;
 
       /**
        * Returns resource for the current theme key.
@@ -1126,6 +1254,115 @@ declare namespace Reactory {
       setDevelopmentMode(enabled: boolean): void;
 
       isDevelopmentMode(): boolean;
+    }
+
+    export class ReactorySDK extends EventEmitter implements IReactoryApi {
+      navigation: ReactRouterAlias.NavigateFunction;
+      location: ReactRouterAlias.Location;
+      history: unknown;
+      queries: unknown;
+      mutations: unknown;
+      props: unknown;
+      componentRegister: IReactoryComponentRegister;
+      client: ApolloClient<NormalizedCacheObject>;
+      init: () => Promise<void>;
+      getSizeSpec: () => IWindowSizeSpec;
+      login: (email: string, password: string) => Promise<ILoginResult>;
+      register: (username: string, password: string) => void;
+      reset: (email: string, password: string) => void;
+      forgot: (email: string) => void;
+      utils: IReactoryApiUtils;
+      companyWithId: (id: string) => Promise<Reactory.Models.IOrganization>;
+      $func: { [key: string]: (kwargs: unknown[]) => unknown; };
+      tokenValidated: boolean;
+      lastValidation: number;
+      tokenValid: boolean;
+      getAvatar: (profile: Reactory.Models.IUser, alt?: string) => string;
+      getOrganizationLogo: (organizationId: string, file: string) => string;
+      getUserFullName: (user: Reactory.Models.IUser) => string;
+      CDN_ROOT: string;
+      API_ROOT: string;
+      CLIENT_KEY: string;
+      CLIENT_PWD: string;
+      formSchemas: Forms.IReactoryForm[];
+      formSchemaLastFetch: moment.Moment;
+      assets: { logo: string; avatar: string; icons: { 16: string; 32: string; 44: string; 64: string; 144: string; 192: string; 512: string; }; };
+      amq: AsyncMessageQueue;
+      statistics: unknown[];
+      __form_instances: unknown[];
+      flushIntervalTimer: unknown;
+      __REACTORYAPI: boolean;
+      publishingStats: boolean;
+      reduxStore: unknown;
+      muiTheme: MaterialCoreAlias.Theme;
+      queryObject: { [key: string]: string; };
+      queryString: string;
+      objectToQueryString: (obj: unknown) => string;
+      i18n: i18n;
+      clearCache(): void;
+      createNotification(title: string, notificationProperties: unknown): void;
+      goto(where: string, state: unknown): void;
+      registerFunction(fqn: string, functionReference: (args: unknown) => unknown, requiresApi: boolean): void;
+      log(message: string, params?: unknown, kind?: string): void;
+      publishstats(): void;
+      flushstats(save: boolean): void;
+      stat(key: string, statistic: unknown): void;
+      trackFormInstance(formInstance: unknown): void;
+      graphqlMutation<T, V>(mutation: string | DocumentNode, variables: V, options?: unknown): Promise<FetchResult<T, Record<string, any>, Record<string, any>>>;
+      graphqlQuery<T, V>(query: string | DocumentNode, variables: V, options?: unknown): Promise<ApolloQueryResult<T>>;
+      afterLogin(user: ILoginResult): Promise<Reactory.Models.IApiStatus>;
+      loadComponent(Component: ValidComponent<unknown, unknown, unknown>, props: unknown, target: unknown): void;
+      loadComponentWithFQN(fqn: string, props: unknown, target: unknown): void;
+      renderForm(componentView: unknown): unknown;
+      reactoryForm(form: Forms.IReactoryForm): ReactAlias.ReactElement<any, string | ReactAlias.JSXElementConstructor<any>>;
+      forms(): void;
+      raiseFormCommand(commandId: string, commandDef: unknown, formData: unknown): Promise<unknown>;
+      startWorkFlow(workFlowId: string, data: unknown): void;
+      onFormCommandEvent(commandId: string, func: (args: unknown) => unknown): void;
+      hasRole(itemRoles: string[], userRoles?: string[], organization?: Reactory.Models.IOrganization, business_unit?: Reactory.Models.IBusinessUnit, userMembership?: Reactory.Models.IMembership[]): boolean;
+      isAnon(): boolean;
+      addRole(user: Reactory.Models.IUser, organization: Reactory.Models.IOrganization, role: string): boolean;
+      removeRole(user: Reactory.Models.IUser, organization: Reactory.Models.IOrganization, role: string): boolean;
+      getMenus(target: unknown): unknown[];
+      getTheme(): unknown;
+      getThemeResource: (path?: string) => string;
+      getCDNResource: (path: string) => string;
+      getRoutes(): Routing.IReactoryRoute[];
+      getApplicationRoles(): string[];
+      setUser(user: Reactory.Models.IApiStatus): void;
+      setAuthToken(token: string): void;
+      getAuthToken(): string;
+      setLastUserEmail(email: string): void;
+      getLastUserEmail(): void;
+      registerComponent(nameSpace: string, name: string, version: string, component: unknown, tags?: string[], roles?: string[], wrapWithApi?: boolean, connectors?: unknown[], componentType?: string): void;
+      getComponents<T>(componentFqns: unknown[]): T;
+      getComponent<T>(fqn: string): T;
+      getComponentsByType(type: string): IReactoryComponentRegister;
+      getNotFoundComponent(notFoundComponentFqn: string): ValidComponent<unknown, unknown, unknown>;
+      getNotAllowedComponent(notAllowedComponentFqn: string): ValidComponent<unknown, unknown, unknown>;
+      mountComponent(ComponentToMount: ValidComponent<unknown, unknown, unknown>, props: unknown, domNode: unknown, theme?: boolean, callback?: () => void): void;
+      showModalWithComponentFqn(componentFqn: string, title: string, props: unknown, modalProps: unknown, domNode: unknown, theme: unknown, callback: (args: unknown) => unknown): void;
+      showModalWithComponent(title: string, ComponentToMount: ValidComponent<unknown, unknown, unknown>, props: unknown, modalProps: unknown, domNode: unknown, theme: unknown, callback: (args: unknown) => unknown): void;
+      createElement(ComponentToCreate: ValidComponent<unknown, unknown, unknown>, props: unknown): unknown;
+      unmountComponent(node: unknown): boolean;
+      logout(refreshStatus: boolean): void;
+      getLastValidation(): unknown;
+      getTokenValidated(): unknown;
+      getUser(): Reactory.Models.IApiStatus;
+      saveUserLoginCredentials(provider: string, props: unknown): Promise<unknown>;
+      getUserLoginCredentials(provider: string): Promise<unknown>;
+      storeObjectWithKey(key: string, objectToStore: unknown, indexDB?: boolean, cb?: (err: unknown) => void): Promise<void>;
+      readObjectWithKey(key: string, indexDB?: boolean, cb?: (err: unknown) => void): Promise<unknown>;
+      deleteObjectWithKey(key: string, indexDB?: boolean, cb?: (err: unknown) => void): Promise<void>;
+      status(options?: IApiStatusRequestOptions): Promise<Reactory.Models.IApiStatus>;
+      validateToken(token: string): void;
+      resetPassword(resetProps: ResetPasswordProps): Promise<unknown>;
+      setViewContext(context: unknown): void;
+      getViewContext(): unknown;
+      extendClientResolver(resolver: unknown): void;
+      setDevelopmentMode(enabled: boolean): void;
+      isDevelopmentMode(): boolean; 
+
     }
 
     export interface IReactoryWiredComponent {
