@@ -6,7 +6,7 @@ import { Request, Application } from "express";
 import core from "express-serve-static-core";
 import fs from "fs";
 import ExcelJS from "exceljs";
-import EventEmitter from 'eventemitter3';
+import EventEmitter from "eventemitter3";
 import { Stream } from "stream";
 import moment, { Moment } from "moment";
 import { v4 as uuid } from "uuid";
@@ -45,6 +45,7 @@ import * as ReactRouterAlias from "react-router";
 import * as ReactRouterDomAlias from "react-router-dom";
 import i18next from "i18next";
 import { FilledInputProps, InputProps, OutlinedInputProps } from "@mui/material";
+import { type } from "os";
 
 /// <reference path="global.d.ts" />
 
@@ -145,37 +146,37 @@ declare namespace Reactory {
    * domain of function for the component
    */
   export enum ComponentDomain {
-     "model",
-     "service",
-     "component",
-     "plugin",
-     "module",
-     "function",
-     "object",
-     "enum",
-     "interface",
-     "type",
-     "directive",
-     "schema",
-     "query",
-     "mutation",
-     "subscription",
-     "resolver",
-     "action",
-     "event",
-     "eventHandler",
-     "eventListener",
-     "eventEmitter",
-     "eventDispatcher",
-     "eventSubscriber",
-     "eventPublisher",
-     "eventProducer",
-     "eventConsumer",
+    "model",
+    "service",
+    "component",
+    "plugin",
+    "module",
+    "function",
+    "object",
+    "enum",
+    "interface",
+    "type",
+    "directive",
+    "schema",
+    "query",
+    "mutation",
+    "subscription",
+    "resolver",
+    "action",
+    "event",
+    "eventHandler",
+    "eventListener",
+    "eventEmitter",
+    "eventDispatcher",
+    "eventSubscriber",
+    "eventPublisher",
+    "eventProducer",
+    "eventConsumer",
   }
 
   /**
-  * A feature type
-  */
+   * A feature type
+   */
   export enum FeatureType {
     "string",
     "number",
@@ -185,7 +186,7 @@ declare namespace Reactory {
     "array",
     "function",
     "symbol",
-    "bigint"
+    "bigint",
   }
 
   /**
@@ -214,7 +215,7 @@ declare namespace Reactory {
     /**
      * The type of the feature.  This can be used to provide additional information
      * */
-    featureType: FeatureType
+    featureType: FeatureType;
   }
 
   /**
@@ -224,48 +225,48 @@ declare namespace Reactory {
     /**
      * the key for the parameter
      */
-    key: string, 
+    key: string;
     /**
      * A human friendly name for the argument
-    */
-    name: string,
+     */
+    name: string;
     /**
      * indicates if the argument is required
      */
-    required?: boolean,
+    required?: boolean;
     /**
      * A description of the argument
      */
-    description?: string,
+    description?: string;
     /**
      * The type of the argument
      */
-    type?: string,
+    type?: string;
     /**
      * A default value for the argument
      */
-    default?: unknown
+    default?: unknown;
     /**
      * An async provider for the argument
-     * @returns 
+     * @returns
      */
-    provider?: () => Promise<unknown>
+    provider?: () => Promise<unknown>;
   }
 
   /**
    * IReactoryComponentDefintion<T> is the interface definition for a reactory component
    * that is being registered within the reactory eco system.
-   * 
-   * Generic Paramter T is the type of the component that is 
+   *
+   * Generic Paramter T is the type of the component that is
    * being defined.
    */
   export interface IReactoryComponentDefinition<T = unknown> extends IComponentFqnDefinition {
     /**
-    * Longer description, what does the component do.
-    * i.e. BackupFileservice is a specific service for persisting uploaded files to a
-    * backup folder. The service will also provide a mechanism for retrieving files
-    * from the backup folder that can be used by restore service.
-    */
+     * Longer description, what does the component do.
+     * i.e. BackupFileservice is a specific service for persisting uploaded files to a
+     * backup folder. The service will also provide a mechanism for retrieving files
+     * from the backup folder that can be used by restore service.
+     */
     description?: string;
     /**
      * A string array of that can used to identify the model
@@ -276,17 +277,17 @@ declare namespace Reactory {
      */
     stem?: string;
     /**
-     * The component reference. 
+     * The component reference.
      * Use these when using React components etc which will be activated
      * using the <Component /> syntax.
      */
     component?: T;
     /**
      * A component activator function that can be used to activate the component.
-     * @param kwargs 
-     * @returns 
+     * @param kwargs
+     * @returns
      */
-    activate?: (kwargs: { key: string, value: unknown }) => T;
+    activate?: (kwargs: { key: string; value: unknown }) => T;
     /**
      * activation kwargs descriptors
      */
@@ -416,6 +417,13 @@ declare namespace Reactory {
     }
 
     export type ValidComponent<P, S, SS> =
+      | React.FC<P>
+      | Function
+      | React.ForwardRefExoticComponent<P>
+      | React.ForwardRefRenderFunction<P, unknown>
+      | React.MemoExoticComponent<React.FC<P>>
+      | React.NamedExoticComponent<P>
+      | React.ComponentClass<P, S>
       | React.Component<P, S, SS>
       | React.FunctionComponent<P>
       | React.PureComponent<P, S, SS>;
@@ -706,17 +714,15 @@ declare namespace Reactory {
       size: "xl" | "lg" | "md" | "sm" | "xs";
     }
 
-    
-
     /**
      * Reactory API interface definition. This interface defines the reactory
-     * api that is available to the client. The client api is a singleton 
-     * instance that is available to the client via the window / global object. 
+     * api that is available to the client. The client api is a singleton
+     * instance that is available to the client via the window / global object.
      */
     export interface IReactoryApi {
       /**
        * Constains the navigation history object. This object is used to
-       * navigate the application. 
+       * navigate the application.
        * Future use of this object is not certain and may be removed in future.
        */
       history: unknown;
@@ -729,19 +735,19 @@ declare namespace Reactory {
       location: ReactRouterAlias.Location;
       /**
        * Contains register queries, this will be deprecated in future.
-       * 
+       *
        * @deprecated - use of this object is not recommended.
        * */
       queries: unknown;
       /**
        * Contains register mutations, this will be deprecated in future.
-       * 
+       *
        */
       mutations: unknown;
       /**
        * Window size internal state.
        */
-      $windowSize: IWindowSizeSpec; 
+      $windowSize: IWindowSizeSpec;
       /**
        * Input props passed to the constructor
        */
@@ -757,35 +763,35 @@ declare namespace Reactory {
 
       /**
        * Initializer function that is used to initialize the reactory api.
-       * @returns 
+       * @returns
        */
-      init: () => Promise<void>
+      init: () => Promise<void>;
 
       /**
        * Returns the current window size specification.
-       * @returns 
+       * @returns
        */
       getSizeSpec: () => IWindowSizeSpec;
 
       /**
        * Provides login access to the reactory api using a username and password.
-       * @param email 
-       * @param password 
-       * @returns 
+       * @param email
+       * @param password
+       * @returns
        */
       login: (email: string, password: string) => Promise<ILoginResult>;
       /**
        * Provides a simple register function that can be used to register a user
-       * @param username 
-       * @param password 
-       * @returns 
+       * @param username
+       * @param password
+       * @returns
        */
       register: (username: string, password: string) => void;
       /**
        * Provides a simple reset function that can be used to reset a user password
-       * @param email 
-       * @param password 
-       * @returns 
+       * @param email
+       * @param password
+       * @returns
        */
       reset: (email: string, password: string) => void;
       /***
@@ -799,8 +805,8 @@ declare namespace Reactory {
       utils: IReactoryApiUtils;
       /**
        * Gets company with a predefined id.
-       * @param id 
-       * @returns 
+       * @param id
+       * @returns
        */
       companyWithId: (id: string) => Promise<Reactory.Models.IOrganization>;
       $func: {
@@ -838,7 +844,7 @@ declare namespace Reactory {
       __REACTORYAPI: boolean;
       publishingStats: boolean;
       reduxStore: unknown;
-      muiTheme: MaterialCoreAlias.Theme;
+      muiTheme: MaterialCoreAlias.Theme & { [key: string]: unknown };
       queryObject: { [key: string]: string };
       queryString: string;
       objectToQueryString: (obj: unknown) => string;
@@ -987,13 +993,16 @@ declare namespace Reactory {
 
       /**
        * Loads a form with a gven id
-       * @param id 
-       * @param onFormUpdated 
+       * @param id
+       * @param onFormUpdated
        */
-      form(id: string, onFormUpdated?: (form: Forms.IReactoryForm, error?: Error) => void): Forms.IReactoryForm;
-      
+      form(
+        id: string,
+        onFormUpdated?: (form: Forms.IReactoryForm, error?: Error) => void,
+      ): Forms.IReactoryForm;
+
       /**
-       * 
+       *
        * @param commandId
        * */
       raiseFormCommand(commandId: string, commandDef: unknown, formData: unknown): Promise<unknown>;
@@ -1002,21 +1011,21 @@ declare namespace Reactory {
        * starts a workflow
        * */
       startWorkFlow(workFlowId: string, data: unknown): void;
-      
+
       /**
-       * 
-       * @param commandId 
-       * @param func 
+       *
+       * @param commandId
+       * @param func
        */
       onFormCommandEvent(commandId: string, func: (args: unknown | unknown[]) => unknown): void;
-      
+
       /**
        * Checks user roles against the given roles
-       * @param itemRoles 
-       * @param userRoles 
-       * @param organization 
-       * @param business_unit 
-       * @param userMembership 
+       * @param itemRoles
+       * @param userRoles
+       * @param organization
+       * @param business_unit
+       * @param userMembership
        */
       hasRole(
         itemRoles: string[],
@@ -1044,7 +1053,7 @@ declare namespace Reactory {
       /**
        * Returns the current theme
        */
-      getTheme(): Theme;
+      getTheme(): UX.IReactoryTheme;
 
       /**
        * Returns resource for the current theme key.
@@ -1254,9 +1263,20 @@ declare namespace Reactory {
       setDevelopmentMode(enabled: boolean): void;
 
       isDevelopmentMode(): boolean;
+
+      emit(event: string | symbol, ...args: unknown[]): boolean;
+      [key: string]: unknown;
     }
 
     export class ReactorySDK extends EventEmitter implements IReactoryApi {
+      [key: string]: unknown;
+      $windowSize: IWindowSizeSpec;
+      init: () => Promise<void>;
+      getSizeSpec: () => IWindowSizeSpec;
+      form(
+        id: string,
+        onFormUpdated?: (form: Forms.IReactoryForm, error?: Error) => void,
+      ): Forms.IReactoryForm;
       navigation: ReactRouterAlias.NavigateFunction;
       location: ReactRouterAlias.Location;
       history: unknown;
@@ -1265,15 +1285,13 @@ declare namespace Reactory {
       props: unknown;
       componentRegister: IReactoryComponentRegister;
       client: ApolloClient<NormalizedCacheObject>;
-      init: () => Promise<void>;
-      getSizeSpec: () => IWindowSizeSpec;
       login: (email: string, password: string) => Promise<ILoginResult>;
       register: (username: string, password: string) => void;
       reset: (email: string, password: string) => void;
       forgot: (email: string) => void;
       utils: IReactoryApiUtils;
       companyWithId: (id: string) => Promise<Reactory.Models.IOrganization>;
-      $func: { [key: string]: (kwargs: unknown[]) => unknown; };
+      $func: { [key: string]: (kwargs: unknown[]) => unknown };
       tokenValidated: boolean;
       lastValidation: number;
       tokenValid: boolean;
@@ -1286,7 +1304,19 @@ declare namespace Reactory {
       CLIENT_PWD: string;
       formSchemas: Forms.IReactoryForm[];
       formSchemaLastFetch: moment.Moment;
-      assets: { logo: string; avatar: string; icons: { 16: string; 32: string; 44: string; 64: string; 144: string; 192: string; 512: string; }; };
+      assets: {
+        logo: string;
+        avatar: string;
+        icons: {
+          16: string;
+          32: string;
+          44: string;
+          64: string;
+          144: string;
+          192: string;
+          512: string;
+        };
+      };
       amq: AsyncMessageQueue;
       statistics: unknown[];
       __form_instances: unknown[];
@@ -1294,37 +1324,69 @@ declare namespace Reactory {
       __REACTORYAPI: boolean;
       publishingStats: boolean;
       reduxStore: unknown;
-      muiTheme: MaterialCoreAlias.Theme;
-      queryObject: { [key: string]: string; };
+      muiTheme: MaterialCoreAlias.Theme & { [key: string]: unknown };
+      queryObject: { [key: string]: string };
       queryString: string;
       objectToQueryString: (obj: unknown) => string;
-      i18n: i18n;
+      i18n: typeof i18n;
       clearCache(): void;
       createNotification(title: string, notificationProperties: unknown): void;
       goto(where: string, state: unknown): void;
-      registerFunction(fqn: string, functionReference: (args: unknown) => unknown, requiresApi: boolean): void;
+      registerFunction(
+        fqn: string,
+        functionReference: (args: unknown) => unknown,
+        requiresApi: boolean,
+      ): void;
       log(message: string, params?: unknown, kind?: string): void;
       publishstats(): void;
       flushstats(save: boolean): void;
       stat(key: string, statistic: unknown): void;
       trackFormInstance(formInstance: unknown): void;
-      graphqlMutation<T, V>(mutation: string | DocumentNode, variables: V, options?: unknown): Promise<FetchResult<T, Record<string, any>, Record<string, any>>>;
-      graphqlQuery<T, V>(query: string | DocumentNode, variables: V, options?: unknown): Promise<ApolloQueryResult<T>>;
+      graphqlMutation<T, V>(
+        mutation: string | DocumentNode,
+        variables: V,
+        options?: unknown,
+      ): Promise<FetchResult<T, Record<string, any>, Record<string, any>>>;
+      graphqlQuery<T, V>(
+        query: string | DocumentNode,
+        variables: V,
+        options?: unknown,
+      ): Promise<ApolloQueryResult<T>>;
       afterLogin(user: ILoginResult): Promise<Reactory.Models.IApiStatus>;
-      loadComponent(Component: ValidComponent<unknown, unknown, unknown>, props: unknown, target: unknown): void;
+      loadComponent(
+        Component: ValidComponent<unknown, unknown, unknown>,
+        props: unknown,
+        target: unknown,
+      ): void;
       loadComponentWithFQN(fqn: string, props: unknown, target: unknown): void;
       renderForm(componentView: unknown): unknown;
-      reactoryForm(form: Forms.IReactoryForm): ReactAlias.ReactElement<any, string | ReactAlias.JSXElementConstructor<any>>;
+      reactoryForm(
+        form: Forms.IReactoryForm,
+      ): ReactAlias.ReactElement<any, string | ReactAlias.JSXElementConstructor<any>>;
       forms(): void;
       raiseFormCommand(commandId: string, commandDef: unknown, formData: unknown): Promise<unknown>;
       startWorkFlow(workFlowId: string, data: unknown): void;
       onFormCommandEvent(commandId: string, func: (args: unknown) => unknown): void;
-      hasRole(itemRoles: string[], userRoles?: string[], organization?: Reactory.Models.IOrganization, business_unit?: Reactory.Models.IBusinessUnit, userMembership?: Reactory.Models.IMembership[]): boolean;
+      hasRole(
+        itemRoles: string[],
+        userRoles?: string[],
+        organization?: Reactory.Models.IOrganization,
+        business_unit?: Reactory.Models.IBusinessUnit,
+        userMembership?: Reactory.Models.IMembership[],
+      ): boolean;
       isAnon(): boolean;
-      addRole(user: Reactory.Models.IUser, organization: Reactory.Models.IOrganization, role: string): boolean;
-      removeRole(user: Reactory.Models.IUser, organization: Reactory.Models.IOrganization, role: string): boolean;
+      addRole(
+        user: Reactory.Models.IUser,
+        organization: Reactory.Models.IOrganization,
+        role: string,
+      ): boolean;
+      removeRole(
+        user: Reactory.Models.IUser,
+        organization: Reactory.Models.IOrganization,
+        role: string,
+      ): boolean;
       getMenus(target: unknown): unknown[];
-      getTheme(): unknown;
+      getTheme(): UX.IReactoryTheme;
       getThemeResource: (path?: string) => string;
       getCDNResource: (path: string) => string;
       getRoutes(): Routing.IReactoryRoute[];
@@ -1334,26 +1396,76 @@ declare namespace Reactory {
       getAuthToken(): string;
       setLastUserEmail(email: string): void;
       getLastUserEmail(): void;
-      registerComponent(nameSpace: string, name: string, version: string, component: unknown, tags?: string[], roles?: string[], wrapWithApi?: boolean, connectors?: unknown[], componentType?: string): void;
+      registerComponent(
+        nameSpace: string,
+        name: string,
+        version: string,
+        component: unknown,
+        tags?: string[],
+        roles?: string[],
+        wrapWithApi?: boolean,
+        connectors?: unknown[],
+        componentType?: string,
+      ): void;
       getComponents<T>(componentFqns: unknown[]): T;
       getComponent<T>(fqn: string): T;
       getComponentsByType(type: string): IReactoryComponentRegister;
       getNotFoundComponent(notFoundComponentFqn: string): ValidComponent<unknown, unknown, unknown>;
-      getNotAllowedComponent(notAllowedComponentFqn: string): ValidComponent<unknown, unknown, unknown>;
-      mountComponent(ComponentToMount: ValidComponent<unknown, unknown, unknown>, props: unknown, domNode: unknown, theme?: boolean, callback?: () => void): void;
-      showModalWithComponentFqn(componentFqn: string, title: string, props: unknown, modalProps: unknown, domNode: unknown, theme: unknown, callback: (args: unknown) => unknown): void;
-      showModalWithComponent(title: string, ComponentToMount: ValidComponent<unknown, unknown, unknown>, props: unknown, modalProps: unknown, domNode: unknown, theme: unknown, callback: (args: unknown) => unknown): void;
-      createElement(ComponentToCreate: ValidComponent<unknown, unknown, unknown>, props: unknown): unknown;
+      getNotAllowedComponent(
+        notAllowedComponentFqn: string,
+      ): ValidComponent<unknown, unknown, unknown>;
+      mountComponent(
+        ComponentToMount: ValidComponent<unknown, unknown, unknown>,
+        props: unknown,
+        domNode: unknown,
+        theme?: boolean,
+        callback?: () => void,
+      ): void;
+      showModalWithComponentFqn(
+        componentFqn: string,
+        title: string,
+        props: unknown,
+        modalProps: unknown,
+        domNode: unknown,
+        theme: unknown,
+        callback: (args: unknown) => unknown,
+      ): void;
+      showModalWithComponent(
+        title: string,
+        ComponentToMount: ValidComponent<unknown, unknown, unknown>,
+        props: unknown,
+        modalProps: unknown,
+        domNode: unknown,
+        theme: unknown,
+        callback: (args: unknown) => unknown,
+      ): void;
+      createElement(
+        ComponentToCreate: ValidComponent<unknown, unknown, unknown>,
+        props: unknown,
+      ): unknown;
       unmountComponent(node: unknown): boolean;
       logout(refreshStatus: boolean): void;
       getLastValidation(): unknown;
       getTokenValidated(): unknown;
       getUser(): Reactory.Models.IApiStatus;
-      saveUserLoginCredentials(provider: string, props: unknown): Promise<unknown>;
+      saveUserLoginCredentials(provider: string, props: unknown): Promise<void>;
       getUserLoginCredentials(provider: string): Promise<unknown>;
-      storeObjectWithKey(key: string, objectToStore: unknown, indexDB?: boolean, cb?: (err: unknown) => void): Promise<void>;
-      readObjectWithKey(key: string, indexDB?: boolean, cb?: (err: unknown) => void): Promise<unknown>;
-      deleteObjectWithKey(key: string, indexDB?: boolean, cb?: (err: unknown) => void): Promise<void>;
+      storeObjectWithKey(
+        key: string,
+        objectToStore: unknown,
+        indexDB?: boolean,
+        cb?: (err: unknown) => void,
+      ): Promise<void>;
+      readObjectWithKey(
+        key: string,
+        indexDB?: boolean,
+        cb?: (err: unknown) => void,
+      ): Promise<unknown>;
+      deleteObjectWithKey(
+        key: string,
+        indexDB?: boolean,
+        cb?: (err: unknown) => void,
+      ): Promise<void>;
       status(options?: IApiStatusRequestOptions): Promise<Reactory.Models.IApiStatus>;
       validateToken(token: string): void;
       resetPassword(resetProps: ResetPasswordProps): Promise<unknown>;
@@ -1361,8 +1473,7 @@ declare namespace Reactory {
       getViewContext(): unknown;
       extendClientResolver(resolver: unknown): void;
       setDevelopmentMode(enabled: boolean): void;
-      isDevelopmentMode(): boolean; 
-
+      isDevelopmentMode(): boolean;
     }
 
     export interface IReactoryWiredComponent {
@@ -1455,7 +1566,7 @@ declare namespace Reactory {
       uiFramework?: string;
       mode?: string | "view" | "edit" | "new";
       formContext?: Partial<IReactoryFormContext<unknown>>;
-      extendSchema?: (args: unknown | unknown[]) => unknown;
+      extendSchema?: (args: unknown | unknown[]) => Reactory.Forms.IReactoryForm;
       busy?: boolean;
       events?: {
         [key: string]: (args: unknown | unknown[]) => unknown;
@@ -1463,24 +1574,24 @@ declare namespace Reactory {
       query?: {
         [key: string]: unknown;
       };
-      onChange?: (args: unknown | unknown[]) => unknown;
-      onSubmit?: (args: unknown | unknown[]) => unknown;
-      onError?: (args: unknown | unknown[]) => unknown;
-      onCommand?: (args: unknown | unknown[]) => unknown;
-      onMutateComplete?: (args: unknown | unknown[]) => unknown;
-      onQueryComplete?: (args: unknown | unknown[]) => unknown;
+      onChange?: (...args: unknown[]) => void | boolean;
+      onSubmit?: (...args: unknown[]) => void | boolean;
+      onError?: (...args: unknown[]) => void;
+      onCommand?: (...args: unknown[]) => unknown;
+      onMutateComplete?: (...args: unknown[]) => unknown;
+      onQueryComplete?: (...args: unknown[]) => unknown;
       before?: React.Component | React.ReactNode | React.ReactNodeArray;
       children?: React.ReactNode | React.ReactNodeArray;
       $route?: unknown;
       $App?: unknown;
-      validate?: (args: unknown | unknown[]) => unknown;
-      transformErrors?: (args: unknown | unknown[]) => unknown;
+      validate?: (...args: unknown[]) => unknown;
+      transformErrors?: (...args: unknown[]) => unknown;
       autoQueryDisabled?: boolean;
       routePrefix?: string;
       refCallback?: (formReference: unknown) => void;
       queryOnFormDataChange?: boolean;
-      onBeforeMutation?: (args: unknown | unknown[]) => unknown;
-      onBeforeQuery?: (args: unknown | unknown[]) => unknown;
+      onBeforeMutation?: (...args: unknown[]) => void | boolean;
+      onBeforeQuery?: (...args: unknown[]) => void | boolean;
       componentType?: string | "form" | "widget";
       watchList?: string[];
       [key: string]: unknown;
@@ -1760,7 +1871,13 @@ declare namespace Reactory {
         /**
          * Array of components to bind
          */
-        components?: unknown[];
+        components?: { 
+          component: string,
+          props?: { 
+            [key: string]: unknown;
+          },
+          propsMap?: ObjectMap;
+         }[];
         /**
          * An array of components to bind to the column
          */
@@ -1768,7 +1885,16 @@ declare namespace Reactory {
         /**
          *
          */
-        props?: unknown;
+        props?: {
+          actionButton?: {
+            icon?: string;
+            color?: string;
+            size?: string | "small" | "medium" | "large";
+            variant?: string | "text" | "outlined" | "contained";
+            text?: string;
+          };
+          [key: string]: unknown;
+        };
         /**
          *
          */
@@ -1794,9 +1920,15 @@ declare namespace Reactory {
          */
         name?: string;
         /**
+         * Parameters to pass to the event
+         */
+        params?: {
+          [key: string]: unknown;
+        }
+        /**
          * object map to use when mapping properties
          */
-        paramsMap?: unknown;
+        paramsMap?: ObjectMap;
         /**
          * when the via is set to component
          * the event that is raised
@@ -1865,6 +1997,10 @@ declare namespace Reactory {
        * Row action
        */
       export interface IMaterialTableWidgetAction {
+        /**
+         * The title to display
+         */
+        title?: string;
         /**
          * icon to use for row action
          */
@@ -2040,11 +2176,15 @@ declare namespace Reactory {
         /**
          * Toolbar static props
          */
-        toolbarProps?: unknown;
+        toolbarProps?: {
+          [key: string]: unknown;
+        };
         /**
          * Toolbar property map
          */
-        toolbarPropsMap?: unknown;
+        toolbarPropsMap?: {
+          [key: string]: unknown;
+        };
         /**
          * Where to place the toolbar
          */
@@ -2052,22 +2192,68 @@ declare namespace Reactory {
         /**
          *
          */
-        detailPanelPropsMap?: unknown;
+        detailPanelPropsMap?: ObjectMap;
         /**
          * Static properties to pass to the detail panel
          */
-        detailPanelProps?: unknown;
+        detailPanelProps?: {
+          [key: string]: unknown;
+        };
         /**
          *
          */
-        resultMap?: unknown;
+        resultMap?: ObjectMap;
         resultType?: string | "array" | "object";
         resultKey?: string;
-        variables: unknown;
+        variables: ObjectMap;
+
+        columnsProperty?: string
+
+        columnsPropertyMap?: ObjectMap;
+
+        headerStyle: {
+          [key: string]: unknown;
+        }
+
+        rowStyle: {
+          [key: string]: unknown;
+        }
+
+        selectedRowStyle: {
+          [key: string]: unknown;
+        }
+
+        altRowStyle: {
+          [key: string]: unknown;
+        }
+
+        conditionalRowStyling: {
+          field: string;
+          condition: string;
+          style: {
+            [key: string]: unknown;
+          }
+        }[]
         /**
          *
          */
         [key: string]: unknown;
+      }
+
+      export interface IAutoCompleteDropDownUIProps {
+        multiSelect: boolean;
+        onChangePropsMap: ObjectMap;
+        nullValue: any;
+        filterSelectedOptions: boolean;
+        keyField: string;
+        labelField: string;
+        matchField: string;
+        displayField: string;
+        title: string;
+      }
+
+      export interface IAutoCompleteDropDownUISchema extends Reactory.Schema.IUISchema {
+        "ui:options"?: IAutoCompleteDropDownUIProps;
       }
 
       export type SupportTicket = (props: {
@@ -2501,7 +2687,10 @@ declare namespace Reactory {
       /**
        * Apollo network options to use with the query
        */
-      options?: unknown;
+      options?: {
+        fetchPolicy?: string | "cache-first" | "cache-and-network" | "network-only" | "cache-only";
+        [key: string]: unknown;
+      };
       /**
        * A throttle in ms, if this called is to be throttled.
        * This is useful for queries or mutations that trigger on
@@ -2572,7 +2761,12 @@ declare namespace Reactory {
       /**
        * A notification object
        */
-      notification?: unknown;
+      notification?: {
+        inAppNotification?: boolean;
+        title?: string;
+        type?: string | "success" | "warning" | "danger" | "info";
+        props?: unknown;
+      };
       /**
        * Currently supported options are "merge" and "replace"
        */
@@ -2590,6 +2784,15 @@ declare namespace Reactory {
       handledBy?: string | "onChange" | "onSubmit";
 
       objectMap?: boolean;
+      /**
+       * Options object to pass to the mutation
+       */
+      options?: {
+        /**
+         * Refetech Queries that will be executed after the mutation
+         */
+        refetchQueries?: unknown[];
+      };
     }
 
     export interface IReactoryFormMutations {
@@ -2998,9 +3201,14 @@ declare namespace Reactory {
        */
       exports?: IExport[];
       /**
-       * TODO: investigate use of refresh property on Reactory Form
+       * Refresh property has several flags that can be used to
+       * triggere a form refresh.
        */
-      refresh?: unknown;
+      refresh?: {
+        onChange?: boolean;
+        onSubmit?: boolean;
+        onTimeout?: number;
+      };
       /**
        * The widget map used to map components to internal Widgets
        */
@@ -3106,6 +3314,7 @@ declare namespace Reactory {
        * If published is not set it will by default be set to true
        */
       published?: boolean;
+
       [key: string]: unknown;
     }
 
@@ -3629,12 +3838,19 @@ declare namespace Reactory {
       status: string;
       /**
        * @deprecated
+       * * - use loggedIn property instead.
        */
       firstName: string;
       /**
        * @deprecated
+       * * - use loggedIn property instead.
        */
       lastName: string;
+      /**
+       * @deprecated
+       * - use loggedIn property instead.
+       */
+      email: string;
       /**
        * All user related context information
        * is kept in this object
@@ -3648,6 +3864,18 @@ declare namespace Reactory {
        * Reactory navigation entries for this user
        */
       navigationComponents: INavigationComponentDefinition[];
+      /**
+       * Represent the routes the user has access to
+       * */
+      routes: Routing.IReactoryRoute[];
+      /**
+       * Name of the default theme in use for this application
+       */
+      theme: string;
+      /**
+       * Current Active Theme Object
+       */
+      activeTheme: Reactory.UX.IReactoryTheme;
       [key: string]: unknown;
     }
 
@@ -4181,7 +4409,7 @@ declare namespace Reactory {
       clientId: string | unknown;
       organization?: IOrganization | IOrganizationDocument;
       organizationId?: string | unknown;
-      businessUnit?: IBusinessUnitDocument;
+      businessUnit?: IBusinessUnit | IBusinessUnitDocument;
       businessUnitId?: string | unknown;
       enabled?: boolean;
       authProvider?: string;
@@ -5231,7 +5459,16 @@ declare namespace Reactory {
       assets?: IReactoryThemeAsset[];
       layouts?: IReactoryLayout[];
       colorSchemes?: IReactoryColorSchemes;
+      /**
+       * The current active palette for this context
+       */
+      palette?: Reactory.UX.IThemePalette;
       content?: unknown;
+      /**
+       * used for adding additional properties / icons / svgs etc to the theme.
+       * these have to be added on the client side via an injectable component.
+       */
+      extensions?: unknown;
     }
 
     /**
@@ -5711,153 +5948,148 @@ declare namespace Reactory {
     }
 
     export enum FunctionalServiceTypes {
-      "file",             // File handling services
-      "data",             // Data services
-      "iot",              // Internet of Things related services
-      "email",            // Email related services
-      "notification",     // Notification services
-      "integration",      // Services used for integration
-      "authentication",   // Authentication services
-      "authorization",    // Authorization services
-      "billing",          // Billing or payment related services
-      "messaging",        // Messaging services (e.g. chat, SMS)
-      "logging",          // Logging services
-      "monitoring",       // Monitoring or observability services
-      "analytics",        // Analytics services
-      "search",           // Search related services
-      "database",         // Database related services
-      "cache",            // Caching services
-      "queue",            // Queue services
-      "stream",           // Stream processing services
-      "workflow",         // Workflow services
-      "network",          // Network related services
-      "storage",          // Storage services
-      "backup",           // Backup services
-      "scheduler",        // Scheduling services
-      "location",         // Location services
-      "security",         // Security related services
-      "reporting",        // Reporting services
-      "translation",      // Translation services
-      "ocr",              // Optical Character Recognition services
-      "ai",               // AI or Machine Learning services
-      "media",            // Media processing services (audio, video)
-      "cdn",              // Content Delivery Network services
-      "session",          // Session management services
-      "configuration",    // Configuration services
-      "rateLimiting",     // Rate limiting services
-      "abTesting",        // A/B testing services
-      "featureToggle",    // Feature toggle services
-      "event",            // Event related services
-      "custom",           // Custom services
-      "template"          // Template related services
+      "file", // File handling services
+      "data", // Data services
+      "iot", // Internet of Things related services
+      "email", // Email related services
+      "notification", // Notification services
+      "integration", // Services used for integration
+      "authentication", // Authentication services
+      "authorization", // Authorization services
+      "billing", // Billing or payment related services
+      "messaging", // Messaging services (e.g. chat, SMS)
+      "logging", // Logging services
+      "monitoring", // Monitoring or observability services
+      "analytics", // Analytics services
+      "search", // Search related services
+      "database", // Database related services
+      "cache", // Caching services
+      "queue", // Queue services
+      "stream", // Stream processing services
+      "workflow", // Workflow services
+      "network", // Network related services
+      "storage", // Storage services
+      "backup", // Backup services
+      "scheduler", // Scheduling services
+      "location", // Location services
+      "security", // Security related services
+      "reporting", // Reporting services
+      "translation", // Translation services
+      "ocr", // Optical Character Recognition services
+      "ai", // AI or Machine Learning services
+      "media", // Media processing services (audio, video)
+      "cdn", // Content Delivery Network services
+      "session", // Session management services
+      "configuration", // Configuration services
+      "rateLimiting", // Rate limiting services
+      "abTesting", // A/B testing services
+      "featureToggle", // Feature toggle services
+      "event", // Event related services
+      "custom", // Custom services
+      "template", // Template related services
     }
-
-    
 
     export enum LifecycleServiceTypes {
-      "development",     // Services used during development phase
-      "testing",         // Services used during testing phase
-      "staging",         // Services used during staging phase
-      "production",      // Services used during production phase
-      "maintenance",     // Services used for maintenance
-      "debugging",       // Services used for debugging
-      "monitoring",      // Services used for monitoring application health
-      "logging",         // Services used for logging
-      "deployment",      // Services used for deployment
+      "development", // Services used during development phase
+      "testing", // Services used during testing phase
+      "staging", // Services used during staging phase
+      "production", // Services used during production phase
+      "maintenance", // Services used for maintenance
+      "debugging", // Services used for debugging
+      "monitoring", // Services used for monitoring application health
+      "logging", // Services used for logging
+      "deployment", // Services used for deployment
       "continuousIntegration", // Services used for continuous integration
-      "continuousDelivery",   // Services used for continuous delivery
-      "bugTracking",     // Services used for bug tracking
-      "issueTracking",   // Services used for issue tracking
-      "taskTracking",    // Services used for task tracking
-      "versionControl",  // Services used for version control
-      "codeReview",      // Services used for code review
-      "build",           // Services used for build process
-      "release",         // Services used for release process
-      "rollback",        // Services used for rollback process
-      "scaling",         // Services used for scaling (vertical, horizontal)
-      "loadBalancing",   // Services used for load balancing
-      "failover",        // Services used for failover process
-      "backupRestore",   // Services used for backup and restore process
+      "continuousDelivery", // Services used for continuous delivery
+      "bugTracking", // Services used for bug tracking
+      "issueTracking", // Services used for issue tracking
+      "taskTracking", // Services used for task tracking
+      "versionControl", // Services used for version control
+      "codeReview", // Services used for code review
+      "build", // Services used for build process
+      "release", // Services used for release process
+      "rollback", // Services used for rollback process
+      "scaling", // Services used for scaling (vertical, horizontal)
+      "loadBalancing", // Services used for load balancing
+      "failover", // Services used for failover process
+      "backupRestore", // Services used for backup and restore process
       "securityScanning", // Services used for security scanning
       "performanceTuning", // Services used for performance tuning
-      "audit",           // Services used for auditing
-      "compliance",      // Services used for compliance
-      "documentation",   // Services used for documentation
+      "audit", // Services used for auditing
+      "compliance", // Services used for compliance
+      "documentation", // Services used for documentation
     }
-
 
     export enum OrganizationalServiceTypes {
-      "user",           // Services intended for regular users
-      "admin",          // Services intended for administrators
-      "superAdmin",     // Services intended for super administrators
-      "support",        // Services intended for support teams
-      "developer",      // Services intended for developers
-      "productOwner",   // Services intended for product owners
-      "stakeholder",    // Services intended for stakeholders
-      "businessAnalyst",// Services intended for business analysts
-      "qa",             // Services intended for QA teams
-      "hr",             // Services intended for human resources
-      "finance",        // Services intended for finance teams
-      "marketing",      // Services intended for marketing teams
-      "sales",          // Services intended for sales teams
-      "legal",          // Services intended for legal teams
-      "operation",      // Services intended for operations teams
-      "security",       // Services intended for security teams
-      "auditor",        // Services intended for auditors
-      "compliance",     // Services intended for compliance teams
-      "training",       // Services intended for training or education
-      "projectManagement",  // Services intended for project management teams
-      "executive",      // Services intended for executive users
-      "customer",       // Services intended for customers
-      "partner",        // Services intended for partners or third-party collaborators
-      "supplier",       // Services intended for suppliers
-      "vendor",         // Services intended for vendors
-      "consultant",     // Services intended for consultants
+      "user", // Services intended for regular users
+      "admin", // Services intended for administrators
+      "superAdmin", // Services intended for super administrators
+      "support", // Services intended for support teams
+      "developer", // Services intended for developers
+      "productOwner", // Services intended for product owners
+      "stakeholder", // Services intended for stakeholders
+      "businessAnalyst", // Services intended for business analysts
+      "qa", // Services intended for QA teams
+      "hr", // Services intended for human resources
+      "finance", // Services intended for finance teams
+      "marketing", // Services intended for marketing teams
+      "sales", // Services intended for sales teams
+      "legal", // Services intended for legal teams
+      "operation", // Services intended for operations teams
+      "security", // Services intended for security teams
+      "auditor", // Services intended for auditors
+      "compliance", // Services intended for compliance teams
+      "training", // Services intended for training or education
+      "projectManagement", // Services intended for project management teams
+      "executive", // Services intended for executive users
+      "customer", // Services intended for customers
+      "partner", // Services intended for partners or third-party collaborators
+      "supplier", // Services intended for suppliers
+      "vendor", // Services intended for vendors
+      "consultant", // Services intended for consultants
     }
-
 
     export enum DomainServiceTypes {
-      "customerManagement",   // Services for customer management
-      "productManagement",    // Services for product management
-      "inventoryManagement",  // Services for inventory management
-      "salesManagement",      // Services for sales management
-      "orderManagement",      // Services for order management
-      "paymentProcessing",    // Services for payment processing
-      "shipmentManagement",   // Services for shipment management
-      "accountManagement",    // Services for account management
+      "customerManagement", // Services for customer management
+      "productManagement", // Services for product management
+      "inventoryManagement", // Services for inventory management
+      "salesManagement", // Services for sales management
+      "orderManagement", // Services for order management
+      "paymentProcessing", // Services for payment processing
+      "shipmentManagement", // Services for shipment management
+      "accountManagement", // Services for account management
       "subscriptionManagement", // Services for subscription management
-      "contractManagement",   // Services for contract management
-      "projectManagement",    // Services for project management
-      "taskManagement",       // Services for task management
-      "resourceManagement",   // Services for resource management
-      "documentManagement",   // Services for document management
-      "contentManagement",    // Services for content management
-      "knowledgeBase",        // Services for knowledge base or FAQ
-      "reporting",            // Services for reporting
-      "analytics",            // Services for analytics
-      "marketingAutomation",  // Services for marketing automation
-      "crm",                  // Services for Customer Relationship Management
-      "erp",                  // Services for Enterprise Resource Planning
-      "hr",                   // Services for human resources operations
-      "financial",            // Services for financial operations
-      "manufacturing",        // Services for manufacturing operations
-      "logistics",            // Services for logistics operations
-      "supplyChain",          // Services for supply chain operations
-      "eCommerce",            // Services for e-commerce operations
-      "healthCare",           // Services for healthcare operations
-      "education",            // Services for education operations
-      "realEstate",           // Services for real estate operations
-      "legal",                // Services for legal operations
-      "itManagement",         // Services for IT management operations
-      "custom"                // Custom domain-specific services
+      "contractManagement", // Services for contract management
+      "projectManagement", // Services for project management
+      "taskManagement", // Services for task management
+      "resourceManagement", // Services for resource management
+      "documentManagement", // Services for document management
+      "contentManagement", // Services for content management
+      "knowledgeBase", // Services for knowledge base or FAQ
+      "reporting", // Services for reporting
+      "analytics", // Services for analytics
+      "marketingAutomation", // Services for marketing automation
+      "crm", // Services for Customer Relationship Management
+      "erp", // Services for Enterprise Resource Planning
+      "hr", // Services for human resources operations
+      "financial", // Services for financial operations
+      "manufacturing", // Services for manufacturing operations
+      "logistics", // Services for logistics operations
+      "supplyChain", // Services for supply chain operations
+      "eCommerce", // Services for e-commerce operations
+      "healthCare", // Services for healthcare operations
+      "education", // Services for education operations
+      "realEstate", // Services for real estate operations
+      "legal", // Services for legal operations
+      "itManagement", // Services for IT management operations
+      "custom", // Custom domain-specific services
     }
 
-
-    export type ReactoryServiceTypes = FunctionalServiceTypes | 
-      LifecycleServiceTypes | 
-      OrganizationalServiceTypes | 
-      DomainServiceTypes;
-
+    export type ReactoryServiceTypes =
+      | FunctionalServiceTypes
+      | LifecycleServiceTypes
+      | OrganizationalServiceTypes
+      | DomainServiceTypes;
 
     export interface IReactoryServiceDependency {
       /**
@@ -5885,14 +6117,26 @@ declare namespace Reactory {
      * A service definition is used to define a service that can be loaded
      * by the reactory system as well as activated by the system.
      */
-    export interface IReactoryServiceDefinition<T extends IReactoryService> extends IReactoryComponentDefinition<T>      
-      {
+    export interface IReactoryServiceDefinition<T extends IReactoryService>
+      extends IReactoryComponentDefinition<T> {
       /**
        * The ID is the full FQN of the service
        * - this property will be deprecated in the future and replaced with the nameSpace, name and version properties
        * */
-      id?: string;
-  
+      id?: FQN | string;
+
+      /**
+       * You can provide a list of aliases for the service.
+       * For instance, the ReactoryFileService has an alias of "FileService".
+       */
+      alias?: FQN[] | string[];
+
+      /**
+       * If there are more than one service of the same fqn, you can provide an order
+       * to indicate which service should be used with the highest priority.
+       */
+      order?: number;
+
       /***
        * A function that returns an instance of the service.  Your service
        * can either run per execution or can run in the context of the service as a singleton
@@ -5915,14 +6159,14 @@ declare namespace Reactory {
        * Depenency array
        * @example
        * [
-       *    // safe - will use the fqn to find the service and will 
-       *    // will use setFileService to set the service instance
-       *    'core.FileService@1.0.0',  
        *    // safe - will use the fqn to find the service and will
-       *    // use the alias name to determine setter, in this instance 
+       *    // will use setFileService to set the service instance
+       *    'core.FileService@1.0.0',
+       *    // safe - will use the fqn to find the service and will
+       *    // use the alias name to determine setter, in this instance
        *    // it would be setMyUserSerivce
        *    { id: 'core.UserService@1.0.0', alias: 'myUserService' }
-       *    // unsafe - will use nlp service to find the service and will 
+       *    // unsafe - will use nlp service to find the service and will
        *    // createa a camel cased setter name based on the input
        *    'report service'
        * ]
@@ -8151,19 +8395,21 @@ declare namespace Reactory {
         | "subtitle2"
         | "body1"
         | "body2";
-      iconProps?: unknown;
+      iconProps?: { style: any, [key: string]: any };
       renderHtml?: boolean;
-      titleProps?: unknown;
-      bodyProps?: unknown;
-      containerProps?: unknown;
+      titleProps?: { style: any, [key: string]: any };
+      bodyProps?: { style: any, [key: string]: any };
+      containerProps?: { style: any, [key: string]: any };
       componentFqn?: string;
-      componentProps?: unknown;
-      componentPropsMap?: unknown;
+      componentProps?: { style: any, [key: string]: any };
+      componentPropsMap?: ObjectMap;
       /**
        * If true, the label will be rendered as a link that will copy the value
        * of the field to the clipboard.
        */
       copyToClipboard?: boolean;
+
+      'ui:graphql'?: Reactory.Forms.IReactoryFormQuery;
     }
 
     export interface IUIUTextFieldOptions extends IUISchemaOptions {
