@@ -2994,6 +2994,12 @@ declare namespace Reactory {
       type:
         | string
         | "css"
+        | "font"
+        | "json"
+        | "xml"
+        | "text"
+        | "html"
+        | "pdf"
         | "script"
         | "image"
         | "video"
