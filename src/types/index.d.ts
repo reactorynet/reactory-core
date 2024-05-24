@@ -3676,6 +3676,137 @@ declare namespace Reactory {
       [key: string]: unknown;
     }
 
+    /**
+     * ReactoryFormGeneratorFunction is a function that will generate an array of forms
+     */
+    export type ReactoryFormGeneratorFunction<TOptions> = (options: TOptions) => Promise<IReactoryForm[]>;
+
+    /**
+     * ReactoryFormGeneratorFunctionSync is a function that will generate an array of forms
+     */
+    export type ReactoryFormGeneratorFunctionSync<TOptions> = (options: TOptions) => IReactoryForm[];
+
+    /**
+     * IReactoryFormGenerator is a structure that defines a form generator
+     * that can be used to generate a form.
+     */
+    export interface IReactoryFormGenerator<TOptions> { 
+      /**
+       * The id of the form
+       * i.e. mysql.CustomerTableForm@1.0.0
+       */
+      id: FQN;
+
+      /**
+       * A form FQN that can be used to collect options for the form generator
+       */
+      optionsForm?: FQN;
+
+      /**
+       * Options that will be passed to the generator. If the optionsForm is defined
+       * then the options will be collected from the form.
+       */
+      options?: TOptions;
+
+      /**
+       * The service that will be used to generate the form
+       */
+      service: FQN;
+      
+      /**
+       * The method that will be used to generate the form
+       */
+      method: string;
+    }
+
+    /**
+     * Defines the interface for the ReactoryFormGeneratorOptions
+     * this will be used to pass options to the form generator function
+     * that will be used to generate the form.
+     */
+    export interface IReactoryRelationDatabaseFormGeneratorOptions { 
+      
+      dialect?: string | "mysql" | "postgres" | "mssql" | "sqlite" | "oracle";
+
+      /**
+       * the connection id / or connection string to use 
+       * for the postgres database driver. This connection 
+       * must exist for the partner / reactory client that is 
+       * executing the generator.
+       */
+      connection: string;
+      
+      /**
+       * If set to true the generator will create the underlying schema
+       * for the form if the table does not exist.
+       */
+      createIfAbsent?: boolean
+
+      /**
+       * A list of in which the database table will be created if not present.
+       */
+      creationEnvironments?: string[];
+
+      /*
+       * The table name that will be used to generate the form.
+       * Setting this value will take precedence over other properties like view
+       * or query. 
+       */
+      table?: string;
+
+      /**
+       * The column definitions for the table and the form.
+       * 
+       * The only required property is the name of the column, all other properties
+       * are optional and only use if createIfAbsent is set to true. 
+       * 
+       * This feature is experimental and should only be used in development environments.
+       * This can be used to create a form from a table that does not exist.
+       */
+      columns?: [
+        {
+          /**
+           * The name of the column
+           */
+          name: string;
+          type?: string;
+          required?: boolean;
+          unique?: boolean;
+          primaryKey?: boolean;
+          autoIncrement?: boolean;
+          defaultValue?: unknown;
+          comment?: string;
+          foreignKey?: {
+            table: string;
+            column: string;
+            onDelete?: string | "cascade" | "restrict" | "set null" | "no action";
+            onUpdate?: string | "cascade" | "restrict" | "set null" | "no action";
+          }
+        }
+      ]
+
+      /**
+       * The name of the view that the form will be generated from.
+       */
+      view?: string;
+
+      /**
+       * A query that will be used to generated the form
+       */
+      query?: string;
+
+      /**
+       * Provides fine grained control of ux output
+       */
+      outputs?: {
+        /**
+         * The types of ui schemas is expected to be generated for this 
+         * form.
+         */
+        uiSchemaStereotypes?: Schema.UISchemaStereotype[];
+      }
+    }
+
     export type ReactoryFormContext<TData, TAdditional extends Array<unknown>> = {
       signature: string;
       version: number;
@@ -8162,6 +8293,8 @@ declare namespace Reactory {
       }
     }
 
+    export type TReactoryForm = Forms.IReactoryForm | Forms.IReactoryFormGenerator;
+
     /**
      * The module data structure represents a collection of all the services,
      * workflows, forms, and PDF definitions.
@@ -8210,7 +8343,7 @@ declare namespace Reactory {
       /**
        * The forms of the module.
        */
-      forms?: Forms.IReactoryForm[];
+      forms?: TReactoryForm[];
 
       /**
        * The PDF definitions of the module.
@@ -8706,6 +8839,13 @@ declare namespace Reactory {
       routes: unknown[];
 
       /**
+       * We can provide application specific forms. These forms
+       * can either be statically defined forms or dynamically
+       * generated forms.
+       */
+      forms?: TReactoryForm[];
+
+      /**
        * enabled authentication configuration
        */
       auth_config?: IReactoryAuthConfiguration<unknown>[];
@@ -9082,6 +9222,8 @@ declare namespace Reactory {
       | IUIUTextFieldOptions
       | IUINumberFieldUIOptions
       | IUISchemaOptions;
+
+    export type UISchemaStereotype = "grid" | "tab" | "accordion" | "stepped" | "list" | "paged"; 
 
     /**
      * Place holder interface
