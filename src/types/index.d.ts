@@ -51,6 +51,7 @@ import * as ReactRouterAlias from "react-router";
 import * as ReactRouterDomAlias from "react-router-dom";
 import i18next from "i18next";
 import { FilledInputProps, InputProps, OutlinedInputProps } from "@mui/material";
+import { ReadLine } from "readline";
 
 /// <reference path="global.d.ts" />
 
@@ -382,7 +383,8 @@ declare namespace Reactory {
      * @param kwargs
      * @returns
      */
-    activate?: (kwargs: { key: string; value: unknown }) => T;
+    activate?: (kwargs: { key: string; value: unknown }, 
+      context?: Reactory.Server.IReactoryContext) => T;
     /**
      * activation kwargs descriptors
      */
@@ -397,6 +399,21 @@ declare namespace Reactory {
      * Indicates whether or not to overwrite an existing component
      */
     overwrite?: boolean;
+
+    /**
+     * If the component needs to be aware of the reactory 
+     * startup process then this function can be used to 
+     * provide a hook into the startup process.
+     * @returns Promise<void>
+     */
+    onStartup?: (context: Reactory.Server.IReactoryContext) => Promise<void>;
+    /**
+     * If the component needs to be aware of the reactory
+     * shutdown process then this function can be used to
+     * provide a hook into the shutdown process.
+     * @returns Promise<void>
+     */
+    onShutdown?: (context: Reactory.Server.IReactoryContext) => Promise<void>;
     /**
      * The roles that are allowed to access this component
      * if not provided the system will assume that the component
@@ -3690,39 +3707,35 @@ declare namespace Reactory {
      * IReactoryFormGenerator is a structure that defines a form generator
      * that can be used to generate a form.
      */
-    export interface IReactoryFormGenerator<TOptions> { 
+    export interface IReactoryFormGeneratorConfig<TOptions> { 
       /**
-       * The id of the form
-       * i.e. mysql.CustomerTableForm@1.0.0
+       * The id of the generator to use
+       * i.e. "core-generators.PostgresTable@1.0.0"  
        */
       id: FQN;
-
-      /**
-       * A form FQN that can be used to collect options for the form generator
-       */
-      optionsForm?: FQN;
 
       /**
        * Options that will be passed to the generator. If the optionsForm is defined
        * then the options will be collected from the form.
        */
       options?: TOptions;
-
-      /**
-       * The service that will be used to generate the form
-       */
-      service: FQN;
-      
-      /**
-       * The method that will be used to generate the form
-       */
-      method: string;
     }
+    
+    export type TFormGeneratorProps<TOptions> = Reactory.Service.IReactoryServiceProps & IReactoryFormGeneratorConfig<TOptions>
+
+    export class ReactoryFormGeneratorService<TFormGeneratorProps, 
+      TContext> extends 
+      Reactory.Service.ReactoryService<TFormGeneratorProps, TContext> {             
+        generate(): Promise<IReactoryForm[]>;
+      }
 
     /**
      * Defines the interface for the ReactoryFormGeneratorOptions
      * this will be used to pass options to the form generator function
      * that will be used to generate the form.
+     * 
+     * requires a connection id or connection string to the database 
+     * and a dialect.
      */
     export interface IReactoryRelationDatabaseFormGeneratorOptions { 
       
@@ -4443,6 +4456,7 @@ declare namespace Reactory {
       options?: unknown;
     }
 
+  
     export interface IReactoryClient extends Server.IReactoryClientConfig {
       createdAt?: Date;
       //deafult user accounts to create at startup
@@ -4458,7 +4472,52 @@ declare namespace Reactory {
       setPassword: (password: string) => void;
     }
 
-    export interface IReactoryClientDocument extends Mongoose.Document, IReactoryClient {}
+    export class ReactoryClientDocument extends 
+      Mongoose.Document<ObjectId, unknown, IReactoryClient> implements IReactoryClient
+    { 
+      constructor(client?: Partial<IReactoryClient>);
+      
+      [key: string]: unknown;
+      createdAt?: Date;
+      updatedAt?: Date;
+      colorScheme: (colorvalue: string) => string[];
+      getSetting: <T>(name: string, defaultValue?: T, create?: boolean, componentFqn?: string) => { data: T; };
+      getDefaultUserRoles: () => string[];
+      setPassword: (password: string) => void;
+      key: string;
+      name: string;
+      username: string;
+      email: string;
+      salt: string;
+      password: string;
+      avatar: string;
+      siteUrl: string;
+      emailSendVia: string;
+      emailApiKey: string;
+      resetEmailRoute: string;
+      menus: UX.IReactoryMenuConfig[];
+      applicationRoles: string[];
+      users?: Server.IStaticallyLoadedUser[];
+      components?: unknown[];
+      theme?: string;
+      themes?: UX.IReactoryTheme[];
+      plugins?: Platform.IReactoryApplicationPlugin[];
+      billingType?: string;
+      modules?: unknown[];
+      routes: unknown[];
+      forms?: any[];
+      auth_config?: Server.IReactoryAuthConfiguration<unknown>[];
+      settings?: Server.IReactoryClientSetting<unknown>[];
+      featureFlags?: Server.IReactoryFeatureFlagValue<unknown>[];
+      whitelist?: string[];
+      allowCustomTheme?: boolean;
+    }
+
+    export interface IReactoryClientDocument extends Mongoose.Document<ObjectId, unknown, IReactoryClient>, IReactoryClient {
+      new(): ReactoryClientDocument;
+    }
+
+    export type ReactoryClientModel = Mongoose.Model<IReactoryClient>;
 
     export type TReactoryClient = IReactoryClient | IReactoryClientDocument;
 
@@ -5260,10 +5319,14 @@ declare namespace Reactory {
     }
 
     //@ts-ignore
-    export interface IUserDocument extends Mongoose.Document<ObjectId>, IUser {
+    export interface IUserDocument extends Mongoose.Document<ObjectId, {}, IUser>, IUser {
       memberships: Mongoose.Types.Array<Reactory.Models.IMembershipDocument>;
       validatePassword: (password: string) => Promise<boolean>;
     }
+
+    export type ReactoryUserModel = Mongoose.Model<IUser, {}, { 
+      validatePassword: (password: string) => Promise<boolean>
+    }, Mongoose.Schema<IUser>>;
 
     export interface IUserDemographics {
       race: string | ObjectId | IDemographic | IDemographicDocument;
@@ -6519,6 +6582,10 @@ declare namespace Reactory {
     }
 
     export enum LifecycleServiceTypes {
+      "codeGeneration", // Services used for code generation
+      "codeAnalysis", // Services used for code analysis
+      "schemaGeneration", // Services used for schema generation
+      "schemaValidation", // Services used for schema validation
       "development", // Services used during development phase
       "testing", // Services used during testing phase
       "staging", // Services used during staging phase
@@ -6742,13 +6809,18 @@ declare namespace Reactory {
     export type TContext<T> = Server.IReactoryContext & T;
 
     export class ReactoryService<TP, TC> implements IReactoryService {
-      constructor(props: TProps<TP>, context: TContext<TC>);
-      [key: string]: unknown;
+      
       nameSpace: string;
       name: string;
       version: string;
       props: TP;
-      toString?: (includeVersion?: boolean) => string;
+      context: TC;
+      [key: string]: unknown;
+
+      
+      toString(includeVersion: boolean = true): string {
+        return `${this.nameSpace}.${this.name}${includeVersion ? `@${this.version}` : ''}`;
+      };
     }
 
     /**
@@ -6761,7 +6833,7 @@ declare namespace Reactory {
        * their errors internally and return a rejected promise
        * if the service is not able to start.
        */
-      onStartup(): Promise<void>;
+      onStartup(context: Reactory.Server.IReactoryContext): Promise<void>;
     }
 
     /**
@@ -8293,7 +8365,7 @@ declare namespace Reactory {
       }
     }
 
-    export type TReactoryForm = Forms.IReactoryForm | Forms.IReactoryFormGenerator;
+    export type TReactoryForm = Forms.IReactoryForm | Forms.ReactoryFormGenerator<unknown>;
 
     /**
      * The module data structure represents a collection of all the services,
@@ -8390,6 +8462,13 @@ declare namespace Reactory {
       cli?: Reactory.IReactoryComponentDefinition<(kwargs: string[], context: Reactory.Server.IReactoryContext) => Promise<void>>[];
     }
 
+    export type ReactoryServiceFilter = {
+      id?: string;
+      name?: string;
+      type?: string;
+      lifeCycle?: Reactory.Service.SERVICE_LIFECYCLE;
+    }
+
     /**
      * The IReactoryContext is the object should be passed through to all levels of the execution.
      * It contains the logged in user, the memberships and several shortcut utilities that allows
@@ -8408,6 +8487,12 @@ declare namespace Reactory {
        * The partner / application that is currently executing
        */
       partner: Reactory.Models.IReactoryClientDocument;
+
+      /**
+       * The host indicates the current execution environment.
+       */
+      host: string | "cli" | "express" | "grpc" | "test" | "workflow" | "web";
+
       /**
        * Service activator function that creates / returns a service with the given
        * fqn (fully qualified name)
@@ -8420,9 +8505,14 @@ declare namespace Reactory {
       getService<T extends Reactory.Service.IReactoryService>(
         fqn: string,
         props?: unknown,
-        context?: Server.IReactoryContext,
         lifeCycle?: Service.SERVICE_LIFECYCLE,
       ): T;
+
+      /**
+       * list all services that are available to the current context.
+       * @param filter - the filter to apply to the services
+       */
+      listServices(filter: ReactoryServiceFilter): Reactory.Service.IReactoryServiceDefinition<any>[];
 
       /**
        * An array of all the services that are available to the current context
@@ -8471,11 +8561,11 @@ declare namespace Reactory {
       /**
        * The current response object
        */
-      $response: Response;
+      response?: Express.Response;
       /**
        * The current request object
        */
-      $request: Request;
+      request?: Express.Request;
       /**
        * current color palette
        */
@@ -8564,7 +8654,18 @@ declare namespace Reactory {
        */
       removeValue(key: string): Promise<void>;
 
+      /**
+       * Extends the Context with extensions using the 
+       * client configuration.
+       */
+      extend<TResult extends IReactoryContext>(): Promise<TResult>;
+
+      // additional context properties
       [key: string]: unknown;
+    }
+
+    export interface IReactoryCliContext {
+      readline: ReadLine;
     }
 
     export interface IExecutionContextProvider {
