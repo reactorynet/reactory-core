@@ -3729,6 +3729,49 @@ declare namespace Reactory {
         generate(): Promise<IReactoryForm[]>;
       }
 
+    export interface IReactoryDatabaseEntityColumn {
+      name: string;
+      type?: string;
+      required?: boolean;
+      unique?: boolean;
+      primaryKey?: boolean;
+      autoIncrement?: boolean;
+      defaultValue?: unknown;
+      comment?: string;
+      foreignKey?: {
+        table: string;
+        column: string;
+        onDelete?: string | "cascade" | "restrict" | "set null" | "no action";
+        onUpdate?: string | "cascade" | "restrict" | "set null" | "no action";
+      }
+    }
+    export interface IReactoryDatabaseEntity {
+      /**
+       * The type of entity to generate
+       */
+      type: string | "table" | "view" | "query" | "function";
+      /**
+       * The schema name of the entity, if not provided the default schema will be used.
+       * This schema is usually the database schema name to which the entity belongs.
+       */
+      schema?: string;
+      /**
+       * name of the entity
+       */
+      name: string;
+      /**
+       * columns to include
+       */
+      columns?: IReactoryDatabaseEntityColumn[];
+      /**
+       * Query to use to generate the entity.
+       */
+      query?: string;
+      /**
+       * The stereo types to generate for the entity
+       */
+      stereoTypes?: Reactory.Schema.UISchemaStereotype[];       
+    }
     /**
      * Defines the interface for the ReactoryFormGeneratorOptions
      * this will be used to pass options to the form generator function
@@ -3738,9 +3781,6 @@ declare namespace Reactory {
      * and a dialect.
      */
     export interface IReactoryRelationDatabaseFormGeneratorOptions { 
-      
-      dialect?: string | "mysql" | "postgres" | "mssql" | "sqlite" | "oracle";
-
       /**
        * the connection id / or connection string to use 
        * for the postgres database driver. This connection 
@@ -3750,71 +3790,16 @@ declare namespace Reactory {
       connection: string;
       
       /**
-       * If set to true the generator will create the underlying schema
-       * for the form if the table does not exist.
+       * The entities to use for the form generation
        */
-      createIfAbsent?: boolean
-
-      /**
-       * A list of in which the database table will be created if not present.
-       */
-      creationEnvironments?: string[];
-
-      /*
-       * The table name that will be used to generate the form.
-       * Setting this value will take precedence over other properties like view
-       * or query. 
-       */
-      table?: string;
-
-      /**
-       * The column definitions for the table and the form.
-       * 
-       * The only required property is the name of the column, all other properties
-       * are optional and only use if createIfAbsent is set to true. 
-       * 
-       * This feature is experimental and should only be used in development environments.
-       * This can be used to create a form from a table that does not exist.
-       */
-      columns?: [
-        {
-          /**
-           * The name of the column
-           */
-          name: string;
-          type?: string;
-          required?: boolean;
-          unique?: boolean;
-          primaryKey?: boolean;
-          autoIncrement?: boolean;
-          defaultValue?: unknown;
-          comment?: string;
-          foreignKey?: {
-            table: string;
-            column: string;
-            onDelete?: string | "cascade" | "restrict" | "set null" | "no action";
-            onUpdate?: string | "cascade" | "restrict" | "set null" | "no action";
-          }
-        }
-      ]
-
-      /**
-       * The name of the view that the form will be generated from.
-       */
-      view?: string;
-
-      /**
-       * A query that will be used to generated the form
-       */
-      query?: string;
-
+      entities: IReactoryDatabaseEntity[];
       /**
        * Provides fine grained control of ux output
        */
       outputs?: {
         /**
          * The types of ui schemas is expected to be generated for this 
-         * form.
+         * form. If defined here these will be used as the default stereotypes
          */
         uiSchemaStereotypes?: Schema.UISchemaStereotype[];
       }
@@ -5149,6 +5134,8 @@ declare namespace Reactory {
      */
     export interface IUserCreateParams extends IUserBio, IUserContact {
       organization?: TOrganization;
+      roles? : string[];
+      password?: string;
     }
 
     export interface IUserIl8n {
@@ -8222,12 +8209,40 @@ declare namespace Reactory {
        * The level of logging the application should use
        */
       LOG_LEVEL: string;
+      /**
+       * Postgres host
+       */
+      REACTORY_POSTGRES_HOST: string
+      /**
+       * Postgres port
+       */
+      REACTORY_POSTGRES_PORT: string
+      /**
+       * Postgres user
+       */
+      REACTORY_POSTGRES_USER: string
+      /**
+       * Postgres password
+       */
+      REACTORY_POSTGRES_PASSWORD: string
+      /**
+       * Postgres database
+       */
+      REACTORY_POSTGRES_DB: string
+      /**
+       * Morgan middleware enabled state
+       */
+      MORGAN_MIDDLEWARE_ENABLED: boolean
+      /**
+       * Filters to apply when logging network requests
+       */
+      MORGAN_MIDDLEWARE_FILTERS: string
     }
 
     /**
      * Utility type for extending the environment with additional properties
      */
-    type ExtendedEnvironment<Additional extends unknown[]> = NodeJS.ProcessEnv & Additional[number];
+    export type ExtendedEnvironment<Additional extends unknown[]> = NodeJS.ProcessEnv & Additional[number];
 
     export interface ReactoryEmailEnvironment {
       /**
@@ -8365,7 +8380,8 @@ declare namespace Reactory {
       }
     }
 
-    export type TReactoryForm = Forms.IReactoryForm | Forms.ReactoryFormGenerator<unknown>;
+    export type TReactoryForm = Forms.IReactoryForm;
+
 
     /**
      * The module data structure represents a collection of all the services,
@@ -8668,7 +8684,7 @@ declare namespace Reactory {
       readline: ReadLine;
     }
 
-    export interface IExecutionContextProvider {
+    export interface IExecutionContextProvider extends Reactory.Service.IReactoryService {
       getContext(currentContent: IReactoryContext): Promise<IReactoryContext>;
     }
 
@@ -8681,6 +8697,10 @@ declare namespace Reactory {
        * Email address
        */
       email: string;
+      /**
+       * Unique username for the user
+       */
+      username?: string
       /**
        * The roles granted to this user
        */
@@ -9324,7 +9344,7 @@ declare namespace Reactory {
       | IUINumberFieldUIOptions
       | IUISchemaOptions;
 
-    export type UISchemaStereotype = "grid" | "tab" | "accordion" | "stepped" | "list" | "paged"; 
+    export type UISchemaStereotype = "grid" | "tab" | "accordion" | "stepped" | "list" | "paged" | "default" ; 
 
     /**
      * Place holder interface
