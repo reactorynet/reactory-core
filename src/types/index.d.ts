@@ -311,7 +311,7 @@ declare namespace Reactory {
     /**
      * The type of the feature.  This can be used to provide additional information
      * */
-    featureType: FeatureType;
+    featureType: string | FeatureType;
   }
 
   /**
@@ -425,7 +425,7 @@ declare namespace Reactory {
      * The component domain is a string that is used to identify
      * the domain of function for the component
      */
-    domain?: ComponentDomain;
+    domain?: string | ComponentDomain;
   }
 
   /**
@@ -3737,6 +3737,7 @@ declare namespace Reactory {
       primaryKey?: boolean;
       autoIncrement?: boolean;
       defaultValue?: unknown;
+      readonly?: boolean; 
       comment?: string;
       foreignKey?: {
         table: string;
@@ -3788,6 +3789,12 @@ declare namespace Reactory {
        * executing the generator.
        */
       connection: string;
+
+      /**
+       * The name of the module in which the generated
+       * forms will be placed.
+       */
+      module?: string;
       
       /**
        * The entities to use for the form generation
@@ -8210,6 +8217,27 @@ declare namespace Reactory {
        */
       LOG_LEVEL: string;
       /**
+       * The root home folder for the application
+       */
+      REACTORY_HOME: string;
+      /**
+       * REACTORY_DATA folder is where the application stores
+       * data that is not part of the core application.
+       */
+      REACTORY_DATA: string;
+      /**
+       * The root folder the server application 
+       */
+      REACTORY_SERVER: string;
+      /**
+       * The folder where the PWA client application is located
+       */
+      REACTORY_CLIENT: string;
+      /**
+       * The folder where PWA client plugins are located
+       */
+      REACTORY_PLUGINS: string;
+      /**
        * Postgres host
        */
       REACTORY_POSTGRES_HOST: string
@@ -8253,7 +8281,7 @@ declare namespace Reactory {
       /**
        * The default method to use for sending email
        */
-      REACTORY_EMAIL_SEND_VIA?: string | "sendgrid" | "smtp" | "microsoft" | "google";
+      REACTORY_EMAIL_SEND_VIA?: string | "postal" | "sendgrid" | "smtp" | "microsoft" | "google" | "mailgun" | "aws" | "sendmail" | "mandrill" | "postmark" | "sparkpost" | "elasticemail";
     }
 
     /**

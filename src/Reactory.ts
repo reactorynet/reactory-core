@@ -187,6 +187,14 @@ enum DomainServiceTypes {
   "custom", // Custom domain-specific services
 }
 
+
+export type ReactoryServiceTypes =
+| FunctionalServiceTypes
+| LifecycleServiceTypes
+| OrganizationalServiceTypes
+| DomainServiceTypes;
+
+
 abstract class ReactoryService<P, C>  implements Reactory.Service.IReactoryService {
   description?: string;
   tags?: string[];
