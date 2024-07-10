@@ -8704,6 +8704,18 @@ declare namespace Reactory {
        */
       extend<TResult extends IReactoryContext>(): Promise<TResult>;
 
+      /**
+       * Executes a target promise as a specific user account.
+       * @param user 
+       * @param target 
+       */
+      runAs<TResult>(user: Models.IUserDocument, target: Promise<TResult>): Promise<TResult>;
+
+      /**
+       * Executes a target promise using the system user account
+       * @param target 
+       */
+      runAsSystem<TResult>(target: Promise<TResult>): Promise<TResult>;
       // additional context properties
       [key: string]: unknown;
     }
