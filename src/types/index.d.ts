@@ -5315,7 +5315,7 @@ declare namespace Reactory {
     //@ts-ignore
     export interface IUserDocument extends Mongoose.Document<ObjectId, {}, IUser>, IUser {
       memberships: Mongoose.Types.Array<Reactory.Models.IMembershipDocument>;
-      validatePassword: (password: string) => Promise<boolean>;
+      validatePassword: (password: string) => boolean;
     }
 
     export type ReactoryUserModel = Mongoose.Model<IUser, {}, { 
