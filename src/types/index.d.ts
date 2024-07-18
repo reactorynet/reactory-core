@@ -2,7 +2,7 @@
 import { ObjectId } from "mongodb";
 import Mongoose from "mongoose";
 import { MimeType } from "chartjs-node-canvas";
-import { Request, Application } from "express";
+import { Request, Application, Response, Router } from "express";
 import core from "express-serve-static-core";
 import fs from "fs";
 import ExcelJS from "exceljs";
@@ -8410,6 +8410,7 @@ declare namespace Reactory {
 
     export type TReactoryForm = Forms.IReactoryForm;
 
+    export type TCli = Reactory.IReactoryComponentDefinition<(kwargs: string[], context: Reactory.Server.IReactoryContext) => Promise<void>>;
 
     /**
      * The module data structure represents a collection of all the services,
@@ -8477,6 +8478,13 @@ declare namespace Reactory {
       grpc?: IReactoryGrpcConfig[];
 
       /**
+       * Route handlers providerd by the module
+       */
+      routes?: {
+        [key: string]: Router
+      },
+
+      /**
        * The models of the module provided by the module
        */
       models?: Reactory.IReactoryComponentDefinition<unknown>[];
@@ -8503,7 +8511,12 @@ declare namespace Reactory {
        * These can be executed from the command line using the
        * `reactory-cli` nameSpace.name --arg1 --arg2=value
        */
-      cli?: Reactory.IReactoryComponentDefinition<(kwargs: string[], context: Reactory.Server.IReactoryContext) => Promise<void>>[];
+      cli?: TCli[];
+
+      /**
+       * The module entry point path.
+       */
+      path?: string
     }
 
     export type ReactoryServiceFilter = {
@@ -8605,11 +8618,11 @@ declare namespace Reactory {
       /**
        * The current response object
        */
-      response?: Express.Response;
+      response?: Response;
       /**
        * The current request object
        */
-      request?: Express.Request;
+      request?: ReactoryExpressRequest;
       /**
        * current color palette
        */

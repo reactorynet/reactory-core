@@ -27,7 +27,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "rollup": "rollup --config rollup.config.mjs --bundleConfigAsCjs",
-    "package": "npm pack --pack-destination $REACTORY_PLUGINS/artifacts",
+    "package": "yarn pack --pack-destination $REACTORY_PLUGINS/artifacts",
     "build:install": "npm-run-all clean rollup docs package deploy:local",
     "deploy:local": "NODE_PATH=./scripts npx babel-node ./scripts/deploy.js --presets @babel/env",  
     "test": "jest",
