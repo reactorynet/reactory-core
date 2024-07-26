@@ -1,6 +1,6 @@
 {
   "name": "@reactory/reactory-core",
-  "version": "1.1.0-RC1",
+  "version": "1.1.0-RC1-19d2cf",
   "displayName": "Reactory Core",
   "description": "Reactory Core - shared across all platforms and services. Contains type definitions, constants and shared components for the reactory eco-system.",
   "main": "dist/reactory.core.js",
@@ -27,9 +27,12 @@
   "scripts": {
     "clean": "rm -rf dist",
     "rollup": "rollup --config rollup.config.mjs --bundleConfigAsCjs",
-    "package": "yarn pack --pack-destination $REACTORY_PLUGINS/artifacts",
-    "build:install": "npm-run-all clean rollup docs package deploy:local",
-    "deploy:local": "NODE_PATH=./scripts npx babel-node ./scripts/deploy.js --presets @babel/env",  
+    "package": "npm-run-all build:version-read",
+    "build:package": "yarn pack --filename $REACTORY_PLUGINS/artifacts/$REACTORY_CORE_PACKAGE_FILENAME",
+    "build:install": "npm-run-all clean build:version rollup docs package deploy:local",
+    "build:version-write": "node ./scripts/version.mjs",
+    "build:version-read": "node ./scripts/version.mjs --read",
+    "deploy:local": "NODE_PATH=./scripts npx babel-node ./scripts/deploy.js --presets @babel/env",
     "test": "jest",
     "lint": "eslint . --fix",
     "docs": "jsdoc -c jsdoc.json"
@@ -38,7 +41,7 @@
     "type": "git",
     "url": "https://bitbucket.org/reactory/reactory-core.git"
   },
-  "dependencies": {    
+  "dependencies": {
     "reflect-annotations": "4.0.0-beta.1",
     "reflect-args": "2.0.0",
     "reflect-metadata": "0.1.13"
@@ -108,8 +111,8 @@
     "d3-cloud": "1.2.7",
     "d3-color": "3.1.0",
     "d3-force": "3.0.0",
-    "d3-delaunay": "6.0.4",    
-    "eslint": "8.56.0",
+    "d3-delaunay": "6.0.4",
+    "eslint": "9.7.0",
     "eventemitter3": "5.0.1",
     "exceljs": "4.4.0",
     "graphql": "16.9.0",

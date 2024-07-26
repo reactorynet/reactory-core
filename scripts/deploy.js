@@ -39,7 +39,7 @@ dest.forEach((target) => {
   shell.echo(`Deploying lib to ${target}`);
   log(shell.exec(`rm -rf ${target}/node_module/@reactory`));
   log(shell.exec(`cp ${source} ${target}/lib/${filename}`));  
-  log(shell.exec(`npm i ${target}/lib/${filename} --save ${verbose ? '' : '--silent'}`));
+  log(shell.exec(`yarn add ${target}/lib/${filename} --save ${verbose ? '' : '> /dev/null 2>&1'}`));
 });
 
 

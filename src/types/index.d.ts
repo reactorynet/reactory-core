@@ -5519,8 +5519,20 @@ declare namespace Reactory {
       ObjectId,
       unknown,
       IReactorySupportTicket
-    > {
+    > implements IReactorySupportTicket {
       constructor();
+      request: string;
+      requestType: string;
+      description: string;
+      status: string;
+      reference: string;
+      createdBy: ObjectId | IUser | IUserDocument;
+      createdDate: Date;
+      updatedDate: Date;
+      assignedTo: ObjectId | IUser | IUserDocument;
+      formId: string;
+      comments: IReactoryComment[] | IReactoryCommentDocument[];
+      documents: IReactoryFile[] | IReactoryFileModel[];
     }
 
     export interface IReactorySupportTicketDocument
@@ -8418,6 +8430,12 @@ declare namespace Reactory {
      */
     export interface IReactoryModule {
       /**
+       * The id for the module. This should correlate with the 
+       * folder name that the module is in. If the id is not set it
+       * will be generated and set at runtime.
+       */
+      id?: string
+      /**
        * The namespace of the module.
        */
       nameSpace: string;
@@ -8512,11 +8530,6 @@ declare namespace Reactory {
        * `reactory-cli` nameSpace.name --arg1 --arg2=value
        */
       cli?: TCli[];
-
-      /**
-       * The module entry point path.
-       */
-      path?: string
     }
 
     export type ReactoryServiceFilter = {
@@ -9145,16 +9158,18 @@ declare namespace Reactory {
       $id: string;
     }
 
-    type GridSize = number | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-    export interface IGridLayout {
-      [key: string]: {
+    export type GridSize = number | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+
+    export interface IGridFieldLayout {
         xs?: GridSize;
         sm?: GridSize;
         md?: GridSize;
         lg?: GridSize;
         xl?: GridSize;
         style?: unknown;
-      };
+      }
+    export interface IGridLayout {
+      [key: string]: IGridFieldLayout
     }
 
     export interface IGridOptions {
