@@ -8678,6 +8678,13 @@ declare namespace Reactory {
         businessUnit?: Models.IBusinessUnitDocument,
       ) => boolean;
 
+      hasAnyRole: (
+        roles: string[],
+        partner?: Models.IPartner,
+        organization?: Models.IOrganizationDocument,
+        businessUnit?: Models.IBusinessUnitDocument,
+      ) => boolean;
+
       /**
        * Internationalisation Service / Translation Service.
        */

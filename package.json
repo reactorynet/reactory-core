@@ -1,6 +1,6 @@
 {
   "name": "@reactory/reactory-core",
-  "version": "1.1.0-RC1-19d2cf",
+  "version": "1.1.0-RC1-0175f3",
   "displayName": "Reactory Core",
   "description": "Reactory Core - shared across all platforms and services. Contains type definitions, constants and shared components for the reactory eco-system.",
   "main": "dist/reactory.core.js",
@@ -25,17 +25,16 @@
     "^reactory/reactory-core(.*)$": "<rootDir>/src/"
   },
   "scripts": {
-    "clean": "rm -rf dist",
-    "rollup": "rollup --config rollup.config.mjs --bundleConfigAsCjs",
-    "package": "npm-run-all build:version-read",
-    "build:package": "yarn pack --filename $REACTORY_PLUGINS/artifacts/$REACTORY_CORE_PACKAGE_FILENAME",
-    "build:install": "npm-run-all clean build:version rollup docs package deploy:local",
+    "build:clean": "rm -rf dist && rm -rf docs && rm -rf *.tgz",
+    "build:rollup": "rollup --config rollup.config.mjs --bundleConfigAsCjs",
+    "build:package": "node ./scripts/package.mjs",
+    "build:install": "npm-run-all build:clean build:version-write build:rollup build:docs build:package deploy:local",
     "build:version-write": "node ./scripts/version.mjs",
     "build:version-read": "node ./scripts/version.mjs --read",
     "deploy:local": "NODE_PATH=./scripts npx babel-node ./scripts/deploy.js --presets @babel/env",
     "test": "jest",
-    "lint": "eslint . --fix",
-    "docs": "jsdoc -c jsdoc.json"
+    "build:lint": "eslint . --fix",
+    "build:docs": "jsdoc -c jsdoc.json"
   },
   "repository": {
     "type": "git",

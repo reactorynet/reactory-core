@@ -44,12 +44,16 @@ function getNextVersion() {
   packageJSON.version = version;
   
   fs.writeFileSync(PACKAGE_FILE, JSON.stringify(packageJSON, null, 2));
+  console.log(packageJSON.version);
+  shell.exec(`export REACTORY_CORE_PACKAGE_FILENAME=reactory-reactory-core-${packageJSON.version}.tgz`);
 }
 
 if (process.argv[2] === "--read") {
   const packageJSON = JSON.parse(fs.readFileSync(PACKAGE_FILE).toString());
   console.log(packageJSON.version);
-  shell.exec(`export REACTORY_CORE_PACKAGE_FILENAME=reactory-reactory-core-${packageJSON.version}.tgz`);
+  const result = shell.exec(`export REACTORY_CORE_PACKAGE_FILENAME=reactory-reactory-core-${packageJSON.version}.tgz`);
+  //console.log(`export REACTORY_CORE_PACKAGE_FILENAME=reactory-reactory-core-${packageJSON.version}.tgz`);
+  console.log(result.stdout);
 } else {
   getNextVersion();
 }
