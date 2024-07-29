@@ -529,6 +529,7 @@ declare namespace Reactory {
     }
 
     export type ValidComponent<P, S, SS> =
+      | React.ComponentType<P>
       | React.FC<P>
       | Function
       | React.ForwardRefExoticComponent<P>
@@ -2693,6 +2694,116 @@ declare namespace Reactory {
   }
 
   export namespace Forms {
+
+    export interface IFieldProps<TData, 
+      TSchema = Schema.AnySchema, 
+      TUISchema = Schema.IUISchema> {
+        schema: TSchema;
+        uiSchema: TUISchema;
+        idSchema: Schema.IDSchema;
+        formData: TData;
+    }
+
+    export type ReactoryFieldComponent<TData, TSchema, TUISchema> = 
+      Reactory.Client.ValidComponent<IFieldProps<TData, TSchema, TUISchema>, unknown, unknown>;
+
+    export type ReactoryObjectFieldComponent<TObj extends object> = ReactoryFieldComponent<TObj, Schema.IObjectSchema, Schema.IUISchema>;
+    export type ReactoryArrayFieldComponent<TArray extends unknown[]> = ReactoryFieldComponent<TArray, Schema.IArraySchema, Schema.IUISchema>;
+    export type ReactoryStringFieldComponent = ReactoryFieldComponent<string, Schema.IStringSchema, Schema.IUISchema>;
+    export type ReactoryNumberFieldComponent = ReactoryFieldComponent<number, Schema.INumberSchema, Schema.IUISchema>;
+    export type ReactoryBooleanFieldComponent = ReactoryFieldComponent<boolean, Schema.IBooleanSchema, Schema.IUISchema>;
+    export type ReactorySchemaFieldComponent = ReactoryFieldComponent<Schema.AnySchema, Schema.AnySchema, Schema.IUISchema>;
+    export type ReactoryTitleFieldComponent = ReactoryFieldComponent<string, Schema.IStringSchema, Schema.IUISchema>;
+    export type ReactortDescriptionFieldComponent = ReactoryFieldComponent<string, Schema.IStringSchema, Schema.IUISchema>;
+    export type ReactoryGridLayoutComponent = ReactoryFieldComponent<object, Schema.IObjectSchema, Schema.IUISchema>;
+    export type ReactoryTabbedLayoutComponent = ReactoryFieldComponent<object, Schema.IObjectSchema, Schema.IUISchema>;
+
+
+    export interface IReactoryFields {
+      ArrayField: ReactoryFieldComponent<Array<unknown>, Schema.IArraySchema, Schema.IUISchema>;
+      BooleanField: ReactoryFieldComponent<boolean, Schema.IBooleanSchema, Schema.IUISchema>;
+      DescriptionField: ReactoryFieldComponent<string, Schema.IStringSchema, Schema.IUISchema>;
+      NumberField: ReactoryFieldComponent<number, Schema.INumberSchema, Schema.IUISchema>;
+      ObjectField: ReactoryFieldComponent<object, Schema.IObjectSchema, Schema.IUISchema>;
+      SchemaField: ReactoryFieldComponent<Schema.AnySchema, Schema.AnySchema, Schema.IUISchema>;
+      StringField: ReactoryFieldComponent<string, Schema.IStringSchema, Schema.IUISchema>;
+      TitleField: ReactoryFieldComponent<string, Schema.IStringSchema, Schema.IUISchema>;
+      GridLayout: ReactoryFieldComponent<object, Schema.IObjectSchema, Schema.IUISchema> | ReactoryFieldComponent<Array<unknown>, Schema.IArraySchema, Schema.IUISchema>;
+      TabbedLayout: ReactoryFieldComponent<object, Schema.IObjectSchema, Schema.IUISchema> | ReactoryFieldComponent<Array<unknown>, Schema.IArraySchema, Schema.IUISchema>;      
+      UnsupportedField: Reactory.Client.AnyValidComponent;
+      [key: string]: Reactory.Client.AnyValidComponent;
+    }
+
+    /**
+     * Defines the propert
+     */
+    export interface ISchemaFormProps<TData> {
+      idSchema?: Reactory.Schema.IDSchema,
+      schema: Reactory.Schema.ISchema,
+      uiSchema: Reactory.Schema.IUISchema,
+      idPrefix?: string,
+      errorSchema?: any,
+      formData?: TData,
+      widgets?: {
+        [key: string]: React.Component | React.FC | React.PureComponent
+      },
+      fields?: object,
+      ArrayFieldTemplate?: () => any,
+      ObjectFieldTemplate?: () => any,
+      FieldTemplate?: () => any,
+      ErrorList?: React.FC<any>,
+      onBlur?: (...args: any) => void
+      onFocus?: (...args: any) => void,
+      onChange?: (formData: any) => any,
+      onError?: (errors: any[], erroSchema?: any) => any,
+      showErrorList?: boolean,
+      onSubmit?: (form: any) => void,
+      id?: string,
+      className?: string,
+      chilren?: any
+      name?: string,
+      method?: string,
+      target?: string,
+      action?: string,
+      autocomplete?: string,
+      enctype?: string,
+      acceptcharset?: string,
+      noValidate?: boolean,
+      noHtml5Validate?: boolean,
+      liveValidate?: boolean,
+      toolbarPosition?: string
+      validate?: (formData: any, schema?: Reactory.Schema.ISchema, validationType?: string) => { errors: any, errorSchema: any },
+      transformErrors?: (errors: any) => any,
+      safeRenderCompletion?: boolean,
+      formContext: Reactory.Forms.ReactoryFormContext<any, any>,
+      disabled?: boolean
+      style?: any,  
+      [key: string]: any
+    }
+
+    export interface IReactoryWidgets { 
+      [key: string]: Reactory.Client.AnyValidComponent;
+    }
+
+    export interface IReactoryTemplates { 
+      ArrayFieldTemplate: Reactory.Client.AnyValidComponent;
+        DateFieldTemplate: Reactory.Client.AnyValidComponent;
+        FieldTemplate: Reactory.Client.AnyValidComponent;
+        FormErrorList: Reactory.Client.AnyValidComponent;
+        ObjectTemplate: Reactory.Client.AnyValidComponent;
+        [key: string]: Reactory.Client.AnyValidComponent;
+    }
+
+    export interface IReactoryFormUtilitiesRegistry {
+      fields: IReactoryFields;
+      widgets: IReactoryWidgets;
+      templates: IReactoryTemplates;
+      formContext: Reactory.Client.IReactoryFormContext<unknown>;
+      definitions: {
+        [key: string]: Reactory.Schema.AnySchema;
+      }
+    }
+
     /**
      * A Reactory UX Package is consist of fields
      * widgets and templates.
@@ -2705,37 +2816,15 @@ declare namespace Reactory {
       /**
        * A property containing the fields
        */
-      fields?: {
-        ArrayField: Reactory.Client.AnyValidComponent;
-        BooleanField: Reactory.Client.AnyValidComponent;
-        DescriptionField: Reactory.Client.AnyValidComponent;
-        NumberField: Reactory.Client.AnyValidComponent;
-        ObjectField: Reactory.Client.AnyValidComponent;
-        SchemaField: Reactory.Client.AnyValidComponent;
-        StringField: Reactory.Client.AnyValidComponent;
-        TitleField: Reactory.Client.AnyValidComponent;
-        GridLayout: Reactory.Client.AnyValidComponent;
-        TabbedLayout: Reactory.Client.AnyValidComponent;
-        UnsupportedField: Reactory.Client.AnyValidComponent;
-        [key: string]: Reactory.Client.AnyValidComponent;
-      };
+      fields?: IReactoryFields;
       /**
        * A property containing custom widgets
        */
-      widgets?: {
-        [key: string]: Reactory.Client.AnyValidComponent;
-      };
+      widgets?: IReactoryWidgets;
       /**
        * A property for field templates.
        */
-      templates?: {
-        ArrayFieldTemplate: Reactory.Client.AnyValidComponent;
-        DateFieldTemplate: Reactory.Client.AnyValidComponent;
-        FieldTemplate: Reactory.Client.AnyValidComponent;
-        FormErrorList: Reactory.Client.AnyValidComponent;
-        ObjectTemplate: Reactory.Client.AnyValidComponent;
-        [key: string]: Reactory.Client.AnyValidComponent;
-      };
+      templates?: IReactoryTemplates;
       /**
        * for future use
        */
@@ -9515,6 +9604,16 @@ declare namespace Reactory {
       [key: string]: ISchema;
     }
 
+    /**
+     * Reference schema elements
+     */
+    export interface IReferenceSchema {
+      /**
+       * The reference to the schema element that represents this schema element.
+       */
+      $ref: string;
+    }
+
     export interface ISchema {
       /**
        * The type defines the field type of the Schema element.
@@ -9526,12 +9625,6 @@ declare namespace Reactory {
        * - boolean
        * - array
        * - null
-       * - function
-       * - promise
-       * ### NOTE
-       * function | promise !!warning - experimental feature do not use unless trained in the
-       * art of function types and promises. The function type will allow you to bind
-       * a function to an object using a FQN
        */
       type: string | "object" | "string" | "number" | "boolean" | "array" | "null" | string[];
       /**
@@ -9547,7 +9640,7 @@ declare namespace Reactory {
        */
       description?: string | undefined;
       /**
-       * default valueu for the schema element
+       * default value for the schema element
        */
       default?: unknown | undefined;
       /**
@@ -9565,15 +9658,11 @@ declare namespace Reactory {
       /**
        * Schema definitions
        */
-      definitions?: unknown;
-      /**
-       * items schema
-       */
-      items?: ISchema;
+      definitions?: unknown;      
       /**
        * format type
        */
-      format?: string | "email" | "password" | "date" | "date-time";
+      format?: string | "email" | "password" | "date" | "date-time" | "phone" | "url" | "uri" | "uuid" | "ipv4" | "ipv6";
       /**
        * valid enum values
        */
@@ -9595,13 +9684,6 @@ declare namespace Reactory {
     }
 
     /**
-     * Reference schema elements
-     */
-    export interface IReferenceSchema {
-      $ref: string;
-    }
-
-    /**
      *
      */
     export interface IStringSchema extends ISchema {
@@ -9611,10 +9693,16 @@ declare namespace Reactory {
       pattern?: string | RegExp;
     }
 
+    export interface IBooleanSchema extends ISchema {
+      type: "boolean";
+      default?: boolean;      
+    }
+
     export interface INumberSchema extends ISchema {
       type: "number";
       minimum?: number;
       maximum?: number;
+      default?: number;
     }
 
     export interface IDateSchema extends ISchema {
@@ -9622,6 +9710,7 @@ declare namespace Reactory {
       format: "date";
       minimum?: number | string;
       maximum?: number | string;
+      default?: number | string;
     }
 
     export interface IDateTimeSchema extends ISchema {
@@ -9629,11 +9718,13 @@ declare namespace Reactory {
       format: "date-time";
       minimum?: number | string;
       maximum?: number | string;
+      default?: number | string;
     }
 
     export interface IObjectSchema extends ISchema {
       type: "object";
-      properties?: ISchemaObjectProperties;
+      properties: ISchemaObjectProperties;
+      default?: object | unknown;
     }
 
     export interface IArraySchema extends ISchema {
@@ -9648,10 +9739,16 @@ declare namespace Reactory {
     }
 
     export interface IObjectProperties {
-      [field: string]: ISchema;
+      [field: string]: AnySchema;
     }
 
-    export type AnySchema = ISchema | IObjectSchema | IArraySchema;
+    export type AnySchema = ISchema
+      | IStringSchema
+      | INumberSchema
+      | IDateSchema
+      | IDateTimeSchema
+      | IObjectSchema
+      | IArraySchema;
 
     /**
      * Resolver interface that returns a schema
