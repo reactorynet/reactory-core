@@ -16,7 +16,7 @@ import classNames from "classnames";
 import ObjectMapper from "object-mapper";
 import HumanNumner from "human-number";
 import HumanDate from "human-date";
-import i18n from "i18next";
+import i18n, { TOptions as I18nFormatOptions } from "i18next";
 import {
   ApolloClient,
   ApolloQueryResult,
@@ -93,32 +93,32 @@ declare namespace Reactory {
    * A user role type, this is essentially a string
    * but we use {@link REACTORY_CORE_ROLES} to provide
    * a set of predefined roles that can be used.
-   * 
+   *
    * The user role can also be a fully qualified name
    * that represents a role function that will be used
    * to determine if a user has access to a component.
-   * 
+   *
    * @example "namespace.RoleName@1.0.0"
-   * 
-   * The function should return a boolean value that indicates 
+   *
+   * The function should return a boolean value that indicates
    * if the user has access to the component or not.
-   * 
+   *
    * @example
    * ```typescript
    * // Example of a role function for the ADMIN role on the reactory server
-   * const hasRoleForComponent = (props: Reactory.Server.RoleCheckProps) => { 
+   * const hasRoleForComponent = (props: Reactory.Server.RoleCheckProps) => {
    *  const { user } = props.context;
    *  return user.roles.includes('ADMIN');
    * }
    * ```
-   * 
+   *
    * The role function should be registered with the reactory server
    * and then the fully qualified name can be used to provide access
    * control to component access on the server side.
-   * 
+   *
    * A similar function can be used on the client side to provide access
    * control to components on client applications.
-   * 
+   *
    * @example
    * ```typescript
    * // Example of a role function for the ADMIN role on the reactory client
@@ -135,16 +135,16 @@ declare namespace Reactory {
 
   /**
    * Transform an object from one shape to another.
-   * 
+   *
    * @param sourceObject - The source object that is being transformed
    * @param sourceKey - The key of the source object
    * @param targetObject - The target object that is being transformed
    * @param targetKey - The key of the target object
-   * 
+   *
    * @returns The transformed object
-   * 
+   *
    * @example
-   * 
+   *
    * ```typescript
    * const transform = (sourceObject, sourceKey, targetObject, targetKey) => {
    *  targetObject[targetKey] = sourceObject[sourceKey];
@@ -155,11 +155,12 @@ declare namespace Reactory {
     sourceObject: TIN,
     sourceKey: string,
     targetObject: TOUT,
-    targetKey: string) => TOUT | Promise<TOUT>;
+    targetKey: string,
+  ) => TOUT | Promise<TOUT>;
   /**
    * Object Transform object is used for fine grained control over an object data set.
    */
-  export interface ObjectTransform<TIN, TOUT>{
+  export interface ObjectTransform<TIN, TOUT> {
     key: string;
     transform(): TransformFunction<TIN, TOUT>;
     transformFQN?: FQN;
@@ -167,11 +168,10 @@ declare namespace Reactory {
     default(): TransformFunction<TIN, TOUT>;
   }
 
-
   /**
    * Object Map Entry is used to map a source object to a target object.
    * example:
-   * 
+   *
    * ```typescript
    * {
    * key: "sourceKey",
@@ -200,11 +200,11 @@ declare namespace Reactory {
   };
 
   /**
-   * Basic construct of a fully qualified name 
+   * Basic construct of a fully qualified name
    */
   export interface IFQNObject {
     /**
-     * nameSpace is used as large grouping. Cannot contain "." 
+     * nameSpace is used as large grouping. Cannot contain "."
      */
     nameSpace: string;
     /**
@@ -215,16 +215,16 @@ declare namespace Reactory {
      * The version part of the component id
      */
     version: string;
-  } 
+  }
 
   /**
    * A struct representation of IComponentFqnDefinition
    */
-  export interface IComponentFqnDefinition extends IFQNObject {    
+  export interface IComponentFqnDefinition extends IFQNObject {
     /**
-     * toString function to provide a string formatted version of the 
+     * toString function to provide a string formatted version of the
      * component id.
-     * @param includeVersion 
+     * @param includeVersion
      */
     toString?(includeVersion?: boolean): string;
   }
@@ -383,8 +383,10 @@ declare namespace Reactory {
      * @param kwargs
      * @returns
      */
-    activate?: (kwargs: { key: string; value: unknown }, 
-      context?: Reactory.Server.IReactoryContext) => T;
+    activate?: (
+      kwargs: { key: string; value: unknown },
+      context?: Reactory.Server.IReactoryContext,
+    ) => T;
     /**
      * activation kwargs descriptors
      */
@@ -401,8 +403,8 @@ declare namespace Reactory {
     overwrite?: boolean;
 
     /**
-     * If the component needs to be aware of the reactory 
-     * startup process then this function can be used to 
+     * If the component needs to be aware of the reactory
+     * startup process then this function can be used to
      * provide a hook into the startup process.
      * @returns Promise<void>
      */
@@ -528,20 +530,9 @@ declare namespace Reactory {
       options: NotificationOptions;
     }
 
-    export type ValidComponent<P, S, SS> =
-      | React.ComponentType<P>
-      | React.FC<P>
-      | Function
-      | React.ForwardRefExoticComponent<P>
-      | React.ForwardRefRenderFunction<P, unknown>
-      | React.MemoExoticComponent<React.FC<P>>
-      | React.NamedExoticComponent<P>
-      | React.ComponentClass<P, S>
-      | React.Component<P, S, SS>
-      | React.FunctionComponent<P>
-      | React.PureComponent<P, S, SS>;
+    export type ValidComponent<P> = React.ComponentType<P>;
 
-    export type AnyValidComponent = ValidComponent<unknown, unknown, unknown> | "() => JSX.Element";
+    export type AnyValidComponent = ValidComponent<unknown> | "() => JSX.Element";
 
     export type ValidModule = AnyValidComponent | unknown | Module;
 
@@ -766,12 +757,12 @@ declare namespace Reactory {
       version: string;
       /**
        * The component reference.
-       * A component can be a function, class, module, object or 
+       * A component can be a function, class, module, object or
        * any valid javascript value.
        * */
       component: T;
       /**
-       * Component tags, these are used to provide additional data 
+       * Component tags, these are used to provide additional data
        * about the component.
        */
       tags?: string[];
@@ -1097,11 +1088,7 @@ declare namespace Reactory {
        * @param props
        * @param target
        */
-      loadComponent(
-        Component: ValidComponent<unknown, unknown, unknown>,
-        props: unknown,
-        target: unknown,
-      ): void;
+      loadComponent(Component: ValidComponent<unknown>, props: unknown, target: unknown): void;
 
       /**
        *
@@ -1289,14 +1276,12 @@ declare namespace Reactory {
        *
        * @param notFoundComponentFqn Returns a component to use a
        */
-      getNotFoundComponent(notFoundComponentFqn: string): ValidComponent<unknown, unknown, unknown>;
+      getNotFoundComponent(notFoundComponentFqn: string): ValidComponent<unknown>;
 
-      getNotAllowedComponent(
-        notAllowedComponentFqn: string,
-      ): ValidComponent<unknown, unknown, unknown>;
+      getNotAllowedComponent(notAllowedComponentFqn: string): ValidComponent<unknown>;
 
       mountComponent(
-        ComponentToMount: ValidComponent<unknown, unknown, unknown>,
+        ComponentToMount: ValidComponent<unknown>,
         props: unknown,
         domNode: unknown,
         theme?: boolean,
@@ -1315,7 +1300,7 @@ declare namespace Reactory {
 
       showModalWithComponent(
         title: string,
-        ComponentToMount: ValidComponent<unknown, unknown, unknown>,
+        ComponentToMount: ValidComponent<unknown>,
         props: unknown,
         modalProps: unknown,
         domNode: unknown,
@@ -1323,10 +1308,7 @@ declare namespace Reactory {
         callback: (args: unknown | unknown[]) => unknown,
       ): void;
 
-      createElement(
-        ComponentToCreate: ValidComponent<unknown, unknown, unknown>,
-        props: unknown,
-      ): unknown;
+      createElement(ComponentToCreate: ValidComponent<unknown>, props: unknown): unknown;
 
       unmountComponent(node: unknown): boolean;
 
@@ -1490,11 +1472,7 @@ declare namespace Reactory {
         options?: unknown,
       ): Promise<ApolloQueryResult<T>>;
       afterLogin(user: ILoginResult): Promise<Reactory.Models.IApiStatus>;
-      loadComponent(
-        Component: ValidComponent<unknown, unknown, unknown>,
-        props: unknown,
-        target: unknown,
-      ): void;
+      loadComponent(Component: ValidComponent<unknown>, props: unknown, target: unknown): void;
       loadComponentWithFQN(fqn: string, props: unknown, target: unknown): void;
       renderForm(componentView: unknown): unknown;
       reactoryForm(
@@ -1547,12 +1525,10 @@ declare namespace Reactory {
       getComponents<T>(componentFqns: unknown[]): T;
       getComponent<T>(fqn: string): T;
       getComponentsByType(type: string): IReactoryComponentRegister;
-      getNotFoundComponent(notFoundComponentFqn: string): ValidComponent<unknown, unknown, unknown>;
-      getNotAllowedComponent(
-        notAllowedComponentFqn: string,
-      ): ValidComponent<unknown, unknown, unknown>;
+      getNotFoundComponent(notFoundComponentFqn: string): ValidComponent<unknown>;
+      getNotAllowedComponent(notAllowedComponentFqn: string): ValidComponent<unknown>;
       mountComponent(
-        ComponentToMount: ValidComponent<unknown, unknown, unknown>,
+        ComponentToMount: ValidComponent<unknown>,
         props: unknown,
         domNode: unknown,
         theme?: boolean,
@@ -1569,17 +1545,14 @@ declare namespace Reactory {
       ): void;
       showModalWithComponent(
         title: string,
-        ComponentToMount: ValidComponent<unknown, unknown, unknown>,
+        ComponentToMount: ValidComponent<unknown>,
         props: unknown,
         modalProps: unknown,
         domNode: unknown,
         theme: unknown,
         callback: (args: unknown) => unknown,
       ): void;
-      createElement(
-        ComponentToCreate: ValidComponent<unknown, unknown, unknown>,
-        props: unknown,
-      ): unknown;
+      createElement(ComponentToCreate: ValidComponent<unknown>, props: unknown): unknown;
       unmountComponent(node: unknown): boolean;
       logout(refreshStatus: boolean): void;
       getLastValidation(): unknown;
@@ -1756,7 +1729,7 @@ declare namespace Reactory {
       uiSchema: TUISchema;
       idSchema: Schema.IDSchema;
       formContext: Reactory.Client.IReactoryFormContext<TRoot>;
-      onChange: (newFormData: T, errorSchema: IWidgetErrorSchema) => void;
+      onChange: (newFormData: T, errorSchema?: Reactory.Schema.IErrorSchema) => void;
       [key: string]: unknown;
     }
 
@@ -1774,7 +1747,7 @@ declare namespace Reactory {
       export type d3Color = typeof d3ColorAlias;
       export type d3Force = typeof d3ForceAlias;
       export type d3Delaunay = typeof d3DelaunayAlias;
-      
+
       export interface D3Package {
         d3: d3;
         d3Array: d3Array;
@@ -1788,7 +1761,6 @@ declare namespace Reactory {
       export type MaterialStyles = typeof MaterialStylesAlias;
       export type MaterialLabs = typeof MaterialLabsAlias;
       export type MaterialIcons = typeof MaterialIconsAlias;
-      
 
       export interface IMaterialModule {
         MaterialCore: MaterialCore;
@@ -2025,13 +1997,13 @@ declare namespace Reactory {
         /**
          * Array of components to bind
          */
-        components?: { 
-          component: string,
-          props?: { 
+        components?: {
+          component: string;
+          props?: {
             [key: string]: unknown;
-          },
+          };
           propsMap?: ObjectMap;
-         }[];
+        }[];
         /**
          * An array of components to bind to the column
          */
@@ -2078,7 +2050,7 @@ declare namespace Reactory {
          */
         params?: {
           [key: string]: unknown;
-        }
+        };
         /**
          * object map to use when mapping properties
          */
@@ -2361,33 +2333,33 @@ declare namespace Reactory {
         resultKey?: string;
         variables: ObjectMap;
 
-        columnsProperty?: string
+        columnsProperty?: string;
 
         columnsPropertyMap?: ObjectMap;
 
         headerStyle: {
           [key: string]: unknown;
-        }
+        };
 
         rowStyle: {
           [key: string]: unknown;
-        }
+        };
 
         selectedRowStyle: {
           [key: string]: unknown;
-        }
+        };
 
         altRowStyle: {
           [key: string]: unknown;
-        }
+        };
 
         conditionalRowStyling: {
           field: string;
           condition: string;
           style: {
             [key: string]: unknown;
-          }
-        }[]
+          };
+        }[];
         /**
          *
          */
@@ -2694,115 +2666,178 @@ declare namespace Reactory {
   }
 
   export namespace Forms {
-
-    export interface IFieldProps<TData, 
-      TSchema = Schema.AnySchema, 
-      TUISchema = Schema.IUISchema> {
-        schema: TSchema;
-        uiSchema: TUISchema;
-        idSchema: Schema.IDSchema;
-        formData: TData;
+    export interface IFieldProps<TData, TSchema = Schema.AnySchema, TUISchema = Schema.IUISchema> {
+      id?: string,
+      schema: TSchema;
+      uiSchema?: TUISchema;
+      idSchema: Schema.IDSchema;
+      formData?: TData;
+      formContext?: ReactoryFormContext<TData, any>;
+      errorSchema?: any;
+      rawErrors?: any;
+      autofocus?: boolean;
+      disabled?: boolean;
+      readonly?: boolean;
+      idPrefix?: string;
+      name?: string;
+      required?: boolean;
+      className?: string;
+      canAdd?: boolean;
+      onChange?: (data: TData, errorSchema?: Reactory.Schema.IErrorSchema) => void;
+      onKeyChange?: (key: string, errorSchema?: Reactory.Schema.IErrorSchema) => void;
+      onBlur?: () => void;
+      onFocus?: () => void;
+      onAddClick?: () => void;
+      registry?: IReactoryFormUtilitiesRegistry;
+      style?: React.CSSProperties;
+      jss?: unknown;
+      definitions?: unknown;
     }
 
-    export type ReactoryFieldComponent<TData, TSchema, TUISchema> = 
-      Reactory.Client.ValidComponent<IFieldProps<TData, TSchema, TUISchema>, unknown, unknown>;
+    export type ReactoryFieldComponent<TData, TSchema = Schema.AnySchema, TUISchema = Schema.IUISchema, TAdditional = {}> = React.ComponentType<
+      IFieldProps<TData, TSchema, Reactory.Schema.IUISchema> & TAdditional
+    >;
 
-    export type ReactoryObjectFieldComponent<TObj extends object> = ReactoryFieldComponent<TObj, Schema.IObjectSchema, Schema.IUISchema>;
-    export type ReactoryArrayFieldComponent<TArray extends unknown[]> = ReactoryFieldComponent<TArray, Schema.IArraySchema, Schema.IUISchema>;
-    export type ReactoryStringFieldComponent = ReactoryFieldComponent<string, Schema.IStringSchema, Schema.IUISchema>;
-    export type ReactoryNumberFieldComponent = ReactoryFieldComponent<number, Schema.INumberSchema, Schema.IUISchema>;
-    export type ReactoryBooleanFieldComponent = ReactoryFieldComponent<boolean, Schema.IBooleanSchema, Schema.IUISchema>;
-    export type ReactorySchemaFieldComponent = ReactoryFieldComponent<Schema.AnySchema, Schema.AnySchema, Schema.IUISchema>;
-    export type ReactoryTitleFieldComponent = ReactoryFieldComponent<string, Schema.IStringSchema, Schema.IUISchema>;
-    export type ReactortDescriptionFieldComponent = ReactoryFieldComponent<string, Schema.IStringSchema, Schema.IUISchema>;
-    export type ReactoryGridLayoutComponent = ReactoryFieldComponent<object, Schema.IObjectSchema, Schema.IUISchema>;
-    export type ReactoryTabbedLayoutComponent = ReactoryFieldComponent<object, Schema.IObjectSchema, Schema.IUISchema>;
-
+    export type ReactorySchemaFieldComponent = ReactoryFieldComponent<any, Schema.ISchema>;
+    export type ReactoryArrayFieldComponent = ReactoryFieldComponent<any[], Schema.IArraySchema>;
+    export type ReactoryBooleanFieldComponent = ReactoryFieldComponent<boolean, Schema.IBooleanSchema>;
+    export type ReactoryNumberFieldComponent = ReactoryFieldComponent<number, Schema.INumberSchema>;
+    export type ReactoryObjectFieldComponent = ReactoryFieldComponent<object, Schema.IObjectSchema>;
+    export type ReactoryStringFieldComponent = ReactoryFieldComponent<string, Schema.IStringSchema>;
+    export type ReactoryDateFieldComponent = ReactoryFieldComponent<Date, Schema.IDateSchema>;
+    export type ReactoryDateTimeComponent = ReactoryFieldComponent<Date, Schema.IDateTimeSchema>
+    export type ReactoryTitleFieldComponent = ReactoryFieldComponent<any, Schema.ISchema, Schema.IUISchema,  { title: string | Schema.UITitleFieldOptions }>;
+    export type ReactoryDescriptionFieldComponent = ReactoryFieldComponent<any, Schema.ISchema, Schema.IUISchema, { description: string | Schema.UIDescriptionFieldOptions }>;
+    export type ReactoryGridLayoutComponent = ReactoryFieldComponent<object | any[]>;
+    export type ReactoryTabbedLayoutComponent = ReactoryFieldComponent<object | any[]>;
+    export type ReactoryListLayoutComponent = ReactoryFieldComponent<object | any[]>;
+    export type ReactoryUnsupportedFieldComponent = ReactoryFieldComponent<null, Schema.AnySchema, Schema.IUISchema, { reason: string }>;
+    export type ReactoryErrorFieldComponent = ReactoryFieldComponent<any, Schema.IErrorSchema, Schema.IUISchema, { errors: string[] }>;
+    export type ReactoryHelpFieldComponent = ReactoryFieldComponent<any, Schema.AnySchema, Schema.IUISchema, { topics: string[] }>;
 
     export interface IReactoryFields {
-      ArrayField: ReactoryFieldComponent<Array<unknown>, Schema.IArraySchema, Schema.IUISchema>;
-      BooleanField: ReactoryFieldComponent<boolean, Schema.IBooleanSchema, Schema.IUISchema>;
-      DescriptionField: ReactoryFieldComponent<string, Schema.IStringSchema, Schema.IUISchema>;
-      NumberField: ReactoryFieldComponent<number, Schema.INumberSchema, Schema.IUISchema>;
-      ObjectField: ReactoryFieldComponent<object, Schema.IObjectSchema, Schema.IUISchema>;
-      SchemaField: ReactoryFieldComponent<Schema.AnySchema, Schema.AnySchema, Schema.IUISchema>;
-      StringField: ReactoryFieldComponent<string, Schema.IStringSchema, Schema.IUISchema>;
-      TitleField: ReactoryFieldComponent<string, Schema.IStringSchema, Schema.IUISchema>;
-      GridLayout: ReactoryFieldComponent<object, Schema.IObjectSchema, Schema.IUISchema> | ReactoryFieldComponent<Array<unknown>, Schema.IArraySchema, Schema.IUISchema>;
-      TabbedLayout: ReactoryFieldComponent<object, Schema.IObjectSchema, Schema.IUISchema> | ReactoryFieldComponent<Array<unknown>, Schema.IArraySchema, Schema.IUISchema>;      
-      UnsupportedField: Reactory.Client.AnyValidComponent;
-      [key: string]: Reactory.Client.AnyValidComponent;
+      ArrayField: ReactoryArrayFieldComponent;
+      BooleanField: ReactoryBooleanFieldComponent;
+      TitleField: ReactoryTitleFieldComponent;
+      DescriptionField: ReactoryDescriptionFieldComponent;
+      NumberField: ReactoryNumberFieldComponent;
+      ObjectField: ReactoryObjectFieldComponent;
+      DateField: ReactoryDateFieldComponent;
+      SchemaField: ReactorySchemaFieldComponent;
+      StringField: ReactoryStringFieldComponent;
+      GridField: ReactoryGridLayoutComponent;
+      TabbedField: ReactoryTabbedLayoutComponent;
+      ListField: ReactoryListLayoutComponent;
+      UnsupportedField: ReactoryUnsupportedFieldComponent;
+      ErrorField: ReactoryErrorFieldComponent;
+      HelpField: ReactoryHelpFieldComponent;
+      [key: string]: ReactoryFieldComponent<any>;
     }
 
     /**
-     * Defines the propert
+     * Defines the property set for the ISchemaFormProps
      */
     export interface ISchemaFormProps<TData> {
-      idSchema?: Reactory.Schema.IDSchema,
-      schema: Reactory.Schema.ISchema,
-      uiSchema: Reactory.Schema.IUISchema,
-      idPrefix?: string,
-      errorSchema?: any,
-      formData?: TData,
+      idSchema?: Reactory.Schema.IDSchema;
+      schema: Reactory.Schema.ISchema;
+      uiSchema: Reactory.Schema.IUISchema;
+      idPrefix?: string;
+      errorSchema?: any;
+      formData?: TData;
       widgets?: {
-        [key: string]: React.Component | React.FC | React.PureComponent
-      },
-      fields?: object,
-      ArrayFieldTemplate?: () => any,
-      ObjectFieldTemplate?: () => any,
-      FieldTemplate?: () => any,
-      ErrorList?: React.FC<any>,
-      onBlur?: (...args: any) => void
-      onFocus?: (...args: any) => void,
-      onChange?: (formData: any) => any,
-      onError?: (errors: any[], erroSchema?: any) => any,
-      showErrorList?: boolean,
-      onSubmit?: (form: any) => void,
-      id?: string,
-      className?: string,
-      chilren?: any
-      name?: string,
-      method?: string,
-      target?: string,
-      action?: string,
-      autocomplete?: string,
-      enctype?: string,
-      acceptcharset?: string,
-      noValidate?: boolean,
-      noHtml5Validate?: boolean,
-      liveValidate?: boolean,
-      toolbarPosition?: string
-      validate?: (formData: any, schema?: Reactory.Schema.ISchema, validationType?: string) => { errors: any, errorSchema: any },
-      transformErrors?: (errors: any) => any,
-      safeRenderCompletion?: boolean,
-      formContext: Reactory.Forms.ReactoryFormContext<any, any>,
-      disabled?: boolean
-      style?: any,  
-      [key: string]: any
+        [key: string]: React.Component | React.FC | React.PureComponent;
+      };
+      fields?: object;
+      ArrayFieldTemplate?: () => any;
+      ObjectFieldTemplate?: () => any;
+      FieldTemplate?: () => any;
+      ErrorList?: React.FC<any>;
+      onBlur?: (...args: any) => void;
+      onFocus?: (...args: any) => void;
+      onChange?: (formData: TData, errorSchema: Reactory.Schema.IErrorSchema) => any;
+      onError?: (errors: any[], errorSchema?: Reactory.Schema.IErrorSchema) => any;
+      showErrorList?: boolean;
+      onSubmit?: (form: any) => void;
+      id?: string;
+      className?: string;
+      chilren?: any;
+      name?: string;
+      method?: string;
+      target?: string;
+      action?: string;
+      autocomplete?: string;
+      enctype?: string;
+      acceptcharset?: string;
+      noValidate?: boolean;
+      noHtml5Validate?: boolean;
+      liveValidate?: boolean;
+      toolbarPosition?: string;
+      validate?: (
+        formData: any,
+        schema?: Reactory.Schema.ISchema,
+        validationType?: string,
+      ) => { errors: any; errorSchema: any };
+      transformErrors?: (errors: any, erroSchema?: Reactory.Schema.IErrorSchema) => any;
+      safeRenderCompletion?: boolean;
+      formContext: Reactory.Forms.ReactoryFormContext<any, any>;
+      disabled?: boolean;
+      style?: any;
+      [key: string]: any;
     }
 
-    export interface IReactoryWidgets { 
-      [key: string]: Reactory.Client.AnyValidComponent;
+    export interface IReactoryWidgets {
+      [key: string]: Reactory.Forms.ReactoryFieldComponent<any>;
     }
 
-    export interface IReactoryTemplates { 
-      ArrayFieldTemplate: Reactory.Client.AnyValidComponent;
-        DateFieldTemplate: Reactory.Client.AnyValidComponent;
-        FieldTemplate: Reactory.Client.AnyValidComponent;
-        FormErrorList: Reactory.Client.AnyValidComponent;
-        ObjectTemplate: Reactory.Client.AnyValidComponent;
-        [key: string]: Reactory.Client.AnyValidComponent;
+    export interface IReactoryTemplates {
+      ArrayFieldTemplate: Reactory.Forms.ReactoryArrayFieldComponent;
+      DateFieldTemplate: Reactory.Forms.ReactoryDateFieldComponent;
+      FieldTemplate: Reactory.Forms.ReactorySchemaFieldComponent;
+      FormErrorList: Reactory.Forms.ReactorySchemaFieldComponent;
+      ObjectTemplate: Reactory.Forms.ReactoryObjectFieldComponent;
+      [key: string]: Reactory.Forms.ReactoryFieldComponent<any>;
     }
 
     export interface IReactoryFormUtilitiesRegistry {
       fields: IReactoryFields;
       widgets: IReactoryWidgets;
-      templates: IReactoryTemplates;
+      templates: IReactoryTemplates;      
       formContext: Reactory.Client.IReactoryFormContext<unknown>;
       definitions: {
         [key: string]: Reactory.Schema.AnySchema;
-      }
+      };
     }
+
+    export interface ReactoryFormUtitlitiesHookProps<
+      TData,
+      TSchema extends Reactory.Schema.AnySchema,
+      TUISchema extends Reactory.Schema.IUISchema,
+    > {
+      schema: TSchema;
+      uiSchema?: TUISchema;
+      idSchema: Reactory.Schema.IDSchema;
+      required?: boolean;
+      formData: TData;
+      errorSchema?: any;
+      disabled?: boolean;
+      rawErrors?: any;
+      formContext: Reactory.Forms.ReactoryFormContext<TData, any>;
+    }
+
+    export interface ReactoryFormUtitlitiesHookResult {
+      TitleField: ReactoryFieldComponent<String>;
+      DescriptionField: ReactoryFieldComponent<string>;
+      Field: ReactoryFieldComponent<any>;
+      ErrorField: ReactoryFieldComponent<any>;
+    }
+
+    export type ReactorySchemaUtitlitiesHook = <
+      TData,
+      TSchema extends Reactory.Schema.AnySchema,
+      TUISchema extends Reactory.Schema.IUISchema,
+    >(
+      props: ReactoryFormUtitlitiesHookProps<TData, TSchema, TUISchema>,
+    ) => ReactoryFormUtitlitiesHookResult;
 
     /**
      * A Reactory UX Package is consist of fields
@@ -2851,7 +2886,7 @@ declare namespace Reactory {
     }
 
     /**
-     * The IReactoryEvent is used to define the basic construct for an event that 
+     * The IReactoryEvent is used to define the basic construct for an event that
      * will be fired by the reactory form engine via the reactory event bus.
      */
     export interface IReactoryEvent {
@@ -2864,14 +2899,14 @@ declare namespace Reactory {
        * */
       data?: unknown | undefined;
       /**
-       * Data map object that is used to map any input data to the event 
+       * Data map object that is used to map any input data to the event
        */
       dataMap?: Reactory.ObjectMap;
       /**
        * Indicates whether or not to spread the props from the data object
        * or to pass the data object as is.
        * */
-      spreadProps?: boolean;      
+      spreadProps?: boolean;
       /**
        * When set to true the form will refresh with each event, when not
        * provided it will only execute the refresh once.
@@ -2882,17 +2917,23 @@ declare namespace Reactory {
     /**
      * The ReactoryFormGraphResultHandler is used to indicate what the reactory form
      * should do once the graph query or mutation has been executed.
-     * 
+     *
      * The options are as follows:
      * - redirect: Redirect the user to a new URI
      * - notification: Will show a notification to the user
      * - function: Will execute a function, the function will receive the data result
      * - refresh: Will refresh the form using the defined query for the form
      * - none: Will do nothing aside from data bind the result to the form if the data binding params are defined.
-     * - component: Will bind the result to a component. The default behaviour will be to replace the existing form 
+     * - component: Will bind the result to a component. The default behaviour will be to replace the existing form
      *   with the component.
      */
-    export type ReactoryFormActionHandlerType = "redirect" | "notification" | "function" | "refresh" | "none" | "component";
+    export type ReactoryFormActionHandlerType =
+      | "redirect"
+      | "notification"
+      | "function"
+      | "refresh"
+      | "none"
+      | "component";
 
     export interface IReactoryFormQueryErrorHandlerDefinition {
       /**
@@ -2904,14 +2945,14 @@ declare namespace Reactory {
        * */
       componentRef?: string;
       /**
-       * 
+       *
        */
       method: string;
     }
 
     /**
      * Defines the interface construct for a graph form result handler.
-     * The handler properties are used by the reactory form engine to 
+     * The handler properties are used by the reactory form engine to
      * determine the appropriate action on completion of a graph query or mutation.
      */
     export interface IReactoryFormGraphResultHandler {
@@ -2926,9 +2967,9 @@ declare namespace Reactory {
        * - formContext - the form context
        * - props - the form props
        * - mutation_result - the result of the mutation
-       * 
-       * The template string can be used to build a URI that will be used to redirect the user. 
-       * Template syntax uses the lodash template syntax. 
+       *
+       * The template string can be used to build a URI that will be used to redirect the user.
+       * Template syntax uses the lodash template syntax.
        * i.e. "/some/path/${formData.id}"
        * */
       onSuccessUrl?: string;
@@ -2944,7 +2985,7 @@ declare namespace Reactory {
       /**
        * The component reference to use when the onSuccessMethod is set to component
        * The componentRef must be a fqn of a component that is registered with the client
-       * 
+       *
        * The componentRef is used for both function and component types.
        * */
       componentRef?: string;
@@ -2954,16 +2995,16 @@ declare namespace Reactory {
       mergeStrategy?: string | "merge" | "replace" | "function" | "none";
       /**
        * The merge function to use when merging the data result with the form data.
-       * 
+       *
        * If the componentRef is an object, then a method name can be provided here.
        * If the componentRef is a function then the mergeFunction should be left
        * undefined.
        * */
       mergeFunction?: string;
-      
+
       /**
        * If defined an event will be fired once the graph query or mutation has been executed.
-       * 
+       *
        * The event will be fired in addition to the onSuccessMethod if it is defined.
        */
       onSuccessEvent?: IReactoryEvent;
@@ -3014,9 +3055,9 @@ declare namespace Reactory {
       formData?: unknown;
       /**
        * A variable mapping object that maps data values to a query params.
-       * 
+       *
        * eg.
-       * 
+       *
        * {
        *  "formData.id": "id",
        *  "formData.name": "name",
@@ -3032,16 +3073,16 @@ declare namespace Reactory {
        * Supports
        */
       onSuccessMethod?: ReactoryFormActionHandlerType;
-      
+
       /**
-       * Response handlers key names should match the typename of the 
+       * Response handlers key names should match the typename of the
        * response data. i.e. if your graph type name is "Foo" then the
        * response handler key should be "Foo". This is used to map results for
        * queries or mutaions that have union types.
        */
       responseHandlers?: {
         [key: string]: IReactoryFormGraphResultHandler;
-      }
+      };
       /**
        * The event handler information that provides additional
        * on sucess handling strategies.
@@ -3075,7 +3116,6 @@ declare namespace Reactory {
     }
 
     export interface IReactoryFormQuery extends IReactoryFormGraphElement {
-      
       /**
        * The message that will be displayed while the form is updating
        */
@@ -3086,14 +3126,14 @@ declare namespace Reactory {
       props?: object;
 
       /**
-       * 
+       *
        */
       autoQuery?: boolean;
       //the number of milliseconds the autoQuery must be delayed for before executing
       autoQueryDelay?: number;
       /**
-       * 
-       * */      
+       *
+       * */
       interval?: number;
       /**
        * Indicates whether or not to use websockets for the query
@@ -3203,14 +3243,14 @@ declare namespace Reactory {
     }
 
     /**
-     * This interface provides the structure for a REACTORY form 
+     * This interface provides the structure for a REACTORY form
      */
     export interface IReactoryFormRESTCall {
       /**
        * Defines where the rest call is executed. The call can either
        * be made from the client or from the server on behalf of the user.
-       * 
-       * The default is server side. The form will detect where the data pipeline should execute 
+       *
+       * The default is server side. The form will detect where the data pipeline should execute
        * and will process the call using either client or server.
        */
       runat?: "server" | "client";
@@ -3219,57 +3259,52 @@ declare namespace Reactory {
        */
       cache?: any;
       /**
-       * Indicates which provider to use to execute the 
+       * Indicates which provider to use to execute the
        * data fetch. Default is fetch.
        */
       provider?: "axios" | "fetch";
       /**
        * Method to use for the rest call.
        */
-      method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
+      method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
       /**
        * Options to pass to the rest call
        */
       options: {
         /**
-         * 
+         *
          */
         headers?: any;
         body?: any;
-        [key: string]: any
-      },
+        [key: string]: any;
+      };
       optionsProvider: FQN;
       /**
        * The URL for the rest call. Can be a template string.
-       * 
-       * i.e. 
-       * 
+       *
+       * i.e.
+       *
        * ${process.env.SOME_API_URL}/v1/customer/${formContext.queryObject.user_id}
        */
-      url: string
+      url: string;
     }
 
     /**
      * Interface for REST Definitions.
      */
     export interface IFormRESTDefinition {
-      default?: string,
-      queries?: { 
-        [key: string]: IReactoryFormRESTCall,
-      },
+      default?: string;
+      queries?: {
+        [key: string]: IReactoryFormRESTCall;
+      };
       mutations?: {
-        [key: string]: IReactoryFormRESTCall,
-      }
+        [key: string]: IReactoryFormRESTCall;
+      };
     }
 
-    export interface IReactoryGRPCCall {
+    export interface IReactoryGRPCCall {}
 
-    }
-
-    
-    export interface IFormGrpcDefinition {
-
-    }
+    export interface IFormGrpcDefinition {}
 
     export interface IWidgetMap {
       component?: string | unknown;
@@ -3785,21 +3820,25 @@ declare namespace Reactory {
     /**
      * ReactoryFormGeneratorFunction is a function that will generate an array of forms
      */
-    export type ReactoryFormGeneratorFunction<TOptions> = (options: TOptions) => Promise<IReactoryForm[]>;
+    export type ReactoryFormGeneratorFunction<TOptions> = (
+      options: TOptions,
+    ) => Promise<IReactoryForm[]>;
 
     /**
      * ReactoryFormGeneratorFunctionSync is a function that will generate an array of forms
      */
-    export type ReactoryFormGeneratorFunctionSync<TOptions> = (options: TOptions) => IReactoryForm[];
+    export type ReactoryFormGeneratorFunctionSync<TOptions> = (
+      options: TOptions,
+    ) => IReactoryForm[];
 
     /**
      * IReactoryFormGenerator is a structure that defines a form generator
      * that can be used to generate a form.
      */
-    export interface IReactoryFormGeneratorConfig<TOptions> { 
+    export interface IReactoryFormGeneratorConfig<TOptions> {
       /**
        * The id of the generator to use
-       * i.e. "core-generators.PostgresTable@1.0.0"  
+       * i.e. "core-generators.PostgresTable@1.0.0"
        */
       id: FQN;
 
@@ -3809,14 +3848,14 @@ declare namespace Reactory {
        */
       options?: TOptions;
     }
-    
-    export type TFormGeneratorProps<TOptions> = Reactory.Service.IReactoryServiceProps & IReactoryFormGeneratorConfig<TOptions>
 
-    export class ReactoryFormGeneratorService<TFormGeneratorProps, 
-      TContext> extends 
-      Reactory.Service.ReactoryService<TFormGeneratorProps, TContext> {             
-        generate(): Promise<IReactoryForm[]>;
-      }
+    export type TFormGeneratorProps<TOptions> = Reactory.Service.IReactoryServiceProps &
+      IReactoryFormGeneratorConfig<TOptions>;
+
+    export class ReactoryFormGeneratorService<TFormGeneratorProps, TContext> extends Reactory
+      .Service.ReactoryService<TFormGeneratorProps, TContext> {
+      generate(): Promise<IReactoryForm[]>;
+    }
 
     export interface IReactoryDatabaseEntityColumn {
       name: string;
@@ -3826,14 +3865,14 @@ declare namespace Reactory {
       primaryKey?: boolean;
       autoIncrement?: boolean;
       defaultValue?: unknown;
-      readonly?: boolean; 
+      readonly?: boolean;
       comment?: string;
       foreignKey?: {
         table: string;
         column: string;
         onDelete?: string | "cascade" | "restrict" | "set null" | "no action";
         onUpdate?: string | "cascade" | "restrict" | "set null" | "no action";
-      }
+      };
     }
     export interface IReactoryDatabaseEntity {
       /**
@@ -3860,21 +3899,21 @@ declare namespace Reactory {
       /**
        * The stereo types to generate for the entity
        */
-      stereoTypes?: Reactory.Schema.UISchemaStereotype[];       
+      stereoTypes?: Reactory.Schema.UISchemaStereotype[];
     }
     /**
      * Defines the interface for the ReactoryFormGeneratorOptions
      * this will be used to pass options to the form generator function
      * that will be used to generate the form.
-     * 
-     * requires a connection id or connection string to the database 
+     *
+     * requires a connection id or connection string to the database
      * and a dialect.
      */
-    export interface IReactoryRelationDatabaseFormGeneratorOptions { 
+    export interface IReactoryRelationDatabaseFormGeneratorOptions {
       /**
-       * the connection id / or connection string to use 
-       * for the postgres database driver. This connection 
-       * must exist for the partner / reactory client that is 
+       * the connection id / or connection string to use
+       * for the postgres database driver. This connection
+       * must exist for the partner / reactory client that is
        * executing the generator.
        */
       connection: string;
@@ -3884,7 +3923,7 @@ declare namespace Reactory {
        * forms will be placed.
        */
       module?: string;
-      
+
       /**
        * The entities to use for the form generation
        */
@@ -3894,11 +3933,11 @@ declare namespace Reactory {
        */
       outputs?: {
         /**
-         * The types of ui schemas is expected to be generated for this 
+         * The types of ui schemas is expected to be generated for this
          * form. If defined here these will be used as the default stereotypes
          */
         uiSchemaStereotypes?: Schema.UISchemaStereotype[];
-      }
+      };
     }
 
     export type ReactoryFormContext<TData, TAdditional extends Array<unknown>> = {
@@ -4537,7 +4576,6 @@ declare namespace Reactory {
       options?: unknown;
     }
 
-  
     export interface IReactoryClient extends Server.IReactoryClientConfig {
       createdAt?: Date;
       //deafult user accounts to create at startup
@@ -4553,16 +4591,22 @@ declare namespace Reactory {
       setPassword: (password: string) => void;
     }
 
-    export class ReactoryClientDocument extends 
-      Mongoose.Document<ObjectId, unknown, IReactoryClient> implements IReactoryClient
-    { 
+    export class ReactoryClientDocument
+      extends Mongoose.Document<ObjectId, unknown, IReactoryClient>
+      implements IReactoryClient
+    {
       constructor(client?: Partial<IReactoryClient>);
-      
+
       [key: string]: unknown;
       createdAt?: Date;
       updatedAt?: Date;
       colorScheme: (colorvalue: string) => string[];
-      getSetting: <T>(name: string, defaultValue?: T, create?: boolean, componentFqn?: string) => { data: T; };
+      getSetting: <T>(
+        name: string,
+        defaultValue?: T,
+        create?: boolean,
+        componentFqn?: string,
+      ) => { data: T };
       getDefaultUserRoles: () => string[];
       setPassword: (password: string) => void;
       key: string;
@@ -4594,8 +4638,10 @@ declare namespace Reactory {
       allowCustomTheme?: boolean;
     }
 
-    export interface IReactoryClientDocument extends Mongoose.Document<ObjectId, unknown, IReactoryClient>, IReactoryClient {
-      new(): ReactoryClientDocument;
+    export interface IReactoryClientDocument
+      extends Mongoose.Document<ObjectId, unknown, IReactoryClient>,
+        IReactoryClient {
+      new (): ReactoryClientDocument;
     }
 
     export type ReactoryClientModel = Mongoose.Model<IReactoryClient>;
@@ -5230,7 +5276,7 @@ declare namespace Reactory {
      */
     export interface IUserCreateParams extends IUserBio, IUserContact {
       organization?: TOrganization;
-      roles? : string[];
+      roles?: string[];
       password?: string;
     }
 
@@ -5407,9 +5453,14 @@ declare namespace Reactory {
       validatePassword: (password: string) => boolean;
     }
 
-    export type ReactoryUserModel = Mongoose.Model<IUser, {}, { 
-      validatePassword: (password: string) => Promise<boolean>
-    }, Mongoose.Schema<IUser>>;
+    export type ReactoryUserModel = Mongoose.Model<
+      IUser,
+      {},
+      {
+        validatePassword: (password: string) => Promise<boolean>;
+      },
+      Mongoose.Schema<IUser>
+    >;
 
     export interface IUserDemographics {
       race: string | ObjectId | IDemographic | IDemographicDocument;
@@ -5604,11 +5655,10 @@ declare namespace Reactory {
       documents: IReactoryFile[] | IReactoryFileModel[];
     }
 
-    export class ReactorySupportDocument extends Mongoose.Document<
-      ObjectId,
-      unknown,
-      IReactorySupportTicket
-    > implements IReactorySupportTicket {
+    export class ReactorySupportDocument
+      extends Mongoose.Document<ObjectId, unknown, IReactorySupportTicket>
+      implements IReactorySupportTicket
+    {
       constructor();
       request: string;
       requestType: string;
@@ -5931,31 +5981,27 @@ declare namespace Reactory {
     }
 
     export interface ISearchableType {
-      id: string
+      id: string;
       /**
        * A descriptive name for the searchable type
        */
-      name: string
+      name: string;
     }
 
     export interface ISearchableMetric {
+      name?: string;
 
-      name?: string
+      value?: number;
 
-      value?: number
-
-      unit: string
+      unit: string;
     }
 
-    export interface ISearchable extends 
-      ISearchableBase, 
-      IComponentFqnDefinition {
-      
-        type: ISearchableType
-        children?: Partial<ISearchable>[]
-        source: string
-        path: string
-        metrics: ISearchableMetric[]
+    export interface ISearchable extends ISearchableBase, IComponentFqnDefinition {
+      type: ISearchableType;
+      children?: Partial<ISearchable>[];
+      source: string;
+      path: string;
+      metrics: ISearchableMetric[];
     }
   }
 
@@ -6865,13 +6911,13 @@ declare namespace Reactory {
       dependencies?: ReactoryServiceDependencies;
       /**
        * Defines how the service lifecycle is managed.
-       * 
-       * Basic supported types are instance or singleton. 
-       * 
-       * Also accepted are FQN string which will use a component to manage the lifecycle 
+       *
+       * Basic supported types are instance or singleton.
+       *
+       * Also accepted are FQN string which will use a component to manage the lifecycle
        * of the service.
        */
-      lifeCycle?: SERVICE_LIFECYCLE
+      lifeCycle?: SERVICE_LIFECYCLE;
     }
 
     export interface IReactoryServiceRegister {
@@ -6904,7 +6950,6 @@ declare namespace Reactory {
     export type TContext<T> = Server.IReactoryContext & T;
 
     export class ReactoryService<TP, TC> implements IReactoryService {
-      
       nameSpace: string;
       name: string;
       version: string;
@@ -6912,10 +6957,9 @@ declare namespace Reactory {
       context: TC;
       [key: string]: unknown;
 
-      
       toString(includeVersion: boolean = true): string {
-        return `${this.nameSpace}.${this.name}${includeVersion ? `@${this.version}` : ''}`;
-      };
+        return `${this.nameSpace}.${this.name}${includeVersion ? `@${this.version}` : ""}`;
+      }
     }
 
     /**
@@ -7257,7 +7301,7 @@ declare namespace Reactory {
         options?: {
           publish: boolean;
           module?: string;
-          storage?: FormStore
+          storage?: FormStore;
           git?: Reactory.Git.GitOptions;
         },
       ): Promise<Reactory.Forms.IReactoryForm>;
@@ -7277,11 +7321,15 @@ declare namespace Reactory {
 
       /**
        * Searches for a form using the search params
-       * @param form - Partial form. it will use name, title, description and tags to search 
-       * @param targetModule 
-       * @param where 
+       * @param form - Partial form. it will use name, title, description and tags to search
+       * @param targetModule
+       * @param where
        */
-      search(form: Partial<Reactory.Forms.IReactoryForm>, targetModule?: string, where?: FormStore[]): Promise<Reactory.Forms.IReactoryForm[]>;
+      search(
+        form: Partial<Reactory.Forms.IReactoryForm>,
+        targetModule?: string,
+        where?: FormStore[],
+      ): Promise<Reactory.Forms.IReactoryForm[]>;
 
       /**
        * Overrides a form with a newer version in the database
@@ -8245,7 +8293,7 @@ declare namespace Reactory {
       ): INaturalPackageForInput;
     }
 
-    export interface ISearchResults<T> { 
+    export interface ISearchResults<T> {
       results: T[];
       offset: number;
       limit: number;
@@ -8255,12 +8303,18 @@ declare namespace Reactory {
     export interface ISearchIndexResult {
       id: any;
       success: boolean;
-      error?: string;  
+      error?: string;
     }
 
     export interface ISearchService extends Reactory.Service.IReactoryDefaultService {
-      search<T>(index: string, filter: string, fields?: string[], limit?: number, offset?: number): Promise<ISearchResults<T>>;
-      index<T>(index: string, data: T[]): Promise<ISearchIndexResult>; 
+      search<T>(
+        index: string,
+        filter: string,
+        fields?: string[],
+        limit?: number,
+        offset?: number,
+      ): Promise<ISearchResults<T>>;
+      index<T>(index: string, data: T[]): Promise<ISearchIndexResult>;
       deleteIndex<T>(index: string): Promise<boolean>;
     }
   }
@@ -8327,7 +8381,7 @@ declare namespace Reactory {
        */
       REACTORY_DATA: string;
       /**
-       * The root folder the server application 
+       * The root folder the server application
        */
       REACTORY_SERVER: string;
       /**
@@ -8341,37 +8395,38 @@ declare namespace Reactory {
       /**
        * Postgres host
        */
-      REACTORY_POSTGRES_HOST: string
+      REACTORY_POSTGRES_HOST: string;
       /**
        * Postgres port
        */
-      REACTORY_POSTGRES_PORT: string
+      REACTORY_POSTGRES_PORT: string;
       /**
        * Postgres user
        */
-      REACTORY_POSTGRES_USER: string
+      REACTORY_POSTGRES_USER: string;
       /**
        * Postgres password
        */
-      REACTORY_POSTGRES_PASSWORD: string
+      REACTORY_POSTGRES_PASSWORD: string;
       /**
        * Postgres database
        */
-      REACTORY_POSTGRES_DB: string
+      REACTORY_POSTGRES_DB: string;
       /**
        * Morgan middleware enabled state
        */
-      MORGAN_MIDDLEWARE_ENABLED: boolean
+      MORGAN_MIDDLEWARE_ENABLED: boolean;
       /**
        * Filters to apply when logging network requests
        */
-      MORGAN_MIDDLEWARE_FILTERS: string
+      MORGAN_MIDDLEWARE_FILTERS: string;
     }
 
     /**
      * Utility type for extending the environment with additional properties
      */
-    export type ExtendedEnvironment<Additional extends unknown[]> = NodeJS.ProcessEnv & Additional[number];
+    export type ExtendedEnvironment<Additional extends unknown[]> = NodeJS.ProcessEnv &
+      Additional[number];
 
     export interface ReactoryEmailEnvironment {
       /**
@@ -8382,7 +8437,20 @@ declare namespace Reactory {
       /**
        * The default method to use for sending email
        */
-      REACTORY_EMAIL_SEND_VIA?: string | "postal" | "sendgrid" | "smtp" | "microsoft" | "google" | "mailgun" | "aws" | "sendmail" | "mandrill" | "postmark" | "sparkpost" | "elasticemail";
+      REACTORY_EMAIL_SEND_VIA?:
+        | string
+        | "postal"
+        | "sendgrid"
+        | "smtp"
+        | "microsoft"
+        | "google"
+        | "mailgun"
+        | "aws"
+        | "sendmail"
+        | "mandrill"
+        | "postmark"
+        | "sparkpost"
+        | "elasticemail";
     }
 
     /**
@@ -8502,16 +8570,18 @@ declare namespace Reactory {
 
     export interface IReactoryGrpcConfig {
       // provide the proto filenames for the module
-      protos: string[]
+      protos: string[];
       // define the services for the module
       services: {
-        [key: string]: unknown
-      }
+        [key: string]: unknown;
+      };
     }
 
     export type TReactoryForm = Forms.IReactoryForm;
 
-    export type TCli = Reactory.IReactoryComponentDefinition<(kwargs: string[], context: Reactory.Server.IReactoryContext) => Promise<void>>;
+    export type TCli = Reactory.IReactoryComponentDefinition<
+      (kwargs: string[], context: Reactory.Server.IReactoryContext) => Promise<void>
+    >;
 
     /**
      * The module data structure represents a collection of all the services,
@@ -8519,11 +8589,11 @@ declare namespace Reactory {
      */
     export interface IReactoryModule {
       /**
-       * The id for the module. This should correlate with the 
+       * The id for the module. This should correlate with the
        * folder name that the module is in. If the id is not set it
        * will be generated and set at runtime.
        */
-      id?: string
+      id?: string;
       /**
        * The namespace of the module.
        */
@@ -8588,8 +8658,8 @@ declare namespace Reactory {
        * Route handlers providerd by the module
        */
       routes?: {
-        [key: string]: Router
-      },
+        [key: string]: Router;
+      };
 
       /**
        * The models of the module provided by the module
@@ -8626,7 +8696,7 @@ declare namespace Reactory {
       name?: string;
       type?: string;
       lifeCycle?: Reactory.Service.SERVICE_LIFECYCLE;
-    }
+    };
 
     /**
      * The IReactoryContext is the object should be passed through to all levels of the execution.
@@ -8671,7 +8741,9 @@ declare namespace Reactory {
        * list all services that are available to the current context.
        * @param filter - the filter to apply to the services
        */
-      listServices(filter: ReactoryServiceFilter): Reactory.Service.IReactoryServiceDefinition<any>[];
+      listServices(
+        filter: ReactoryServiceFilter,
+      ): Reactory.Service.IReactoryServiceDefinition<any>[];
 
       /**
        * An array of all the services that are available to the current context
@@ -8798,7 +8870,7 @@ declare namespace Reactory {
        * The current active palette for this context
        */
       palette: Reactory.UX.IThemePalette;
-      
+
       /**
        * Function that uses the default cache provider to get a value
        * @param key - the key to get the value for
@@ -8807,13 +8879,13 @@ declare namespace Reactory {
       getValue<T>(key: string, defaultValue?: Promise<T>): Promise<T>;
 
       /**
-       * Function that uses the default cache provider to set a value 
+       * Function that uses the default cache provider to set a value
        * @param key - the key to set the value for
        * @param value - the value to set
        * @param ttl - the time to live for the value
        */
       setValue<T>(key: string, value: T, ttl?: number): Promise<void>;
-      
+
       /**
        * Function that removes the value from the default cache provider
        * @param key - the key to remove the value for
@@ -8821,21 +8893,21 @@ declare namespace Reactory {
       removeValue(key: string): Promise<void>;
 
       /**
-       * Extends the Context with extensions using the 
+       * Extends the Context with extensions using the
        * client configuration.
        */
       extend<TResult extends IReactoryContext>(): Promise<TResult>;
 
       /**
        * Executes a target promise as a specific user account.
-       * @param user 
-       * @param target 
+       * @param user
+       * @param target
        */
       runAs<TResult>(user: Models.IUserDocument, target: Promise<TResult>): Promise<TResult>;
 
       /**
        * Executes a target promise using the system user account
-       * @param target 
+       * @param target
        */
       runAsSystem<TResult>(target: Promise<TResult>): Promise<TResult>;
       // additional context properties
@@ -8862,7 +8934,7 @@ declare namespace Reactory {
       /**
        * Unique username for the user
        */
-      username?: string
+      username?: string;
       /**
        * The roles granted to this user
        */
@@ -8883,22 +8955,22 @@ declare namespace Reactory {
     }
 
     /**
-     * A feature flag is a data structure that is used to 
+     * A feature flag is a data structure that is used to
      * store information around what features are exposed.
-     * 
-     * Each module in the reactory ecosystem can provide a 
-     * list of feature flags that it exposes. 
-     * 
+     *
+     * Each module in the reactory ecosystem can provide a
+     * list of feature flags that it exposes.
+     *
      * A feature flag is configured on a per connecting application.
-     * 
+     *
      * This means each client configuration will have an entry for
-     * a feature flag. 
+     * a feature flag.
      */
     export interface IReactoryFeatureFlag extends IFQNObject {
       /**
        * The internal id for the feature flag
        */
-      id: string | ObjectId
+      id: string | ObjectId;
       /**
        * A user friendly title for the feature flag
        */
@@ -8908,26 +8980,26 @@ declare namespace Reactory {
        */
       description?: string;
       /**
-       * The permissions for the feature flag. 
+       * The permissions for the feature flag.
        */
       permissions: {
         /**
          * The roles that are allowed to view the feature flag
          */
-        viewer: string[],
+        viewer: string[];
         /**
          * The roles that are allowed to edit the feature flag
          */
-        editor: string[],
+        editor: string[];
         /**
          * The roles that are allowed to admin the feature flag
          */
-        admin: string[]
-      },
+        admin: string[];
+      };
       /**
        * The form FQN to use for the feature flag data.
        */
-      form: FQN      
+      form: FQN;
     }
 
     /**
@@ -8935,75 +9007,75 @@ declare namespace Reactory {
      */
     export interface IReactoryFeatureFlagValue<T> {
       /**
-       * The feature reference. When using string, it either 
+       * The feature reference. When using string, it either
        * has to be the FQN string or the ObjectId string.
        */
-      feature: string | ObjectId | IReactoryFeatureFlag
+      feature: string | ObjectId | IReactoryFeatureFlag;
       /**
        * The partner for which this feature flag is configured. If null
        * it will mean the feature flag is configure for ALL partners.
-       * 
-       * When the partner value is set flag is applied to a specific 
+       *
+       * When the partner value is set flag is applied to a specific
        */
-      partner?: string | ObjectId | Reactory.Models.IReactoryClient
+      partner?: string | ObjectId | Reactory.Models.IReactoryClient;
       /**
        * The organization the feature flag is bound to
        */
-      organization?: string | ObjectId | Reactory.Models.IOrganization
+      organization?: string | ObjectId | Reactory.Models.IOrganization;
       /**
        * The business unit the feature flag is bound to
        */
-      businessUnit?: string | ObjectId | Reactory.Models.IOrganization
+      businessUnit?: string | ObjectId | Reactory.Models.IOrganization;
       /**
        * The regions (2 digit iso country codes)
        */
-      regions?: string[]
+      regions?: string[];
       /**
        * The application roles to which the feature flag applies
        */
-      roles?: string[]
+      roles?: string[];
       /**
        * The users that the feature flag applies to
        */
-      users?: string[] | ObjectId[] | Reactory.Models.IUser[]
+      users?: string[] | ObjectId[] | Reactory.Models.IUser[];
       /**
        * The time zones to which the feature flag applies
        */
-      timezones?: string[] 
+      timezones?: string[];
       /**
        * The data value for the feature flag
        */
-      value: T
+      value: T;
     }
 
-
     export interface IReactoryClientSetting<T> {
-      name: string
-      componentFqn: string
-      formSchema?: Reactory.Schema.ISchema
-      data: T
+      name: string;
+      componentFqn: string;
+      formSchema?: Reactory.Schema.ISchema;
+      data: T;
     }
 
     /**
      * Known auth providers are provider that is provider
-     * by the reactory platform. Additional providers can 
+     * by the reactory platform. Additional providers can
      * be implemented
      */
-    export type ReactoryKnownAuthProvider = "local" |
-      "google" | 
-      "azure" |
-      "facebook" |
-      "linkedin" |
-      "apple" |
-      "okta";
+    export type ReactoryKnownAuthProvider =
+      | "local"
+      | "google"
+      | "azure"
+      | "facebook"
+      | "linkedin"
+      | "apple"
+      | "okta";
 
-      /**
-       * Author configuration interface.
-       */
-      export interface IReactoryAuthConfiguration<TOptions> {
-      provider: string | ReactoryKnownAuthProvider 
-      enabled: boolean
-      options: TOptions
+    /**
+     * Author configuration interface.
+     */
+    export interface IReactoryAuthConfiguration<TOptions> {
+      provider: string | ReactoryKnownAuthProvider;
+      enabled: boolean;
+      options: TOptions;
     }
 
     /**
@@ -9140,7 +9212,7 @@ declare namespace Reactory {
       /**
        * The feature flags that are associated with the client
        */
-      featureFlags?: IReactoryFeatureFlagValue<unknown>[]
+      featureFlags?: IReactoryFeatureFlagValue<unknown>[];
 
       /**
        * A whitelist of referring sites that are permitted for this application
@@ -9254,24 +9326,31 @@ declare namespace Reactory {
       $id: string;
     }
 
+    export interface IErrorSchema {
+      [key: string]: any
+    }
+
     export type GridSize = number | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
     export interface IGridFieldLayout {
-        xs?: GridSize;
-        sm?: GridSize;
-        md?: GridSize;
-        lg?: GridSize;
-        xl?: GridSize;
-        style?: unknown;
-      }
+      xs?: GridSize;
+      sm?: GridSize;
+      md?: GridSize;
+      lg?: GridSize;
+      xl?: GridSize;
+      style?: unknown;
+      render?: React.ComponentType<any> | React.FC<any>;
+      doShow?: (formData: unknown) => boolean;
+    }
     export interface IGridLayout {
-      [key: string]: IGridFieldLayout
+      [key: string]: IGridFieldLayout;
     }
 
     export interface IGridOptions {
       spacing?: number;
       container?: string | "Paper" | "div";
       containerStyles?: React.CSSProperties;
+      jss?: unknown;
     }
 
     export interface ITabLayout {
@@ -9344,6 +9423,20 @@ declare namespace Reactory {
     }
 
     /**
+     * Place holder interface for the column layout
+     */
+    export interface IColumnLayoutOptions {
+      [fieldName: string]: {
+        title: string;
+        width: number;
+        align?: "left" | "right" | "center";
+        draggable?: boolean;
+        resizable?: boolean;
+        sortable?: boolean;
+      };
+    }
+
+    /**
      * Function type that provides a format string / format result based on a function
      */
     export type TUIFormatProvider = (
@@ -9357,7 +9450,7 @@ declare namespace Reactory {
     /**
      * Function type that provides a JSX structure
      */
-    export type TUIJsxProvider = (
+    export type TUIJssProvider = (
       schema: ISchema,
       uiSchema: IUISchema,
       formData?: unknown,
@@ -9381,7 +9474,17 @@ declare namespace Reactory {
        * where it is available the component documentation will highlight
        * this feature.
        */
-      jsx?: unknown | TUIJsxProvider;
+      jss?: unknown | TUIJssProvider;
+
+      /**
+       * Style rules for the UISchema options
+       */
+      style?: React.CSSProperties;
+
+      /**
+       * Boolean indicating if the field should be hidden
+       */
+      hidden?: boolean;
     }
 
     /**
@@ -9389,7 +9492,6 @@ declare namespace Reactory {
      */
     export interface IUINumberFieldUIOptions extends IUISchemaOptions {
       type?: string | "int" | "float" | "double";
-      title?: string;
     }
 
     /**
@@ -9426,13 +9528,13 @@ declare namespace Reactory {
         | "subtitle2"
         | "body1"
         | "body2";
-      iconProps?: { style: any, [key: string]: any };
+      iconProps?: { style: any; [key: string]: any };
       renderHtml?: boolean;
-      titleProps?: { style: any, [key: string]: any };
-      bodyProps?: { style: any, [key: string]: any };
-      containerProps?: { style: any, [key: string]: any };
+      titleProps?: { style: any; [key: string]: any };
+      bodyProps?: { style: any; [key: string]: any };
+      containerProps?: { style: any; [key: string]: any };
       componentFqn?: string;
-      componentProps?: { style: any, [key: string]: any };
+      componentProps?: { style: any; [key: string]: any };
       componentPropsMap?: ObjectMap;
       /**
        * If true, the label will be rendered as a link that will copy the value
@@ -9440,7 +9542,7 @@ declare namespace Reactory {
        */
       copyToClipboard?: boolean;
 
-      'ui:graphql'?: Reactory.Forms.IReactoryFormQuery;
+      "ui:graphql"?: Reactory.Forms.IReactoryFormQuery;
     }
 
     export interface IUIUTextFieldOptions extends IUISchemaOptions {
@@ -9508,38 +9610,148 @@ declare namespace Reactory {
       | IUINumberFieldUIOptions
       | IUISchemaOptions;
 
-    export type UISchemaStereotype = "grid" | "tab" | "accordion" | "stepped" | "list" | "paged" | "default" ; 
+    export type UISchemaStereotype =
+      | "grid"
+      | "tab"
+      | "accordion"
+      | "stepped"
+      | "list"
+      | "paged"
+      | "default";
+
+
+    export interface TextUIElementdOptions {
+      /**
+       * The title for the field, this can be a i18n key, i18n-object or string
+       */
+      title: string | { key: string; options: I18nFormatOptions };
+      /**
+       * A tooltip to provide for the text UI element
+       */
+      tooltip: string | { key: string; options: I18nFormatOptions };
+      /**
+       * A class name for the field
+       */
+      className?: string
+      /**
+       * JSS styles for the field
+       */
+      jss?: unknown;
+      /**
+       * The icon for the field. This is a string that represents the icon
+       * resources that are available for the active theme.
+       * */    
+      icon?: string;
+      /**
+       * The icon options for the field.
+       */
+      iconOptions?: Partial<{
+        color: string;
+        fontSize: number;
+        position: "left" | "right" | "top" | "bottom";
+        jss: unknown;
+        [key: string]: unknown;
+      }>;
+
+      /**
+       * the color to use for the element
+       */
+      color?: "default" | "secondary" | "inherit" | "primary" | "error" | "info" | "success" | "warning";
+
+      /**
+       * The field component to be used for the title field
+       */
+      field?: string | FQN;
+      /**
+       * The field options for the title field
+       * */
+      fieldOptions?: any;
+    }
+
+    /**
+     * The title field options interface.
+     * Defines the options for the "ui:title" uiSchema field.
+     */
+    export interface UITitleFieldOptions extends TextUIElementdOptions {}
+
+    export interface UIDescriptionFieldOptions extends TextUIElementdOptions { }
+
+    export interface UIErrorFieldOptions extends TextUIElementdOptions { }
+    export interface UIFieldToolbarButton extends TextUIElementdOptions {
+      id: string;
+      command: string | FQN;
+      objectMap?: ObjectMap;
+    }
+    export interface UIFieldToolbarOptions { 
+      buttons: UIFieldToolbarButton[];
+    }
 
     /**
      * Place holder interface
      */
     export interface IUISchema {
       /**
+       * The title field for the schema element.
+       *
+       * The title field can be a string or a UITitleFieldOptions object.
+       */
+      "ui:title"?: string | UITitleFieldOptions;
+
+      /**
+       * Field description for the schema object
+       *
+       * The description field can be a string or a UIDescriptionFieldOptions object.
+       */
+      "ui:description"?: string | UIDescriptionFieldOptions;
+
+      /**
+       * The order in which to render the properties.
+       */
+      "ui:order"?: string[]; 
+
+      /**
+       * Any additional props that needs to be passed to the ui component.
+       */
+      "ui:props"?: any
+
+      /**
+       * Toolbar UI Schema options
+       */
+      "ui:toolbar"?: UIFieldToolbarOptions;
+      /**
        * The wiget tat will be used to render the data element. A widget definition takes priority
        * over other configurations. The widget must be a widget that is registered in the FORM
        * registry (this is different to the reactory component registry).
        * Components can be mapped to widgets using the widget map property on the form.
        */
-      "ui:widget"?: string | "null";
+      "ui:widget"?: string | FQN | "null";
       /**
        * This object is passed to the component that is rendering the element.
        * Each option element is unique
        * to the data type / widget
        * that is being used to render the schema element,
        */
-      "ui:options"?: TReactoryFieldOptions | unknown | "null";
+      "ui:options"?: TReactoryFieldOptions | "null";
       /**
        * The ui:field property describes what layout field that is registered in the form registry.
        * GridLayout will use a standard grid mechanism
        */
       "ui:field"?:
         | string
+        | FQN
         | "GridLayout"
         | "TabbedLayout"
         | "AccordionLayout"
         | "SteppedLayout"
         | "ListLayout"
+        | "ColumnLayout"
         | "PagedLayout";
+
+      /**
+       * The field options for the field. Use this when not using any of the
+       * pre-defined layouts.
+       */
+      "ui:field-options"?: unknown;
       /**
        * The grid layout structure. This breaks down the distribtution of properties over a grid.
        * This is generally the default layout
@@ -9591,6 +9803,15 @@ declare namespace Reactory {
        * Paged options
        */
       "ui:paged-options"?: IPagedLayoutOptions;
+      /**
+       * When using columns for layout
+       */
+      "ui:column-options"?: unknown;
+
+      /**
+       * Options for error display for this field
+       */
+      "ui:error"?: string | UIErrorFieldOptions;
       /**
        * GraphQL form query overrides are used some widgets.
        * Widgets that use this feature are:
@@ -9658,11 +9879,22 @@ declare namespace Reactory {
       /**
        * Schema definitions
        */
-      definitions?: unknown;      
+      definitions?: unknown;
       /**
        * format type
        */
-      format?: string | "email" | "password" | "date" | "date-time" | "phone" | "url" | "uri" | "uuid" | "ipv4" | "ipv6";
+      format?:
+        | string
+        | "email"
+        | "password"
+        | "date"
+        | "date-time"
+        | "phone"
+        | "url"
+        | "uri"
+        | "uuid"
+        | "ipv4"
+        | "ipv6";
       /**
        * valid enum values
        */
@@ -9681,6 +9913,10 @@ declare namespace Reactory {
        * to the function id that must be bound to this object element.
        */
       fqn?: string;
+      /**
+       * additional properties that may be added to the object
+       */
+      additionalProperties?: ISchema;
     }
 
     /**
@@ -9695,7 +9931,7 @@ declare namespace Reactory {
 
     export interface IBooleanSchema extends ISchema {
       type: "boolean";
-      default?: boolean;      
+      default?: boolean;
     }
 
     export interface INumberSchema extends ISchema {
@@ -9742,7 +9978,8 @@ declare namespace Reactory {
       [field: string]: AnySchema;
     }
 
-    export type AnySchema = ISchema
+    export type AnySchema =
+      | ISchema
       | IStringSchema
       | INumberSchema
       | IDateSchema
@@ -9805,14 +10042,14 @@ declare namespace Reactory {
         iconAlign?: string | "left" | "right";
         /**
          * If onClick is a string, form engine
-         * will look up the component, then call the 
+         * will look up the component, then call the
          * function with the following params.
-         * (formData, formContext, formDefintion, onSubmit) => void 
-         * 
+         * (formData, formContext, formDefintion, onSubmit) => void
+         *
          * This function can be used as a custom handler, or as an additional
-         * handler that can call the onSubmit function when it has 
+         * handler that can call the onSubmit function when it has
          * completed it's execution.
-         * @returns 
+         * @returns
          */
         onClick?: () => void | FQN;
         href: unknown;
