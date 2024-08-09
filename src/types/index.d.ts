@@ -1027,6 +1027,34 @@ declare namespace Reactory {
       ): void;
 
       /**
+       * Send a debug message to the logger
+       * @param message 
+       * @param params 
+       */
+      debug(message: string, params?: unknown): void;
+
+      /**
+       * Send a error message to the logger
+       * @param message 
+       * @param params 
+       */
+      error(message: string, params?: unknown): void;
+
+      /**
+       * Send a warning message to the logger
+       * @param message 
+       * @param params 
+       */
+      warning(message: string, params?: unknown): void;
+
+      /**
+       * send an info message to the logger
+       * @param message 
+       * @param params 
+       */
+      info(message: string, params?: unknown): void;
+
+      /**
        * publish stats flushes statistic data associated with the user and
        */
       publishstats(): void;
@@ -1457,6 +1485,10 @@ declare namespace Reactory {
         requiresApi: boolean,
       ): void;
       log(message: string, params?: unknown, kind?: string): void;
+      debug(message: string, params?: unknown): void;
+      error(message: string, params?: unknown): void;
+      warning(message: string, params?: unknown): void;
+      info(message: string, params?: unknown): void;
       publishstats(): void;
       flushstats(save: boolean): void;
       stat(key: string, statistic: unknown): void;
@@ -4427,14 +4459,14 @@ declare namespace Reactory {
      */
     export interface IReactoryLoggedInContext {
       id: string;
-      user: IUser;
-      memberships: IMembership[];
-      organization: IOrganization;
-      businessUnit: IBusinessUnit;
-      team: ITeam;
+      user?: Partial<IUser>;
+      memberships?: IMembership[];
+      organization?: Partial<IOrganization>;
+      businessUnit?: Partial<IBusinessUnit>;
+      team?: Partial<ITeam>;
       roles: string[];
-      altRoles: string[];
-      additional: IReactoryLoggedInContextAdditionalData[];
+      altRoles?: string[];
+      additional?: IReactoryLoggedInContextAdditionalData[];
     }
 
     export interface INavigationComponentDefinition {
@@ -5345,6 +5377,10 @@ declare namespace Reactory {
        */
       organization?: ObjectId | Reactory.Models.IOrganizationDocument;
 
+      /**
+       * The current active membership for the user.
+       */
+      activeMembership?: IMembership;
       /**
        * An array of memberships the user belongs to.
        *
