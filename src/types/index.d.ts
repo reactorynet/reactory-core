@@ -9047,7 +9047,7 @@ declare namespace Reactory {
         /**
          * Object mapper utility
          */
-        objectMapper: ObjectMapper;
+        objectMapper: typeof ObjectMapper;
 
         /**
          * lodash utility for array management
