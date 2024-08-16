@@ -188,18 +188,6 @@ declare namespace Reactory {
   export type ObjectMap = IKeyValuePair<string, ObjectMapEntry | ObjectMapMultiTargetEntry>;
 
   /**
-   * Object Mapper interface.
-   *
-   * The object mapper is responsible fot mapping one object to another.
-   *
-   * For more details about object mapper see https://www.npmjs.com/package/object-mapper
-   */
-  export type ObjectMapper = {
-    merge<TSource, TResult>(source: TSource, map: ObjectMap): TResult;
-    merge<TSource, TResult>(source: TSource, destination: TResult, map: ObjectMap): TResult;
-  };
-
-  /**
    * Basic construct of a fully qualified name
    */
   export interface IFQNObject {
@@ -1401,6 +1389,18 @@ declare namespace Reactory {
 
       resetPassword(resetProps: ResetPasswordProps): Promise<unknown>;
 
+      /**
+       * Injects a resource defined in the form resource object
+       * @param resource 
+       */
+      injectResource(resource: Forms.IReactoryFormResource): void;
+
+      /**
+       * Inbjects a plugin component into the platform.
+       * @param plugin 
+       */
+      injectPlugin(plugin: Platform.IReactoryApplicationPlugin): void;
+
       setViewContext(context: unknown): void;
 
       getViewContext(): unknown;
@@ -1415,7 +1415,7 @@ declare namespace Reactory {
       [key: string]: unknown;
     }
 
-    export class ReactorySDK extends EventEmitter implements IReactoryApi {
+    export class ReactorySDK extends EventEmitter implements IReactoryApi {      
       [key: string]: unknown;
       $windowSize: IWindowSizeSpec;
       init: () => Promise<void>;
@@ -1611,6 +1611,7 @@ declare namespace Reactory {
       status(options?: IApiStatusRequestOptions): Promise<Reactory.Models.IApiStatus>;
       validateToken(token: string): void;
       resetPassword(resetProps: ResetPasswordProps): Promise<unknown>;
+      injectResource(resource: Forms.IReactoryFormResource): void;
       setViewContext(context: unknown): void;
       getViewContext(): unknown;
       extendClientResolver(resolver: unknown): void;
@@ -3570,7 +3571,53 @@ declare namespace Reactory {
        * can be a react-native package, an android external module or an ios external module.
        */
       uri: string;
+      /**
+       * A loader to use when loading the resource. This is useful for loading resources that
+       * are not standard. If no loader is defined the default action for the target platform should
+       * be implement.
+       */
+      loader?: FQN;
+      /**
+       * If true, the Reactory Server will attempt to load the resource from the server
+       * and inject it into the client via the reactory server data location.
+       */
+      autoProxy?: boolean
+      /**
+       * Indicates whether or not to cache the remote resource
+       */
+      cache?: boolean;
+      /**
+       * The cache timeout in milliseconds
+       */
+      cacheTimeout?: number;
+      /**
+       * The cache key to use for the resource
+       */
+      cacheKey?: string;
+      /**
+       * The cache provider to use for the resource
+       */
+      cacheProvider: FQN;
     }
+
+    /**
+     * Resource loader options
+     */
+    export interface IResourceLoaderOptions { 
+      /**
+       * The resource to load
+       */
+      resource: IReactoryFormResource;
+      /**
+       * The reactory client
+       */
+      reactory: Reactory.Client.ReactorySDK;
+    }
+
+    /**
+     * Reactory Resource Loader
+     */
+    export type ReactoryResourceLoader = (options: IResourceLoaderOptions) => Promise<void>;
 
     export interface IReactoryFormBase {
       /**
@@ -4471,6 +4518,39 @@ declare namespace Reactory {
 
     export interface INavigationComponentDefinition {
       id: string;
+      componentFqn: string;
+      componentProps?: unknown;
+      componentPropertyMap?: ObjectMap;
+      componentKey?: string;
+      componentContext?: unknown;
+      contextType?: string
+    }
+
+    export interface IUXMessageAction {
+      id: string;
+      action: string;
+      title: string;
+      icon: string;
+      componentFqn: string;
+      componentProps: unknown;
+      modal: boolean;
+      modalSize: string | "small" | "medium" | "large" | "full";
+      priority: number;
+    }
+
+    export interface IUXMessage {
+      id: string;
+      title: string;
+      text: string;
+      data: unknown;
+      via: string;
+      icon: string;
+      actions: IUXMessageAction[]
+      image: string;
+      requireAction: boolean;
+      silent: boolean
+      timestamp: Date;
+      vibrate: number[];
     }
 
     /**
@@ -4530,6 +4610,24 @@ declare namespace Reactory {
        * Current Active Theme Object
        */
       activeTheme: Reactory.UX.IReactoryTheme;
+
+      applicationRoles: string[];
+
+      applicationAvatar: string;
+
+      applicationName: string;
+
+      themes: Reactory.UX.IReactoryTheme[];
+
+      plugins: Platform.IReactoryApplicationPlugin[];
+
+      colorSchemes: unknown;
+
+      messages: IUXMessage[];
+
+      signature: string;
+
+      publicKey: string;
       [key: string]: unknown;
     }
 
@@ -6526,6 +6624,23 @@ declare namespace Reactory {
        * If set then this path will redirect to a different path
        */
       redirect?: string;
+
+      header?: Partial<{
+        show: boolean;
+        title: string;
+        componentFqn: FQN;
+        props: { [key: string]: unknown };
+        propsMap: ObjectMap;
+      }>;
+      
+      footer?: Partial<{
+        show: boolean;
+        title: string;
+        componentFqn: FQN;
+        props: { [key: string]: unknown };
+        propsMap: ObjectMap;
+      }>;
+
       /**
        * Component array that needs to be bound to the route.
        */
@@ -6550,6 +6665,72 @@ declare namespace Reactory {
   export namespace Platform {
     export type ReactoryApplicationPluginPlatform = "web" | "ios" | "android" | "native";
 
+
+    export interface IPluginLoaderOptions { 
+      /**
+       * The resource to load
+       */
+      plugin: IReactoryApplicationPlugin;
+      /**
+       * The reactory client
+       */
+      reactory: Reactory.Client.ReactorySDK;
+    }
+
+    /**
+     * Reactory Resource Loader
+     */
+    export type ReactoryPluginLoader = (options: IPluginLoaderOptions) => Promise<void>;
+
+    /**
+     * Known reactory plugin events
+     */
+    export type KnownReactoryPluginEvents = "loaded" | "error" | "unloaded";
+    
+    /**
+     * The IReactoryPluginEvent interface defines the data elements required
+     * to define a plugin event that can be emitted by a plugin.
+     * 
+     * The event must be raised via the Reactory SDK and it can be consumed
+     * by any other plugin and system listeners that is listening.
+     */
+    export interface IReactoryPluginEvent<T> {
+      /**
+       * The name of the event that is emitted by the plugin.
+       */
+      name: string | KnownReactoryPluginEvents;
+      /**
+       * Indicates whether or not the event should only be bound / consumed once.
+       **/
+      once?: boolean;
+      /**
+       * The max number of times the event should be consumer
+       * */
+      limit?: number;
+      /**
+       * The throttle time in milliseconds
+       */
+      throttleMs?: number;
+    }
+    /**
+     * Event raised when a plugin encounters an error
+     */
+    export type ReactoryPluginErrorEvent = IReactoryPluginEvent<Error> & { name: "error" };
+
+    /**
+     * Event raised when a plugin is unloaded
+     */
+    export type ReactoryPluginUnloadedEvent = IReactoryPluginEvent<IReactoryApplicationPlugin> & { name: "unloaded" };
+
+    /**
+     * Event raised when a plugin is loaded
+     */
+    export type ReactoryPluginLoadedEvent = IReactoryPluginEvent<IReactoryApplicationPlugin> & { name: "loaded" };
+
+    /**
+     * Known plugin events
+     */
+    export type ReactoryKnownPluginEvents = ReactoryPluginErrorEvent | ReactoryPluginUnloadedEvent | ReactoryPluginLoadedEvent;
     /**
      * The IReactoryClientPlugin defines the data elements required
      * by the client or a builder tool to download and install a
@@ -6574,13 +6755,17 @@ declare namespace Reactory {
        */
       description: string;
       /**
+       * The icon for the plugin
+       * */
+      icon?: string;
+      /**
        * Reactory Application Plugin Platform
        */
       platform: ReactoryApplicationPluginPlatform;
       /**
-       * url for the plugin
+       * uri for the plugin
        */
-      url: string;
+      uri: string;
       /**
        * A loader fqn that can be used to process
        * the load request
@@ -6601,7 +6786,11 @@ declare namespace Reactory {
       /**
        * A list of roles that has access to this
        */
-      roles?: string[];
+      roles?: string[];      
+      /**
+       * A list of events that the plugin can emit
+       */
+      events?: IReactoryPluginEvent<ReactoryKnownPluginEvents>[];
     }
 
     /**
@@ -10038,7 +10227,7 @@ declare namespace Reactory {
      */
     export type TClientSchemaResolver = (
       form: Forms.IReactoryForm,
-      reactory: Client.IReactoryApi,
+      reactory: Client.IReactoryApi | Client.ReactorySDK,
     ) => Promise<AnySchema>;
 
     /**
