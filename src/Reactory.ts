@@ -1,4 +1,5 @@
 "use strict";
+import * as React from 'react';
 import { SERVER_ENVIRONMENT, VERSION } from "./constants";
 
 /**
@@ -214,7 +215,7 @@ class Service {
   static LifecycleServiceTypes = LifecycleServiceTypes;
   static OrganizationalServiceTypes = OrganizationalServiceTypes;
   static DomainServiceTypes = DomainServiceTypes;
-  static ReactoryService = ReactoryService;
+  static ReactoryService = ReactoryService;  
 }
 
 /**
@@ -235,7 +236,8 @@ class ReactoryClass {
   static ComponentDomain = ComponentDomain;
 
   static Service = Service;
-  
+
+  static React = typeof React;
 }
 
 
