@@ -52,12 +52,12 @@ import * as ReactRouterDomAlias from "react-router-dom";
 import i18next from "i18next";
 import { Breakpoint, FilledInputProps, InputProps, OutlinedInputProps } from "@mui/material";
 import { ReadLine } from "readline";
+import LocalForage from "localforage";
 
 /// <reference path="global.d.ts" />
 
 export = Reactory;
 export as namespace Reactory;
-
 declare namespace Reactory {
   /**
    * We export React via the Reactory name space so that
@@ -168,15 +168,42 @@ declare namespace Reactory {
     targetObject: TOUT,
     targetKey: string,
   ) => TOUT | Promise<TOUT>;
+
+  /**
+   * Transform an object from one shape to another asynchronously.
+   * @param sourceObject - The source object that is being transformed
+   * @param sourceKey - The key of the source object
+   * @param targetObject - The target object that is being transformed
+   * @param targetKey - The key of the target object
+   * @returns The transformed object
+   * @example
+   * 
+   * ```typescript
+   * const transform = async (sourceObject, sourceKey, targetObject, targetKey) => {
+   *  targetObject[targetKey] = await someAsyncFunction(sourceObject[sourceKey]);
+   *  return targetObject;
+   * }
+   */
+  export type TransformFunctionAsync<TIN, TOUT> = (
+    sourceObject: TIN,
+    sourceKey: string,
+    targetObject: TOUT,
+    targetKey: string,
+  ) => Promise<TOUT>;
+
   /**
    * Object Transform object is used for fine grained control over an object data set.
    */
   export interface ObjectTransform<TIN, TOUT> {
+    /**
+     * key is the key of the source object that is being transformed.
+     */
     key: string;
-    transform(): TransformFunction<TIN, TOUT>;
+    transform: TransformFunction<TIN, TOUT> | TransformFunctionAsync<TIN, TOUT>;
     transformFQN?: FQN;
     defaultFQN?: FQN;
-    default(): TransformFunction<TIN, TOUT>;
+    async?: boolean;
+    default: TransformFunction<TIN, TOUT> | TransformFunctionAsync<TIN, TOUT>;
   }
 
   /**
@@ -185,10 +212,19 @@ declare namespace Reactory {
    *
    * ```typescript
    * {
-   * key: "sourceKey",
-   * transform: (sourceObject, sourceKey, targetObject, targetKey) => { }
+   *   key: "sourceKey",
+   *   transform: (sourceObject, sourceKey, targetObject, targetKey) => { }
+   * }
+   * 
+   * // or
+   * {
+   *   key: "sourceKeyAsync",
+   *   transform: async (sourceObject, sourceKey, targetObject, targetKey) => { }
+   * }
+   * ```
    */
   export type ObjectMapEntry = string | ObjectTransform<unknown, unknown>;
+
   /**
    * Object Map Multi Target Entry is used to map a source object to multiple target objects.
    */
@@ -212,6 +248,7 @@ declare namespace Reactory {
     name: string;
     /**
      * The version part of the component id
+     * follows semver format
      */
     version: string;
   }
@@ -650,7 +687,7 @@ declare namespace Reactory {
        * @param templateObject
        * @param props
        */
-      templateObject: <T>(item: unknown, props: unknown) => T;
+      templateObject: <T>(objectMap: Reactory.ObjectMap, props: unknown) => T;
       /**
        * Function to provide easy to read humanized numbers.
        * i.e. 13000 -> 13K
@@ -3134,10 +3171,10 @@ declare namespace Reactory {
       validationType: ValidationTypes,
     ) => Promise<SchemaFormValidationResult>;
 
-    export type TransformErrorsFunction = (errors: any[], schema: Reactory.Schema.ISchema) => { 
+    export type TransformErrorsFunction = (errors: any[], schema: Reactory.Schema.ISchema) => Promise<{ 
       errors: any[], 
       errorSchema: Reactory.Schema.IErrorSchema, 
-    };
+    }>;
 
     /**
      * Defines the property set for the ISchemaFormProps
@@ -3149,6 +3186,7 @@ declare namespace Reactory {
       idPrefix?: string;
       errorSchema?: any;
       formData?: TData;
+      formContext: Reactory.Forms.ReactoryFormContext<TData, any>;
       widgets?: {
         [key: string]: React.Component | React.FC | React.PureComponent;
       };
@@ -3157,12 +3195,12 @@ declare namespace Reactory {
       ObjectFieldTemplate?: () => any;
       FieldTemplate?: () => any;
       ErrorList?: React.FC<any>;
-      onBlur?: (...args: any) => void;
-      onFocus?: (...args: any) => void;
-      onChange?: (formData: TData, errorSchema: Reactory.Schema.IErrorSchema) => void;
-      onError?: (errors: any[], errorSchema?: Reactory.Schema.IErrorSchema) => void;
+      onBlur?: (...args: any) => Promise<void>;
+      onFocus?: (...args: any) => Promise<void>;
+      onChange: (data: TData, errors: any[], errorSchema: Reactory.Schema.IErrorSchema) => Promise<void>,
+      onSubmit: (data: TData, errors: any[], errorSchema: Reactory.Schema.IErrorSchema) => Promise<void>,
+      onError?: (errors: any[], errorSchema?: Reactory.Schema.IErrorSchema) => Promise<void>;
       showErrorList?: boolean;
-      onSubmit?: (form: any) => void;
       id?: string;
       className?: string;
       chilren?: any;
@@ -3176,13 +3214,14 @@ declare namespace Reactory {
       noValidate?: boolean;
       noHtml5Validate?: boolean;
       liveValidate?: boolean;
-      toolbarPosition?: string;
-      validate?: SchemaFormValidationFunction<TData>;
+      toolbarPosition?: string | "top" | "bottom" | "none";
+      validate?: SchemaFormValidationFunctionSync<TData> | SchemaFormValidationFunctionAsync<TData>;
       transformErrors?: TransformErrorsFunction;
       safeRenderCompletion?: boolean;
-      formContext: Reactory.Forms.ReactoryFormContext<any, any>;
       disabled?: boolean;
       style?: any;
+      // @deprecated
+      ref: (form: any) => void;
       [key: string]: any;
     }
 
@@ -3334,21 +3373,52 @@ declare namespace Reactory {
       | "function"
       | "refresh"
       | "none"
-      | "component";
+      | "component"
+      | "event";
 
     export interface IReactoryFormQueryErrorHandlerDefinition {
       /**
        * The method to use when an error occurs.
        */
-      onErrorMethod: ReactoryFormActionHandlerType;
+      onErrorMethod: ReactoryFormActionHandlerType | ReactoryFormActionHandlerType[];
       /**
        * The component fqn to use when the onErrorMethod is set to component or function
        * */
       componentRef?: string;
       /**
-       *
+       * The name of a method to invoke when the onErrorMethod is set to function
+       * if there is no method name, the system will attempt to use the default 
+       * name of 'onError'
        */
-      method: string;
+      method?: string;
+      /**
+       * The template string to use when the onErrorMethod is set to redirect.
+       * The following properties can be used in the template string.
+       * - formData - the form data
+       * - formContext - the form context
+       * - form - the form 
+       * - errors - the result of the mutation
+       *
+       * The template string can be used to build a URI that will be used to redirect the user.
+       * Template syntax uses the lodash template syntax.
+       * i.e. "/some/path/${formData.id}"
+       */
+      onErrorUrl?: string;
+      /**
+       * The timeout in millis that the form will wait
+       * before redirecting the user. This is generally only used on mutations.
+       */
+      onErrorRedirectTimeout?: number;
+
+      /**
+       * The notification event object to use when the onErrorMethod is set to event.
+       */
+      onErrorEvent?: IReactoryEvent;
+      
+      /**
+       * The notification to use when the onErrorMethod is set to notification.
+       */
+      notification?: IReactoryNotification; 
     }
 
     /**
@@ -3358,9 +3428,9 @@ declare namespace Reactory {
      */
     export interface IReactoryFormGraphResultHandler {
       /**
-       * Indicates which method to use once the graph query or mutation has been executed.
+       * Indicates which method or methods to use once the graph query or mutation has been executed.
        */
-      onSuccessMethod?: ReactoryFormActionHandlerType;
+      onSuccessMethod?: ReactoryFormActionHandlerType | ReactoryFormActionHandlerType[];
       /**
        * The template string to use when the onSuccessMethod is set to redirect.
        * the following properties can be used in the template string.
@@ -4173,6 +4243,49 @@ declare namespace Reactory {
       components?: string[];
     }
 
+    export type ReactoryFormDataProvider =  FQN | 'graphql' | 'rest' | 'local' | 'grpc' | 'socket' | 'none'
+
+    export interface IReactoryFormDataProviderOptions { 
+      [key: string]: unknown;
+      /**
+       * Defines the data merging strategy for the data provider.
+       * - FQN: A fully qualified name of a function that will be used to merge the data. 
+       *   The function needs to be registered in the reactory container.
+       * - merge: Will merge the data with the form data
+       * - replace: Will replace the form data with the data
+       * - none: Will do nothing (default)
+       * - mapper: Will use the map to map the data
+       */
+      mergeStrategy?: FQN | "merge" | "replace" | "none" | "mapper";
+      /**
+       * The object map to use for mapping the data if the merge strategy is set to mapper
+       * or if the merge strategy is undefined, but the map is defined.
+       */
+      map?: ObjectMap;
+    }
+    export interface IReactoryFormDataProvider<TOptions extends IReactoryFormDataProviderOptions> { 
+      type: ReactoryFormDataProvider;
+      options?: TOptions;
+    }
+    /**
+     * Data provider configuration for a reactory form.
+     */
+    export interface IReactoryFormDataProviderConfig {
+      /**
+       * Providers are used to provide data to the form. The form can use
+       * multiple providers to provide data to the form.
+       * 
+       * By default the form will attempt use local data provider and graphql data provider as default if none
+       * is specified.
+       * 
+       * The providers are executed in order they are defined. The first provider will be considered the primary
+       * provider.
+       */
+      providers?: {
+        [key: string]: ReactoryFormDataProvider;
+      } 
+    }
+
     /**
      * The main interface for the data structure that represents the Reactory Form.
      * Most properties are optional as the form only requires a schema and a few other basic
@@ -4182,7 +4295,8 @@ declare namespace Reactory {
       extends IReactoryFormBase,
         IReactoryFormArgs,
         IReactoryFormSchemas,
-        IReactoryFormRuntime {
+        IReactoryFormRuntime, 
+        IReactoryFormDataProviderConfig {
       /**
        * The graph definition for the form
        */
@@ -4229,9 +4343,22 @@ declare namespace Reactory {
        */
       backButton?: boolean;
       /**
-       * TODO: investigate use of the workflow
+       * A work flow configuration for the form. The workflow will be 
+       * triggered when the form is submitted.
        */
-      workflow?: unknown;
+      workflow?: {
+        /** The id of the workflow to call */
+        id: FQN;
+        /**
+         * The object map to use to transform the
+         * input data.
+         */
+        map?: ObjectMap;
+        /**
+         * Any additional properties to use for the merge
+         */
+        props?: unknown;
+      };
       /**
        * boolean property for indicating Html5 validation
        */
@@ -4239,13 +4366,17 @@ declare namespace Reactory {
       /**
        * A form context data / properties that should be injected
        */
-      formContext?: unknown;
+      formContext?: Reactory.Client.IReactoryFormContext<unknown>;
       /**
-       * fields for the form - TODO: investigate structure and use.
+       * fields for the form. The fields are set at runtime
+       * and are used to render the form. The fields are derived
+       * by using the uiFramework selection.
        */
       fields?: unknown;
       /**
-       * Widgets for the form - TODO: investigate structure and use.
+       * Widgets for the form. The widgets are set at runtime
+       * and are used to render the form. The widgets are derived
+       * by using the uiFramework selection.
        */
       widgets?: unknown;
       /**
@@ -4254,7 +4385,7 @@ declare namespace Reactory {
        * edge cases where the form is rendered inside some other static content that 
        * is not managed by the reactory container. 
        * 
-       * This provides a sepearate application context for that form instance.
+       * This provides a separate application context for that form instance.
        */
       wrap?: boolean;
       /**
@@ -10812,7 +10943,16 @@ declare namespace Reactory {
 
   export namespace Web {}
 
+  /**
+   * Workflow name space for the reactory platform.
+   * 
+   * All workflow related interfaces are kept here.
+   */
   export namespace Workflow {
+
+    /**
+     * Reactory workflow definition. This is the base definition for a workflow in the reactory platform.
+     */
     export interface IWorkflow {
       id: string;
       nameSpace: string;
