@@ -7,9 +7,14 @@ When building this project make sure that you have configured the correct enviro
 
 Depending on your terminal you will need to add the following environment variables to your .zprofile or your .bashrc to export the `REACTORY_PLUGINS` environment variable. 
 
-    export REACTORY_DATA ="$HOME/Projects/reactory/reactory-data"
-    export REACTORY_PLUGINS="$REACTORY_DATA/plugins"
-
+```bash
+export REACTORY_HOME="$HOME/Projects/reactory"
+export REACTORY_DATA="$REACTORY_HOME/reactory-data"
+export REACTORY_SERVER="$REACTORY_HOME/reactory-server"
+export REACTORY_CLIENT="$REACTORY_HOME/reactory-client"
+export REACTORY_NATIVE="$REACTORY_HOME/reactory-native"
+export REACTORY_PLUGINS="$REACTORY_DATA/plugins"
+```
 The reactory server, client and native client use these as reference and this must be built first.
 
 To build and install the reactory-core library run the `npm run make-install` at the command prompt.
