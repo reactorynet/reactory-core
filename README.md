@@ -12,6 +12,8 @@ or
 wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 ```
 
+**Please refer to Reactory Server for dependency requirements**
+
 This project is a core project that contains environment variables, defaults, types for different environment runtimes.
 
 When building this project make sure that you have configured the correct environment variable for where the reactory plugins folder resides.
@@ -21,8 +23,8 @@ Depending on your terminal you will need to add the following environment variab
 ```bash
 export REACTORY_HOME="$HOME/Projects/reactory"
 export REACTORY_DATA="$REACTORY_HOME/reactory-data"
-export REACTORY_SERVER="$REACTORY_HOME/reactory-server"
-export REACTORY_CLIENT="$REACTORY_HOME/reactory-client"
+export REACTORY_SERVER="$REACTORY_HOME/reactory-express-server"
+export REACTORY_CLIENT="$REACTORY_HOME/reactory-pwa-client"
 export REACTORY_NATIVE="$REACTORY_HOME/reactory-native"
 export REACTORY_PLUGINS="$REACTORY_DATA/plugins"
 ```
