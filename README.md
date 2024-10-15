@@ -17,6 +17,8 @@ export REACTORY_PLUGINS="$REACTORY_DATA/plugins"
 ```
 The reactory server, client and native client use these as reference and this must be built first.
 
+Install dependencies using `yarn install`.
+
 To build and install the reactory-core library run the `yarn build:install` at the command prompt.
 
 
