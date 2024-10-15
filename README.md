@@ -1,6 +1,17 @@
 ![Build Anything Fast](/branding/reactory-logo.png)
 # Reactory Core
 
+It is highly advised to install [nvm](https://github.com/nvm-sh/nvm) as your node version manager.
+
+Install nvm:
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```
+or
+```bash
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```
+
 This project is a core project that contains environment variables, defaults, types for different environment runtimes.
 
 When building this project make sure that you have configured the correct environment variable for where the reactory plugins folder resides.
