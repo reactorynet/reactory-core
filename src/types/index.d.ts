@@ -3543,7 +3543,7 @@ declare namespace Reactory {
        *
        * Supports
        */
-      onSuccessMethod?: ReactoryFormActionHandlerType;
+      onSuccessMethod?: ReactoryFormActionHandlerType | ReactoryFormActionHandlerType[];
 
       /**
        * Response handlers key names should match the typename of the
