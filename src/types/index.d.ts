@@ -8393,6 +8393,14 @@ declare namespace Reactory {
     }
 
     export interface IReactorySupportService extends Reactory.Service.IReactoryDefaultService {
+      /**
+       * Creates a new support ticket
+       * @param request 
+       * @param description 
+       * @param requestType 
+       * @param meta 
+       * @param formId 
+       */
       createRequest(
         request: string,
         description: string,
@@ -8401,17 +8409,43 @@ declare namespace Reactory {
         formId?: string,
       ): Promise<Models.IReactorySupportTicket | Models.IReactorySupportTicketDocument>;
 
+      /**
+       * Deletes a support ticket
+       * @param ticket_id 
+       * @param reason 
+       */
+      deleteRequest(
+        ids: string[],
+        reason?: string,
+      ): Promise<void>;
+
+      /**
+       * Updated a support ticket
+       * @param ticket_id 
+       * @param updates 
+       */
       updateTicket(
         ticket_id: string,
         updates: Models.IReactorySupportTicketUpdate,
       ): Promise<Models.IReactorySupportTicket | Models.IReactorySupportTicketDocument>;
 
+      /**
+       * Attaches a file to a support ticket
+       * @param ticket_id 
+       * @param file 
+       * @param name 
+       */
       attachDocument(
         ticket_id: string,
         file: File,
         name: string,
       ): Promise<Models.IReactorySupportTicket | Models.IReactorySupportTicketDocument>;
 
+      /**
+       * Returns a paged list of support tickets
+       * @param filter 
+       * @param paging 
+       */
       pagedRequest(
         filter: Models.IReactorySupportTicketFilter,
         paging: Models.IPagingRequest,
