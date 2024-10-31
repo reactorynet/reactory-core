@@ -1,26 +1,45 @@
 ![Build Anything Fast](/branding/reactory-logo.png)
 # Reactory Core
 
+It is highly advised to install [nvm](https://github.com/nvm-sh/nvm) as your node version manager.
+
+Install nvm:
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```
+or
+```bash
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```
+
+**Please refer to Reactory Server for dependency requirements**
+
 This project is a core project that contains environment variables, defaults, types for different environment runtimes.
 
 When building this project make sure that you have configured the correct environment variable for where the reactory plugins folder resides.
 
 Depending on your terminal you will need to add the following environment variables to your .zprofile or your .bashrc to export the `REACTORY_PLUGINS` environment variable. 
 
-    export REACTORY_DATA ="$HOME/Projects/reactory/reactory-data"
-    export REACTORY_PLUGINS="$REACTORY_DATA/plugins"
-
+```bash
+export REACTORY_HOME="$HOME/Projects/reactory"
+export REACTORY_DATA="$REACTORY_HOME/reactory-data"
+export REACTORY_SERVER="$REACTORY_HOME/reactory-express-server"
+export REACTORY_CLIENT="$REACTORY_HOME/reactory-pwa-client"
+export REACTORY_NATIVE="$REACTORY_HOME/reactory-native"
+export REACTORY_PLUGINS="$REACTORY_DATA/plugins"
+```
 The reactory server, client and native client use these as reference and this must be built first.
 
-To build and install the reactory-core library run the `npm run make-install` at the command prompt.
+Install dependencies using `yarn install`.
 
-Once you have the server and client components checked out you can run the `npm run deploy-local` which will copy the library to the server and client /lib folders and then install it into the respective projects.
+To build and install the reactory-core library run the `yarn build:install` at the command prompt.
+
 
 ## Testing
 
 The core library has only two tests, one that checks and confirms the reflection tooling is working and the other simply checks the version.
 
-To run the test, run `npm run test`
+To run the test, run `yarn test`
 
 For more information on reactory check out the reactory docs project.
 

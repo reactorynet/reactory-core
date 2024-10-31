@@ -4,8 +4,9 @@ import commonjs from "@rollup/plugin-commonjs";
 import resolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import typescript from "@rollup/plugin-typescript";
-import copy from "./rollup/copy";
-const jsx = require("rollup-plugin-jsx");
+import copy from "./rollup/copy.js";
+import jsx from 'rollup-plugin-jsx';
+// const jsx = require("rollup-plugin-jsx");
 
 const options = {
   input: "./src/Reactory.ts",
@@ -50,12 +51,9 @@ const options = {
             modules: false,
           },
         ],
-
         [ "@babel/react" ],
-
         [ "@babel/typescript" ],
       ],
-      plugins: [ "@babel/plugin-proposal-class-properties" ],
     }),
     resolve(),
     jsx({ factory: "React.createElement" }),

@@ -68,7 +68,7 @@
             
             <nav>
                 
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Externals</h3><ul><li><a href="external-ConstructorParameters.html">ConstructorParameters</a></li><li><a href="external-Exclude.html">Exclude</a></li><li><a href="external-Extract.html">Extract</a></li><li><a href="external-InstanceType.html">InstanceType</a></li><li><a href="external-NonNullable.html">NonNullable</a></li><li><a href="external-Omit.html">Omit</a></li><li><a href="external-OmitThisParameter.html">OmitThisParameter</a></li><li><a href="external-Parameters.html">Parameters</a></li><li><a href="external-Partial.html">Partial</a></li><li><a href="external-Pick.html">Pick</a></li><li><a href="external-Readonly.html">Readonly</a></li><li><a href="external-Record.html">Record</a></li><li><a href="external-Required.html">Required</a></li><li><a href="external-ReturnType.html">ReturnType</a></li><li><a href="external-ThisParameterType.html">ThisParameterType</a></li><li><a href="external-ThisType.html">ThisType</a></li></ul><h3>Classes</h3><ul><li><a href="Reactory.html">Reactory</a></li></ul><h3>Global</h3><ul><li><a href="global.html#FeatureType">FeatureType</a></li></ul></div>
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Externals</h3><ul><li><a href="external-ConstructorParameters.html">ConstructorParameters</a></li><li><a href="external-Exclude.html">Exclude</a></li><li><a href="external-Extract.html">Extract</a></li><li><a href="external-InstanceType.html">InstanceType</a></li><li><a href="external-NonNullable.html">NonNullable</a></li><li><a href="external-Omit.html">Omit</a></li><li><a href="external-OmitThisParameter.html">OmitThisParameter</a></li><li><a href="external-Parameters.html">Parameters</a></li><li><a href="external-Partial.html">Partial</a></li><li><a href="external-Pick.html">Pick</a></li><li><a href="external-Readonly.html">Readonly</a></li><li><a href="external-Record.html">Record</a></li><li><a href="external-Required.html">Required</a></li><li><a href="external-ReturnType.html">ReturnType</a></li><li><a href="external-ThisParameterType.html">ThisParameterType</a></li><li><a href="external-ThisType.html">ThisType</a></li></ul><h3>Classes</h3><ul><li><a href="ReactoryClass.html">ReactoryClass</a></li></ul><h3>Global</h3><ul><li><a href="global.html#FeatureType">FeatureType</a></li></ul></div>
                 
             </nav>
         </div>
@@ -86,13 +86,13 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>"use strict";
+import * as React from 'react';
 import { SERVER_ENVIRONMENT, VERSION } from "./constants";
-
 
 /**
   * A feature type
   */
-export enum FeatureType {
+enum FeatureType {
   "string",
   "number",
   "boolean",
@@ -104,7 +104,7 @@ export enum FeatureType {
   "bigint"
 }
 
-export enum ComponentDomain {
+enum ComponentDomain {
   "model",
   "service",
   "component",
@@ -132,11 +132,184 @@ export enum ComponentDomain {
   "eventProducer",
   "eventConsumer",
 }
+
+enum FunctionalServiceTypes {
+  "file", // File handling services
+  "data", // Data services
+  "iot", // Internet of Things related services
+  "email", // Email related services
+  "notification", // Notification services
+  "integration", // Services used for integration
+  "authentication", // Authentication services
+  "authorization", // Authorization services
+  "billing", // Billing or payment related services
+  "messaging", // Messaging services (e.g. chat, SMS)
+  "logging", // Logging services
+  "monitoring", // Monitoring or observability services
+  "analytics", // Analytics services
+  "search", // Search related services
+  "database", // Database related services
+  "cache", // Caching services
+  "queue", // Queue services
+  "stream", // Stream processing services
+  "workflow", // Workflow services
+  "network", // Network related services
+  "storage", // Storage services
+  "backup", // Backup services
+  "scheduler", // Scheduling services
+  "location", // Location services
+  "security", // Security related services
+  "reporting", // Reporting services
+  "translation", // Translation services
+  "ocr", // Optical Character Recognition services
+  "ai", // AI or Machine Learning services
+  "media", // Media processing services (audio, video)
+  "cdn", // Content Delivery Network services
+  "session", // Session management services
+  "configuration", // Configuration services
+  "rateLimiting", // Rate limiting services
+  "abTesting", // A/B testing services
+  "featureToggle", // Feature toggle services
+  "event", // Event related services
+  "custom", // Custom services
+  "template", // Template related services
+}
+
+enum LifecycleServiceTypes {
+  "codeGeneration", // Services used for code generation
+  "codeAnalysis", // Services used for code analysis
+  "schemaGeneration", // Services used for schema generation
+  "schemaValidation", // Services used for schema validation
+  "development", // Services used during development phase
+  "testing", // Services used during testing phase
+  "staging", // Services used during staging phase
+  "production", // Services used during production phase
+  "maintenance", // Services used for maintenance
+  "debugging", // Services used for debugging
+  "monitoring", // Services used for monitoring application health
+  "logging", // Services used for logging
+  "deployment", // Services used for deployment
+  "continuousIntegration", // Services used for continuous integration
+  "continuousDelivery", // Services used for continuous delivery
+  "bugTracking", // Services used for bug tracking
+  "issueTracking", // Services used for issue tracking
+  "taskTracking", // Services used for task tracking
+  "versionControl", // Services used for version control
+  "codeReview", // Services used for code review
+  "build", // Services used for build process
+  "release", // Services used for release process
+  "rollback", // Services used for rollback process
+  "scaling", // Services used for scaling (vertical, horizontal)
+  "loadBalancing", // Services used for load balancing
+  "failover", // Services used for failover process
+  "backupRestore", // Services used for backup and restore process
+  "securityScanning", // Services used for security scanning
+  "performanceTuning", // Services used for performance tuning
+  "audit", // Services used for auditing
+  "compliance", // Services used for compliance
+  "documentation", // Services used for documentation
+}
+
+enum OrganizationalServiceTypes {
+  "user", // Services intended for regular users
+  "admin", // Services intended for administrators
+  "superAdmin", // Services intended for super administrators
+  "support", // Services intended for support teams
+  "developer", // Services intended for developers
+  "productOwner", // Services intended for product owners
+  "stakeholder", // Services intended for stakeholders
+  "businessAnalyst", // Services intended for business analysts
+  "qa", // Services intended for QA teams
+  "hr", // Services intended for human resources
+  "finance", // Services intended for finance teams
+  "marketing", // Services intended for marketing teams
+  "sales", // Services intended for sales teams
+  "legal", // Services intended for legal teams
+  "operation", // Services intended for operations teams
+  "security", // Services intended for security teams
+  "auditor", // Services intended for auditors
+  "compliance", // Services intended for compliance teams
+  "training", // Services intended for training or education
+  "projectManagement", // Services intended for project management teams
+  "executive", // Services intended for executive users
+  "customer", // Services intended for customers
+  "partner", // Services intended for partners or third-party collaborators
+  "supplier", // Services intended for suppliers
+  "vendor", // Services intended for vendors
+  "consultant", // Services intended for consultants
+}
+
+enum DomainServiceTypes {
+  "customerManagement", // Services for customer management
+  "productManagement", // Services for product management
+  "inventoryManagement", // Services for inventory management
+  "salesManagement", // Services for sales management
+  "orderManagement", // Services for order management
+  "paymentProcessing", // Services for payment processing
+  "shipmentManagement", // Services for shipment management
+  "accountManagement", // Services for account management
+  "subscriptionManagement", // Services for subscription management
+  "contractManagement", // Services for contract management
+  "projectManagement", // Services for project management
+  "taskManagement", // Services for task management
+  "resourceManagement", // Services for resource management
+  "documentManagement", // Services for document management
+  "contentManagement", // Services for content management
+  "knowledgeBase", // Services for knowledge base or FAQ
+  "reporting", // Services for reporting
+  "analytics", // Services for analytics
+  "marketingAutomation", // Services for marketing automation
+  "crm", // Services for Customer Relationship Management
+  "erp", // Services for Enterprise Resource Planning
+  "hr", // Services for human resources operations
+  "financial", // Services for financial operations
+  "manufacturing", // Services for manufacturing operations
+  "logistics", // Services for logistics operations
+  "supplyChain", // Services for supply chain operations
+  "eCommerce", // Services for e-commerce operations
+  "healthCare", // Services for healthcare operations
+  "education", // Services for education operations
+  "realEstate", // Services for real estate operations
+  "legal", // Services for legal operations
+  "itManagement", // Services for IT management operations
+  "custom", // Custom domain-specific services
+}
+
+
+export type ReactoryServiceTypes =
+| FunctionalServiceTypes
+| LifecycleServiceTypes
+| OrganizationalServiceTypes
+| DomainServiceTypes;
+
+
+abstract class ReactoryService&lt;P, C>  implements Reactory.Service.IReactoryService {
+  description?: string;
+  tags?: string[];
+  nameSpace: string;
+  name: string;
+  version: string;
+  props: P;
+  context: C;
+
+  toString?(includeVersion?: boolean): string {
+    return `${this.nameSpace}.${this.name}${includeVersion ? `.${this.version}` : ''}`;
+  }
+}
+
+class Service {
+  static FunctionalServiceTypes = FunctionalServiceTypes;
+  static LifecycleServiceTypes = LifecycleServiceTypes;
+  static OrganizationalServiceTypes = OrganizationalServiceTypes;
+  static DomainServiceTypes = DomainServiceTypes;
+  static ReactoryService = ReactoryService;  
+}
+
 /**
  * Reactory class is a container / static holder
  * for low level / core features.
  */
-class Reactory {
+class ReactoryClass {
   static REACTORY_VERSION = VERSION;
   static REACTORY_ENVIRONMENT = SERVER_ENVIRONMENT;
 
@@ -148,9 +321,14 @@ class Reactory {
   static FeatureType = FeatureType;
 
   static ComponentDomain = ComponentDomain;
+
+  static Service = Service;
+
+  static React = typeof React;
 }
 
-export default Reactory;
+
+export default ReactoryClass;
 </code></pre>
         </article>
     </section>
@@ -162,7 +340,7 @@ export default Reactory;
             
             <footer class="footer">
                 <div class="content has-text-centered">
-                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a></p>
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a></p>
                     <p class="sidebar-created-by">
                         <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
                         <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
