@@ -1294,12 +1294,14 @@ declare namespace Reactory {
 
       /**
        * Loads a form with a gven id
-       * @param id
-       * @param onFormUpdated
+       * @param id - FQN for the form.
+       * @param onFormUpdated - callback function to call when form schema is updated.
+       * @param options - Options that is passed to the form resolver Form schema and ui schema can use options to change ouput
        */
       form(
         id: string,
         onFormUpdated?: (form: Forms.IReactoryForm, error?: Error) => void,
+        options?: any
       ): Forms.IReactoryForm;
 
       /**
@@ -4601,6 +4603,11 @@ declare namespace Reactory {
       screenBreakPoint: string | "xs" | "sm" | "md" | "lg" | "xl";
       [key: string]: unknown;
     } & TAdditional;
+
+
+    export interface IReactoryFormComponent extends React.FunctionComponent<Reactory.Client.IReactoryFormProps<unknown>> {
+      
+    }
   }
 
   export namespace Graph {
@@ -8393,6 +8400,14 @@ declare namespace Reactory {
     }
 
     export interface IReactorySupportService extends Reactory.Service.IReactoryDefaultService {
+      
+      /**
+       * Get's a ticket by the ticket id and checks if the 
+       * user has permissions to retrieve
+       * @param ticket_id 
+       */
+      getTicket(ticket_id: string): Promise<Models.ReactorySupportDocument>;
+      
       /**
        * Creates a new support ticket
        * @param request 
@@ -8447,7 +8462,7 @@ declare namespace Reactory {
        * @param paging 
        */
       pagedRequest(
-        filter: Models.IReactorySupportTicketFilter,
+        filter: Partial<Models.IReactorySupportTicketFilter>,
         paging: Models.IPagingRequest,
       ): Promise<Models.IPagedReactorySupportTickets>;
     }

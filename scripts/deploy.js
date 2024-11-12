@@ -19,6 +19,7 @@ const verbose = process.argv && process.argv.length > 0 && process.argv.indexOf(
 const dest = [
   `${client}`,
   `${server}`,
+  `${plugins}/__runtime__`, // This is the runtime folder for plugins
 ];
 
 if (!fs.existsSync(source)) {
@@ -36,6 +37,10 @@ const logout = [];
 const log = s => logout.push(s);
 
 const updatePackage = (target) => { 
+  if (fs.existsSync(`${target}/package.json`) === false) { 
+    shell.echo(`No package.json found in ${target} - skipping`);
+    return;
+  }
   const packagePath = `${target}/package.json`;
   const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
   packageJson.dependencies[packageInfo.name] = `file:./lib/${filename}`;
@@ -43,6 +48,11 @@ const updatePackage = (target) => {
 }
 
 dest.forEach((target) => {
+  if (fs.existsSync(target) === false) { 
+    shell.echo(`No target found at ${target} - skipping`);
+    return;
+  }
+  
   shell.cd(target);
   shell.echo(`Deploying lib to ${target}`);
   log(shell.exec(`rm -rf ${target}/node_module/@reactory/react-core`));
