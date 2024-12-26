@@ -6,6 +6,7 @@ import { Request, Application, Response, Router } from "express";
 import core from "express-serve-static-core";
 import fs from "fs";
 import ExcelJS from "exceljs";
+import http from 'http';
 import EventEmitter from "eventemitter3";
 import { Stream, Transform } from "stream";
 import moment, { Moment } from "moment";
@@ -27,6 +28,7 @@ import {
   FetchResult,
 } from "@apollo/client";
 
+import * as ApolloServerAlias from "@apollo/server";
 import * as ApolloCoreAlias from "@apollo/client";
 import * as ApolloReactAlias from "@apollo/client/react";
 import * as ApolloHOCAlias from "@apollo/client/react/hoc";
@@ -53,6 +55,7 @@ import i18next from "i18next";
 import { Breakpoint, FilledInputProps, InputProps, OutlinedInputProps } from "@mui/material";
 import { ReadLine } from "readline";
 import LocalForage from "localforage";
+import { GraphQLRequestContext } from "@apollo/server";
 
 /// <reference path="global.d.ts" />
 
@@ -1041,7 +1044,7 @@ declare namespace Reactory {
       CDN_ROOT: string;
       /**
        * Application API root
-       * @example "https://api.reactory.io" or "http://localhost:4000/api" for local development
+       * @example "https://api.reactory.io" or "http://localhost:4000/graph" for local development
        * */
       API_ROOT: string;
       /**
@@ -4670,10 +4673,20 @@ declare namespace Reactory {
       transformer: (schema: GraphQLSchema) => GraphQLSchema;
     }
 
+    export type TReactoryGraphPlugin = ApolloServerAlias.ApolloServerPlugin<Reactory.Server.IReactoryContext>;
+
+    /**
+     * Defines a Graph Plugin component
+     */
+    export interface IGraphPlugin extends Reactory.IReactoryComponentDefinition<TReactoryGraphPlugin> {
+      ordinal: number      
+    }
+
     export interface IGraphDefinitions {
       Resolvers: IGraphShape;
       Types: string[];
       Directives?: IGraphDirectiveProvider[];
+      Plugins?: IGraphPlugin[];
     }
 
     export interface IResolverStruct {
@@ -9438,6 +9451,27 @@ declare namespace Reactory {
       (kwargs: string[], context: Reactory.Server.IReactoryContext) => Promise<void>
     >;
 
+
+    export type ExpressMiddlewareFunction = (req: Express.Request | Reactory.Server.ReactoryExpressRequest, res: Express.Response, next: Function) => void;
+
+    export type ExpressMiddlewareConfigurationFunctionAsync = (app: Express.Application, httpServer: http.Server) => Promise<void>;
+
+    export type ExpressMiddlewareConfigurationFunction = (app: Express.Application, httpServer: http.Server) => void;
+
+    export type ExpressErrorHandlerMiddlewareFunction = (err: Error, req: Express.Request, res: Express.Response, next: Function) => void;
+    /**
+     * The middleware definition for the module
+     */
+    export type ReactoryMiddlewareDefinition = Reactory.IReactoryComponentDefinition<
+    ExpressMiddlewareFunction | 
+    ExpressMiddlewareConfigurationFunctionAsync | 
+    ExpressMiddlewareConfigurationFunction |
+    ExpressErrorHandlerMiddlewareFunction> & { 
+      ordinal: number;
+      type: "function" | "configuration";
+      async: boolean;
+    };
+
     /**
      * The module data structure represents a collection of all the services,
      * workflows, forms, and PDF definitions.
@@ -9544,6 +9578,11 @@ declare namespace Reactory {
        * `reactory-cli` nameSpace.name --arg1 --arg2=value
        */
       cli?: TCli[];
+
+      /**
+       * A list of middleware that the module provides.
+       */
+      middleware?: ReactoryMiddlewareDefinition[];
     }
 
     export type ReactoryServiceFilter = {

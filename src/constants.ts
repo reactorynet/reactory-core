@@ -9,7 +9,7 @@ export const SERVER_ENVIRONMENT: Reactory.Server.ReactoryEnvironment = {
   API_PORT: `${process.env.API_PORT || 4001}`,
   SENDGRID_API_KEY: process.env.SENDGRID_API_KEY || "",
   API_URI_ROOT: process.env.API_URI_ROOT || "",
-  API_GRAPHQL_URI: `${process.env.API_URI_ROOT}/api`,
+  API_GRAPHQL_URI: `${process.env.API_URI_ROOT}/graph`,
   CDN_ROOT: process.env.CDN_ROOT || "http://localhost:4000/cdn",
   MODE: process.env.MODE || "develop",
   LOG_LEVEL: process.env.LOG_LEVEL || "debug",
