@@ -8221,6 +8221,15 @@ declare namespace Reactory {
       ): Promise<Reactory.Models.IUserDemographics | Reactory.Models.IUserDemographicDocument>;
 
       updateUser(userInput: Reactory.Models.IUser): Promise<Reactory.Models.IUserDocument>;
+
+      listAllUsers(): Promise<Reactory.Models.IUserDocument[]>;
+
+      searchUsers(
+        search: string,
+        sort?: string,
+        limit?: number,
+        offset?: number,
+      ): Promise<Reactory.Models.IUserDocument[]>;
     }
 
     export interface IReactoryUserDemographicsService
@@ -9583,6 +9592,18 @@ declare namespace Reactory {
        * A list of middleware that the module provides.
        */
       middleware?: ReactoryMiddlewareDefinition[];
+
+      /**
+       * Reactor is a container property specifically for the 
+       * reactor AI agents. 
+       */
+      reactor?: {
+        providers: any[];
+        agents: any[];
+        macros: any[];
+        tools: any[];
+        mcp: any[];
+      }
     }
 
     export type ReactoryServiceFilter = {
