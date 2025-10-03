@@ -40,6 +40,7 @@ import d3CloudAlias from "d3-cloud";
 import d3ColorAlias from "d3-color";
 import d3ForceAlias from "d3-force";
 import d3DelaunayAlias from "d3-delaunay";
+import * as ThreeAlias from "three";
 
 import Module from "module";
 import * as ReactAlias from "react";
@@ -54,7 +55,7 @@ import * as ReactRouterDomAlias from "react-router-dom";
 import i18next from "i18next";
 import { Breakpoint, FilledInputProps, InputProps, OutlinedInputProps } from "@mui/material";
 import { ReadLine } from "readline";
-import LocalForage from "localforage";
+import LocalForage, { key } from "localforage";
 import { GraphQLRequestContext } from "@apollo/server";
 
 /// <reference path="global.d.ts" />
@@ -194,6 +195,10 @@ declare namespace Reactory {
     targetKey: string,
   ) => Promise<TOUT>;
 
+  export type TransformFunctionBuiltInId = "toInt" | "toString" | "toDate" | "toBoolean" | "toNumber" | "toFloat" | "toDouble" | "toLong" | "toShort" | "toByte" | "toChar" | "toDouble" | "toFloat" | "toInt" | "toLong" | "toShort" | "toByte" | "toChar";
+
+  export type TransformFunctionDefinition = TransformFunction<any, any> | TransformFunctionAsync<any, any> | TransformFunctionBuiltInId;
+
   /**
    * Object Transform object is used for fine grained control over an object data set.
    */
@@ -202,11 +207,11 @@ declare namespace Reactory {
      * key is the key of the source object that is being transformed.
      */
     key: string;
-    transform: TransformFunction<TIN, TOUT> | TransformFunctionAsync<TIN, TOUT>;
+    transform: TransformFunctionDefinition;
     transformFQN?: FQN;
     defaultFQN?: FQN;
     async?: boolean;
-    default: TransformFunction<TIN, TOUT> | TransformFunctionAsync<TIN, TOUT>;
+    default: TransformFunctionDefinition | any;
   }
 
   /**
@@ -235,7 +240,7 @@ declare namespace Reactory {
   /**
    * Object Map is used to map a source object to a target object.
    */
-  export type ObjectMap = IKeyValuePair<string, ObjectMapEntry | ObjectMapMultiTargetEntry>;
+  export type ObjectMap = { [key: string]: ObjectMapEntry | ObjectMapMultiTargetEntry };
 
   /**
    * Basic construct of a fully qualified name
@@ -647,6 +652,11 @@ declare namespace Reactory {
        * Object mappper utility used to convert objects from one shape to another
        */
       objectMapper: typeof ObjectMapper;
+      /**
+       * Function to parse an object map. This function will parse the object map and return a new object map with the parsed values.
+       * Used where transforms are applied to the target using transform string references.    
+       */
+      parseObjectMap: (objectMap: Reactory.ObjectMap) => Reactory.ObjectMap;
       /**
        * Creates a compiled template function that can interpolate data properties
        * in "interpolate" delimiters,
@@ -1293,7 +1303,7 @@ declare namespace Reactory {
       /**
        * Function call to reload the forms
        */
-      forms(): void;
+      forms(): Promise<Reactory.Forms.IReactoryForm[]>;
 
       /**
        * Loads a form with a gven id
@@ -1655,6 +1665,7 @@ declare namespace Reactory {
       form(
         id: string,
         onFormUpdated?: (form: Forms.IReactoryForm, error?: Error) => void,
+        options?: any,
       ): Forms.IReactoryForm;
       navigation: ReactRouterAlias.NavigateFunction;
       location: ReactRouterAlias.Location;
@@ -1963,6 +1974,13 @@ declare namespace Reactory {
         * correct format is the form id in the format of "nameSpace.name@version"
         */
        formId?: FQN;
+      /**
+       * The load options for the form. This is passed to the ReactoryForm(id, options) mutation
+       * these options are then available on the schema, uiSchema and defaultData async functions.
+       */
+       loadOptions?: {
+        [key: string]: unknown;
+       };
        /**
         * Each form may have multiple help topics that can be displayed when the 
         * user clicks on the help icon. These will be merged with the form definition ]
@@ -2170,6 +2188,8 @@ declare namespace Reactory {
       export type d3Force = typeof d3ForceAlias;
       export type d3Delaunay = typeof d3DelaunayAlias;
 
+      export type Three = typeof ThreeAlias;
+
       export interface D3Package {
         d3: d3;
         d3Array: d3Array;
@@ -2177,6 +2197,10 @@ declare namespace Reactory {
         d3Color: d3Color;
         d3Force: d3Force;
         d3Delaunay: d3Delaunay;
+      }
+
+      export interface ThreePackage {
+        Three: Three;
       }
 
       export type MaterialCore = typeof MaterialCoreAlias;
@@ -2759,23 +2783,23 @@ declare namespace Reactory {
 
         columnsPropertyMap?: ObjectMap;
 
-        headerStyle: {
+        headerStyle?: {
           [key: string]: unknown;
         };
 
-        rowStyle: {
+        rowStyle?: {
           [key: string]: unknown;
         };
 
-        selectedRowStyle: {
+        selectedRowStyle?: {
           [key: string]: unknown;
         };
 
-        altRowStyle: {
+        altRowStyle?: {
           [key: string]: unknown;
         };
 
-        conditionalRowStyling: {
+        conditionalRowStyling?: {
           field: string;
           condition: string;
           style: {
@@ -2839,7 +2863,7 @@ declare namespace Reactory {
       }
 
       /**
-       * Represents a valid
+       * Represents a valid 
        */
       export type WiredDateWidgetProps = Reactory.Client.IReactoryWidgetProps<
         ValidDate,
@@ -3466,6 +3490,11 @@ declare namespace Reactory {
        * */
       componentRef?: string;
       /**
+       * The result map is used to map the data result to the form data.
+       * The result map is an object that maps the data result to the form data.
+       */
+      resultMap?: Reactory.ObjectMap;
+      /**
        * The merge strategy to use when merging the data result with the form data.
        * */
       mergeStrategy?: string | "merge" | "replace" | "function" | "none";
@@ -3554,7 +3583,8 @@ declare namespace Reactory {
        * Response handlers key names should match the typename of the
        * response data. i.e. if your graph type name is "Foo" then the
        * response handler key should be "Foo". This is used to map results for
-       * queries or mutaions that have union types.
+       * queries or mutaions that have union types. Use these when the query or mutation
+       * returns with a union type.
        */
       responseHandlers?: {
         [key: string]: IReactoryFormGraphResultHandler;
@@ -4462,6 +4492,25 @@ declare namespace Reactory {
        * If published is not set it will by default be set to true
        */
       published?: boolean;
+      
+      /**
+       * Reactor configuration for the form will allow the form to be used as 
+       * a source of data for a reactor AI persona.
+       */
+      reactor?: {
+        /**
+         * The id of the reactor persona to use
+         */
+        personaId?: string;
+        /**
+         * The key of the prompt to use for initializing the chat with the AI.
+         */
+        promptKey?: string;
+        /**
+         * Any additional properties to use for the reactor AI engine
+         */
+        [key: string]: unknown;
+      }
 
       [key: string]: unknown;
     }
@@ -5761,7 +5810,7 @@ declare namespace Reactory {
 
     export interface IBusinessUnit {
       [key: string]: unknown;
-      id?: unknown;
+      id?: any;
       name: string;
       description?: string;
       avatar?: string;
@@ -5776,10 +5825,8 @@ declare namespace Reactory {
     }
 
     export interface IBusinessUnitDocument
-      extends Mongoose.Document<ObjectId, unknown, IBusinessUnit> {
-      new (): BusinessUnitDocument;
+      extends Mongoose.Document<ObjectId, unknown, IBusinessUnit>, IBusinessUnit {
     }
-
     export type TBusinessUnit = IBusinessUnit | IBusinessUnitDocument;
 
     export interface IOrganization {
@@ -5993,6 +6040,7 @@ declare namespace Reactory {
       organization?: TOrganization;
       roles?: string[];
       password?: string;
+      username?: string;
     }
 
     export interface IUserIl8n {
@@ -6123,7 +6171,15 @@ declare namespace Reactory {
        * @type {(Reactory.Models.IRecordMeta<unknown> | undefined)}
        */
       meta?: Reactory.Models.IRecordMeta<unknown>;
-
+      /**
+       * An array of teams the user owns
+       */
+      ownedTeams?: Reactory.Models.ITeam[] | Mongoose.Types.Array<Reactory.Models.ITeam>;
+      
+      /**
+       * An array of teams the user is a member of.
+       */
+      teamMemberships?: Reactory.Models.ITeam[] | Mongoose.Types.Array<Reactory.Models.ITeam>;
       /**
        * An object containing additional properties that may be defined for the user.
        *
@@ -7453,7 +7509,15 @@ declare namespace Reactory {
   }
 
   export namespace Service {
-    export type SERVICE_LIFECYCLE = FQN | "instance" | "singleton";
+    /**
+     * The service lifecycle type defines the type of lifecycle that the service should have.
+     * 
+     * - FQN: a service that will manage the lifecycle of the service..
+     * - instance: A new instance of the service is created for each request and context.
+     * - singleton: A single instance of the service is created and shared across all requests for a given context.
+     * - singleton-system: A single instance of the service is created and shared across all requests and contexts.
+     */
+    export type SERVICE_LIFECYCLE = FQN | "instance" | "singleton" | "singleton-system";
 
     export type LOG_TYPE = string | "debug" | "warn" | "error" | "info";
 
@@ -8047,6 +8111,27 @@ declare namespace Reactory {
       ): Promise<Models.IReactoryFileModel>;
 
       generateFileChecksum(filename: string, algo: string): Promise<string>;
+
+      getUserFiles(
+        userId: string | ObjectId,
+        path: string,
+        options?: {                    
+          limit?: number;
+          offset?: number;
+          sortBy?: string;
+          sortOrder?: "asc" | "desc";
+          search?: string;
+          includeFolders?: boolean;
+        },
+      ): Promise<{
+        files: Models.IReactoryFileModel[];
+        folders: { 
+          name: string; 
+          path: string; 
+        }[];
+      }>;
+
+      getUserFileByPath(path: string): Promise<Models.IReactoryFileModel>;      
     }
 
     export type OrganizationImageType = string | "logo" | "avatar";
@@ -8078,6 +8163,8 @@ declare namespace Reactory {
         search: string | number | ObjectId,
       ): Promise<Models.IBusinessUnitDocument>;
 
+      findBusinessUnitById(id: string | number | ObjectId): Promise<Models.IBusinessUnitDocument>;
+
       createBusinessUnit(
         organization_id: string | number | ObjectId,
         name: string,
@@ -8087,6 +8174,8 @@ declare namespace Reactory {
         organization_id: string | number | ObjectId,
         search: string | number | ObjectId,
       ): Promise<Reactory.Models.ITeamDocument>;
+
+      findTeamById(id: string | number | ObjectId): Promise<Reactory.Models.ITeamDocument>;
 
       createTeam(
         organization_id: string | number | ObjectId,
@@ -8182,6 +8271,10 @@ declare namespace Reactory {
     export interface IReactoryUserService extends Reactory.Service.IReactoryDefaultService {
       createUser(
         userInput: Reactory.Models.IUserCreateParams,
+        organization?: Reactory.Models.IOrganizationDocument,
+        businessUnit?: Reactory.Models.IBusinessUnitDocument,
+        teams?: Reactory.Models.ITeamDocument[],
+        partner?: Reactory.Models.IReactoryClientDocument,
       ): Promise<Reactory.Models.IUserDocument>;
 
       findUserWithEmail(email: string): Promise<Reactory.Models.IUserDocument>;
@@ -9715,7 +9808,51 @@ declare namespace Reactory {
       /**
        * current color palette
        */
-      colors: unknown;
+      colors: {
+        enabled: boolean;
+       enable(): void;
+        disable(): void;
+        setTheme(theme: any): void;
+
+        strip(str: string): string;
+        stripColors(str: string): string;
+
+        black(str: string): string;
+        red(str: string): string;
+        green(str: string): string;
+        yellow(str: string): string;
+        blue(str: string): string;
+        magenta(str: string): string;
+        cyan(str: string): string;
+        white(str: string): string;
+        gray(str: string): string;
+        grey(str: string): string;
+
+        bgBlack(str: string): string;
+        bgRed(str: string): string;
+        bgGreen(str: string): string;
+        bgYellow(str: string): string;
+        bgBlue(str: string): string;
+        bgMagenta(str: string): string;
+        bgCyan(str: string): string;
+        bgWhite(str: string): string;
+
+        reset(str: string): string;
+        bold(str: string): string;
+        dim(str: string): string;
+        italic(str: string): string;
+        underline(str: string): string;
+        inverse(str: string): string;
+        hidden(str: string): string;
+        strikethrough(str: string): string;
+
+        rainbow(str: string): string;
+        zebra(str: string): string;
+        america(str: string): string;
+        trap(str: string): string;
+        random(str: string): string;
+        zalgo(str: string): string;
+      };
       /**
        * IoC container
        */
@@ -9867,6 +10004,32 @@ declare namespace Reactory {
        * system will generate a strong password
        */
       password?: string;
+
+      /**
+       * The auth providers that this user is associated with.
+       * This can be a list of auth provider names, i.e.:
+       * ["local", "google", "azure", "facebook", "linkedin", "apple", "okta"]       
+       */
+      authProviders?: string[];
+
+      /**
+       * The organization that this user is associated with.
+       * */
+      organization?: string | ObjectId | Reactory.Models.IOrganizationDocument;
+
+      /**
+       * The business unit that this user is associated with.
+       */
+      businessUnit?:
+        | string
+        | ObjectId
+        | Reactory.Models.IBusinessUnitDocument;
+
+      /**
+       * The teams that the user is associated with.
+       * This can be a list of team ids, team names or team documents.
+       */
+      teams: string[] | ObjectId[] | Reactory.Models.ITeamDocument[];
     }
 
     /**
@@ -9964,9 +10127,37 @@ declare namespace Reactory {
     }
 
     export interface IReactoryClientSetting<T> {
+      /**
+       * The name of the setting
+       */
       name: string;
-      componentFqn: string;
+      /**
+       * The type of the setting
+       */
+      settingType?: string;
+      /**
+       * The variant of the setting
+       */
+      variant?: string;
+      /**
+       * The title of the setting
+       */
+      title?: string;
+      /**
+       * The description of the setting
+       */
+      description?: string;
+      /**
+       * The component fqn of the setting
+       */
+      componentFqn?: string;
+      /**
+       * The form schema of the setting
+       */
       formSchema?: Reactory.Schema.ISchema;
+      /**
+       * The data of the setting
+       */
       data: T;
     }
 
@@ -10248,12 +10439,40 @@ declare namespace Reactory {
     export type GridSize = number | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
     export interface IGridFieldLayout {
+      size?: {
+        xs?: GridSize;
+        sm?: GridSize;
+        md?: GridSize;
+        lg?: GridSize;
+        xl?: GridSize;
+      };
+      /**
+       * backwards compatibility
+       * use size instead
+       */
       xs?: GridSize;
+      /**
+       * backwards compatibility
+       * use size instead
+       */
       sm?: GridSize;
+      /**
+       * backwards compatibility
+       * use size instead
+       */
       md?: GridSize;
+      /**
+       * backwards compatibility
+       * use size instead
+       */
       lg?: GridSize;
+      /**
+       * backwards compatibility
+       * use size instead
+       */
       xl?: GridSize;
       style?: unknown;
+      sx?: MaterialCoreAlias.SxProps<MaterialCoreAlias.Theme>;
       render?: React.ComponentType<any> | React.FC<any>;
       doShow?: (formData: unknown) => boolean;
     }
@@ -10265,7 +10484,9 @@ declare namespace Reactory {
       spacing?: number;
       container?: string | "Paper" | "div";
       containerStyles?: React.CSSProperties;
-      jss?: unknown;
+      jss?: unknown;      
+      sx?: MaterialCoreAlias.SxProps<MaterialCoreAlias.Theme>;
+      [key: string]: unknown;
     }
 
     export interface ITabLayout {
@@ -10277,6 +10498,14 @@ declare namespace Reactory {
 
     export interface ITabOptions {
       textColor?: string | "primary" | "secondary";
+      path?: string;
+      useRouter?: boolean;
+      tabsProps?: {
+        variant?: string | "fullWidth" | "scrollable";
+        style?: React.CSSProperties;
+        indicatorColor?: string | "primary" | "secondary";
+        [key: string]: unknown;
+      }      
     }
 
     //export type ReactoryFields = string | "ArrayField" | "BooleanField" | "TitleField" | ""
@@ -10396,6 +10625,8 @@ declare namespace Reactory {
        */
       style?: React.CSSProperties;
 
+
+      sx?: MaterialCoreAlias.SxProps<MaterialCoreAlias.Theme>;
       /**
        * Boolean indicating if the field should be hidden
        */
@@ -10470,7 +10701,28 @@ declare namespace Reactory {
       renderer?: string | "html" | "markdown" | "richtext" | "text";
     }
 
-    export type IUIBooleanFieldOptions = IUISchemaOptions;
+    export interface IUIBooleanFieldOptions extends IUISchemaOptions {
+      readonly?: boolean;
+      yesLabel?: string;
+      noLabel?: string;
+      showLabels?: boolean;
+      yesIcon?: string;
+      yesIconOptions?: {
+        color?: string;
+        fontSize?: number;
+        position?: "left" | "right" | "top" | "bottom";
+        jss?: unknown;
+        sx?: MaterialCoreAlias.SxProps<MaterialCoreAlias.Theme>;
+      };
+      noIcon?: string;
+      noIconOptions?: {
+        color?: string;
+        fontSize?: number;
+        position?: "left" | "right" | "top" | "bottom";
+        jss?: unknown;
+        sx?: MaterialCoreAlias.SxProps<MaterialCoreAlias.Theme>;
+      }
+    }
 
     export type IUIDateFieldOptions = IUISchemaOptions;
 
@@ -10513,6 +10765,43 @@ declare namespace Reactory {
       onChange: (formData: AutoCompleteFormData<T> | AutoCompleteFormData<T>[]) => void;
     }
 
+    export interface ILineChartUIOptions {   
+    bounds: {
+      width?: number;
+      height?: number;
+    }, 
+    xKey?: string;
+    yKey?: string;
+    line?: {
+      type?: string;
+      dataKey?: string;
+      stroke?: string;
+    };
+    series?: any[];
+    xAxis?: {
+      dataKey?: string;
+      label?: string;
+    };
+    yAxis?: {
+      dataKey?: string;
+      label?: string;
+    };
+  }
+
+export interface ILineChartUISchema extends Reactory.Schema.IUISchema {
+  'ui:widget': 'LineChartWidget';
+  'ui:title'?: string;
+  'ui:options'?: ILineChartUIOptions; 
+}
+
+export interface ILineChartWidgetProps {
+  formData?: any[];
+  schema?: any;
+  uiSchema?: ILineChartUISchema;
+  formContext?: any;
+  reactory?: Reactory.Client.ReactorySDK;
+}
+
     /**
      * The standard field options for the Reactory UI engines / components.
      */
@@ -10523,7 +10812,9 @@ declare namespace Reactory {
       | IUIBooleanFieldOptions
       | IUIUTextFieldOptions
       | IUINumberFieldUIOptions
-      | IUISchemaOptions;
+      | IUISchemaOptions
+      | ILineChartUIOptions 
+      | any;
 
     export type UISchemaStereotype =
       | "grid"
@@ -10596,9 +10887,37 @@ declare namespace Reactory {
       id: string;
       command: string | FQN;
       objectMap?: ObjectMap;
+      buttonProps?: MaterialCoreAlias.ButtonProps | any;
     }
     export interface UIFieldToolbarOptions { 
       buttons: UIFieldToolbarButton[];
+    }
+
+    export interface UIHelpOptions {
+      title: string | { key: string; options: I18nFormatOptions };
+      slug: string;
+      display?: "inline" | "modal" | "tooltip";
+      containerSx?: MaterialCoreAlias.SxProps<MaterialCoreAlias.Theme>;
+    }
+
+    export interface UIAIOptions {
+      title: string | { key: string; options: I18nFormatOptions };
+      personaId: string;
+      promptKey?: string;
+      props: any;
+      propsMap: ObjectMap;
+      display?: "chat" | "prompt-input" | "button" | "slide-in";
+      slideInProps?: {
+        direction?: "left" | "right" | "top" | "bottom";
+        duration?: number;
+        easing?: string;
+        container?: string;
+        containerProps?: any;
+      };
+      containerSx?: MaterialCoreAlias.SxProps<MaterialCoreAlias.Theme>;
+      buttonProps?: MaterialCoreAlias.ButtonProps | any;      
+      dialogProps?: MaterialCoreAlias.DialogProps | any;
+      [key: string]: any;
     }
 
     /**
@@ -10733,6 +11052,15 @@ declare namespace Reactory {
        * * core.LableComponent@1.0.0
        */
       "ui:graphql"?: Reactory.Forms.IReactoryFormQuery;
+      /**
+       * Help options for the schema element.
+       */
+      "ui:help"?: UIHelpOptions;
+
+      /**
+       * AI options for the schema element.
+       */
+      "ui:ai"?: UIAIOptions;
       [key: string]: IUISchema | unknown;
     }
 
@@ -10832,6 +11160,12 @@ declare namespace Reactory {
        * additional properties that may be added to the object
        */
       additionalProperties?: ISchema;
+
+      oneOf?: Partial<ISchema>[] | undefined;
+
+      anyOf?: Partial<ISchema>[] | undefined;
+
+      allOf?: Partial<ISchema>[] | undefined;
     }
 
     /**
@@ -10996,6 +11330,8 @@ declare namespace Reactory {
        * 
        */
       toolbarStyle?: React.CSSProperties;
+
+      toolbarSx?: MaterialCoreAlias.SxProps<MaterialCoreAlias.Theme>;
       /**
        * The position of the toolbar. This can be set to
        * "top", "bottom" or "both"
@@ -11063,10 +11399,7 @@ declare namespace Reactory {
      * Reactory workflow definition. This is the base definition for a workflow in the reactory platform.
      */
     export interface IWorkflow {
-      id: string;
-      nameSpace: string;
-      name: string;
-      version: string;
+      id: string;      
       component: unknown;
       category: string;
       autoStart?: boolean;
