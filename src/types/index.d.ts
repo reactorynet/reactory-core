@@ -5629,6 +5629,10 @@ declare namespace Reactory {
        * The translated content
        */
       content: string;
+      /**
+       * The tags associated with the content
+       */      
+      tags: string[];
     }
 
     /**
