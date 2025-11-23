@@ -6782,6 +6782,284 @@ declare namespace Reactory {
       path: string;
       metrics: ISearchableMetric[];
     }
+
+    /**
+     * OpenTelemetry-compatible metric types
+     */
+    export type OTelMetricType = "gauge" | "counter" | "histogram" | "summary" | "updowncounter";
+
+    /**
+     * OpenTelemetry-compatible attribute value types
+     */
+    export type OTelAttributeValue = string | number | boolean;
+
+    /**
+     * OpenTelemetry metric attributes (labels in Prometheus, tags in Jaeger)
+     * These are key-value pairs that provide dimensional data for metrics
+     */
+    export interface IOTelAttributes {
+      /**
+       * Service name - identifies the service emitting the metric
+       */
+      service_name?: string;
+      /**
+       * Service version
+       */
+      service_version?: string;
+      /**
+       * Service instance ID - unique identifier for the service instance
+       */
+      service_instance_id?: string;
+      /**
+       * Service namespace - logical grouping of services
+       */
+      service_namespace?: string;
+      /**
+       * HTTP method for HTTP-related metrics
+       */
+      http_method?: string;
+      /**
+       * HTTP status code for HTTP-related metrics
+       */
+      http_status_code?: number;
+      /**
+       * HTTP route/path
+       */
+      http_route?: string;
+      /**
+       * GraphQL operation name
+       */
+      graphql_operation_name?: string;
+      /**
+       * GraphQL operation type (query, mutation, subscription)
+       */
+      graphql_operation_type?: string;
+      /**
+       * Error indicator
+       */
+      error?: boolean;
+      /**
+       * Error type/class
+       */
+      error_type?: string;
+      /**
+       * Additional custom attributes
+       */
+      [key: string]: OTelAttributeValue | undefined;
+    }
+
+    /**
+     * Histogram bucket definition for histogram metrics
+     */
+    export interface IHistogramBucket {
+      /**
+       * Upper bound of the bucket (le = less than or equal)
+       */
+      le: number;
+      /**
+       * Count of observations in this bucket
+       */
+      count: number;
+    }
+
+    /**
+     * Histogram data structure
+     */
+    export interface IHistogramData {
+      /**
+       * Total count of observations
+       */
+      count: number;
+      /**
+       * Sum of all observed values
+       */
+      sum: number;
+      /**
+       * Bucket definitions and counts
+       */
+      buckets: IHistogramBucket[];
+    }
+
+    /**
+     * Summary quantile definition
+     */
+    export interface ISummaryQuantile {
+      /**
+       * Quantile value (0-1, e.g., 0.5 for median, 0.95 for 95th percentile)
+       */
+      quantile: number;
+      /**
+       * Value at this quantile
+       */
+      value: number;
+    }
+
+    /**
+     * Summary data structure
+     */
+    export interface ISummaryData {
+      /**
+       * Total count of observations
+       */
+      count: number;
+      /**
+       * Sum of all observed values
+       */
+      sum: number;
+      /**
+       * Quantile values
+       */
+      quantiles: ISummaryQuantile[];
+    }
+
+    /**
+     * A statistic/metric model interface that follows OpenTelemetry conventions
+     * and is compatible with Prometheus and Jaeger exporters.
+     * 
+     * This interface aligns with:
+     * - OpenTelemetry Metrics API specification
+     * - Prometheus metric exposition format
+     * - Jaeger metric tags and dimensions
+     * 
+     * @interface IStatistic
+     */
+    export interface IStatistic {
+      /**
+       * Unique identifier for the metric (optional)
+       */
+      id?: string;
+      
+      /**
+       * Metric name - should follow naming conventions:
+       * - Use lowercase with underscores (snake_case)
+       * - Use descriptive names (e.g., http_requests_total, graphql_duration_ms)
+       * - Include unit suffix where appropriate (e.g., _total, _ms, _bytes)
+       */
+      name: string;
+      
+      /**
+       * Human-readable description of what the metric measures
+       */
+      description?: string;
+      
+      /**
+       * Unit of measurement (e.g., "ms", "bytes", "requests", "1" for dimensionless)
+       * Should follow UCUM (Unified Code for Units of Measure) when possible
+       */
+      unit?: string;
+      
+      /**
+       * Metric type following OpenTelemetry conventions:
+       * - counter: Monotonically increasing value (e.g., total requests)
+       * - gauge: Point-in-time value that can go up or down (e.g., memory usage)
+       * - histogram: Distribution of values (e.g., request duration)
+       * - summary: Similar to histogram with quantiles (e.g., latency percentiles)
+       * - updowncounter: Counter that can increase or decrease (e.g., active connections)
+       */
+      type: OTelMetricType;
+      
+      /**
+       * Current metric value
+       * - For counter/updowncounter: cumulative count
+       * - For gauge: current value
+       * - For histogram/summary: use histogramData or summaryData instead
+       */
+      value?: number;
+      
+      /**
+       * Histogram-specific data (when type is "histogram")
+       */
+      histogramData?: IHistogramData;
+      
+      /**
+       * Summary-specific data (when type is "summary")
+       */
+      summaryData?: ISummaryData;
+      
+      /**
+       * Metric attributes (labels in Prometheus terminology, tags in Jaeger)
+       * These provide dimensional data for filtering and aggregation
+       * 
+       * Best practices:
+       * - Keep cardinality low (avoid high-cardinality values like user IDs)
+       * - Use consistent attribute names across metrics
+       * - Follow semantic conventions for common attributes
+       */
+      attributes?: IOTelAttributes;
+      
+      /**
+       * Timestamp when the metric was recorded
+       * ISO 8601 format recommended for serialization
+       */
+      timestamp?: Date;
+      
+      /**
+       * Optional span/trace context for correlation with distributed traces
+       */
+      traceContext?: {
+        /**
+         * Trace ID (hexadecimal string)
+         */
+        traceId?: string;
+        /**
+         * Span ID (hexadecimal string)
+         */
+        spanId?: string;
+        /**
+         * Trace flags
+         */
+        traceFlags?: number;
+      };
+      
+      /**
+       * Resource attributes identifying the source of the metric
+       * (service, host, container, etc.)
+       */
+      resource?: {
+        /**
+         * Service name
+         */
+        'service.name'?: string;
+        /**
+         * Service version
+         */
+        'service.version'?: string;
+        /**
+         * Service instance ID
+         */
+        'service.instance.id'?: string;
+        /**
+         * Deployment environment
+         */
+        'deployment.environment'?: string;
+        /**
+         * Host name
+         */
+        'host.name'?: string;
+        /**
+         * Additional resource attributes
+         */
+        [key: string]: OTelAttributeValue | undefined;
+      };
+      
+      /**
+       * Instrumentation scope (formerly instrumentation library)
+       */
+      scope?: {
+        /**
+         * Name of the instrumentation library/scope
+         */
+        name: string;
+        /**
+         * Version of the instrumentation library
+         */
+        version?: string;
+        /**
+         * Schema URL for semantic conventions
+         */
+        schemaUrl?: string;
+      };
+    }
   }
 
   /**
