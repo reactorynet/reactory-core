@@ -1230,10 +1230,10 @@ declare namespace Reactory {
       /**
        * Use the stat() function to log unknown statistic you want persisted
        * and associated with the user
-       * @param key - string key
-       * @param statistic - unknown data structure
+       * @param key - string key / name
+       * @param statistic - Reactory.Models.IStatistic object representing the statistic data
        */
-      stat(key: string, statistic: unknown): void;
+      stat(key: string, statistic: Partial<Reactory.Models.IStatistic>): void;
 
       /**
        *
@@ -1734,7 +1734,7 @@ declare namespace Reactory {
       info(message: string, params?: unknown): void;
       publishstats(): void;
       flushstats(save: boolean): void;
-      stat(key: string, statistic: unknown): void;
+      stat(key: string, statistic: Partial<Reactory.Models.IStatistic>): void;
       trackFormInstance(formInstance: unknown): void;
       graphqlMutation<T, V>(
         mutation: string | DocumentNode,
