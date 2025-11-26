@@ -9571,6 +9571,239 @@ declare namespace Reactory {
     }
   }
 
+  export namespace Telemetry {
+    /**
+     * Attributes for OpenTelemetry metrics
+     * Key-value pairs for dimensional data
+     */
+    export type MetricAttributes = {
+      [key: string]: string | number | boolean;
+    };
+
+    /**
+     * Options for creating Reactory metrics
+     */
+    export interface MetricOptions {
+      /** Description of what the metric measures */
+      description?: string;
+      /** Unit of measurement (e.g., 'bytes', 'seconds', 'count') */
+      unit?: string;
+      /** Value type for the metric (from OpenTelemetry) */
+      valueType?: number;
+      /** Whether to persist metrics to StatisticsService */
+      persist?: boolean;
+      /** TTL in seconds for persisted metrics */
+      ttl?: number;
+      /** Additional resource attributes */
+      resource?: {
+        serviceName?: string;
+        serviceVersion?: string;
+        deploymentEnvironment?: string;
+        [key: string]: string | undefined;
+      };
+    }
+
+    /**
+     * Counter metric - monotonically increasing values
+     * Use for: total requests, errors, items processed, bytes sent
+     */
+    export interface ICounter {
+      /**
+       * Add a value to the counter
+       * @param value - The value to add (must be positive)
+       * @param attributes - Optional dimensional attributes
+       */
+      add(value: number, attributes?: MetricAttributes): void;
+    }
+
+    /**
+     * UpDownCounter metric - values that can increase or decrease
+     * Use for: active connections, queue size, items in cache
+     */
+    export interface IUpDownCounter {
+      /**
+       * Add or subtract from the counter
+       * @param value - The value to add (can be negative)
+       * @param attributes - Optional dimensional attributes
+       */
+      add(value: number, attributes?: MetricAttributes): void;
+    }
+
+    /**
+     * Histogram metric - distribution of values
+     * Use for: request duration, response size, latency
+     */
+    export interface IHistogram {
+      /**
+       * Record a value in the histogram
+       * @param value - The value to record
+       * @param attributes - Optional dimensional attributes
+       */
+      record(value: number, attributes?: MetricAttributes): void;
+    }
+
+    /**
+     * Gauge metric - point-in-time observations
+     * Use for: memory usage, CPU utilization, temperature, progress
+     */
+    export interface IGauge {
+      /**
+       * Set the current gauge value
+       * @param value - The current value
+       * @param attributes - Optional dimensional attributes
+       */
+      set(value: number, attributes?: MetricAttributes): void;
+      /**
+       * Get the current gauge value
+       * @param attributes - Optional dimensional attributes
+       * @returns The current value or undefined if not set
+       */
+      get(attributes?: MetricAttributes): number | undefined;
+    }
+
+    /**
+     * Main telemetry interface for Reactory Context
+     * Provides methods for creating and managing OpenTelemetry metrics
+     */
+    export interface IReactoryTelemetry {
+      /**
+       * Create or get a counter metric
+       * Counters are monotonically increasing (always go up)
+       * @param name - Metric name (will be prefixed automatically)
+       * @param options - Optional metric configuration
+       * @returns Counter instance
+       * @example
+       * ```typescript
+       * const counter = context.telemetry.createCounter('requests_total', {
+       *   description: 'Total HTTP requests',
+       *   persist: true
+       * });
+       * counter.add(1, { method: 'GET', status: '200' });
+       * ```
+       */
+      createCounter(name: string, options?: MetricOptions): ICounter;
+
+      /**
+       * Create or get an up-down counter metric
+       * UpDownCounters can increase or decrease
+       * @param name - Metric name (will be prefixed automatically)
+       * @param options - Optional metric configuration
+       * @returns UpDownCounter instance
+       * @example
+       * ```typescript
+       * const connections = context.telemetry.createUpDownCounter('active_connections');
+       * connections.add(1);   // New connection
+       * connections.add(-1);  // Connection closed
+       * ```
+       */
+      createUpDownCounter(name: string, options?: MetricOptions): IUpDownCounter;
+
+      /**
+       * Create or get a histogram metric
+       * Histograms track distributions of values
+       * @param name - Metric name (will be prefixed automatically)
+       * @param options - Optional metric configuration
+       * @returns Histogram instance
+       * @example
+       * ```typescript
+       * const histogram = context.telemetry.createHistogram('request_duration_seconds', {
+       *   unit: 'seconds'
+       * });
+       * histogram.record(0.234, { endpoint: '/api/users' });
+       * ```
+       */
+      createHistogram(name: string, options?: MetricOptions): IHistogram;
+
+      /**
+       * Create or get a gauge metric
+       * Gauges track current values that can go up or down
+       * @param name - Metric name (will be prefixed automatically)
+       * @param options - Optional metric configuration
+       * @returns Gauge instance
+       * @example
+       * ```typescript
+       * const gauge = context.telemetry.createGauge('memory_usage_bytes', {
+       *   unit: 'bytes'
+       * });
+       * gauge.set(process.memoryUsage().heapUsed);
+       * ```
+       */
+      createGauge(name: string, options?: MetricOptions): IGauge;
+
+      /**
+       * Start a timer for measuring operation duration
+       * Returns a function to call when the operation completes
+       * @param metricName - Name of the histogram metric to record to
+       * @param attributes - Optional dimensional attributes
+       * @param options - Optional metric configuration
+       * @returns Function to call when operation completes
+       * @example
+       * ```typescript
+       * const endTimer = context.telemetry.startTimer('operation_duration_seconds');
+       * // ... do work ...
+       * endTimer(); // Automatically records duration
+       * ```
+       */
+      startTimer(
+        metricName: string,
+        attributes?: MetricAttributes,
+        options?: MetricOptions
+      ): () => void;
+
+      /**
+       * Measure execution time of an async function
+       * @param metricName - Name of the histogram metric to record to
+       * @param operation - Async function to measure
+       * @param attributes - Optional dimensional attributes
+       * @param options - Optional metric configuration
+       * @returns Result of the operation
+       * @example
+       * ```typescript
+       * const result = await context.telemetry.measureAsync(
+       *   'database_query_duration_seconds',
+       *   async () => UserModel.find({}),
+       *   { operation: 'find_users' }
+       * );
+       * ```
+       */
+      measureAsync<T>(
+        metricName: string,
+        operation: () => Promise<T>,
+        attributes?: MetricAttributes,
+        options?: MetricOptions
+      ): Promise<T>;
+
+      /**
+       * Measure execution time of a sync function
+       * @param metricName - Name of the histogram metric to record to
+       * @param operation - Sync function to measure
+       * @param attributes - Optional dimensional attributes
+       * @param options - Optional metric configuration
+       * @returns Result of the operation
+       * @example
+       * ```typescript
+       * const result = context.telemetry.measure(
+       *   'calculation_duration_seconds',
+       *   () => complexCalculation(data),
+       *   { calc_type: 'matrix' }
+       * );
+       * ```
+       */
+      measure<T>(
+        metricName: string,
+        operation: () => T,
+        attributes?: MetricAttributes,
+        options?: MetricOptions
+      ): T;
+
+      /**
+       * Clean up resources
+       * Called automatically when context is disposed
+       */
+      dispose(): void;
+    }
+  }
+
   export namespace Server {
     export interface ReactoryBaseEnvironment {
       /**
@@ -10039,6 +10272,25 @@ declare namespace Reactory {
        * An array of all the services that are available to the current context
        */
       services: Reactory.Service.IReactoryService[];
+
+      /**
+       * Telemetry wrapper for creating and managing OpenTelemetry metrics
+       * Provides easy access to counters, histograms, gauges, and updowncounters
+       * with optional persistence to StatisticsService
+       * @example
+       * ```typescript
+       * // Create a counter
+       * const counter = context.telemetry.createCounter('operations_total');
+       * counter.add(1, { status: 'success' });
+       * 
+       * // Time an operation
+       * const result = await context.telemetry.measureAsync(
+       *   'operation_duration_seconds',
+       *   async () => doWork()
+       * );
+       * ```
+       */
+      telemetry: Reactory.Telemetry.IReactoryTelemetry;
 
       /**
        * Logging method to write logs.
