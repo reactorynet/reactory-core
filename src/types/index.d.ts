@@ -1324,7 +1324,7 @@ declare namespace Reactory {
       /**
        * Function call to reload the forms
        */
-      forms(): Promise<Reactory.Forms.IReactoryForm[]>;
+      forms(bypassCache: boolean): Promise<Reactory.Forms.IReactoryForm[]>;
 
       /**
        * Loads a form with a gven id
@@ -1774,7 +1774,7 @@ declare namespace Reactory {
       reactoryForm(
         form: Forms.IReactoryForm,
       ): ReactAlias.ReactElement<any, string | ReactAlias.JSXElementConstructor<any>>;
-      forms(): void;
+      forms(bypassCache: boolean): Promise<Reactory.Forms.IReactoryForm[]>;
       raiseFormCommand(commandId: string, commandDef: unknown, formData: unknown): Promise<unknown>;
       startWorkFlow(workFlowId: string, data: unknown): void;
       onFormCommandEvent(commandId: string, func: (args: unknown) => unknown): void;
@@ -5434,6 +5434,10 @@ declare namespace Reactory {
       setPassword: (password: string) => void;
     }
 
+    /**
+     * The Reactory Client Document represent the Reactory Client model in the database. A client is a tenant of the platform.
+     * It is used to store the client configuration and settings.
+     */
     export class ReactoryClientDocument
       extends Mongoose.Document<ObjectId, unknown, IReactoryClient>
       implements IReactoryClient
@@ -7309,6 +7313,192 @@ declare namespace Reactory {
         schemaUrl?: string;
       };
     }
+
+    // Calendar Visibility Enum
+    export enum ReactoryCalendarVisibility {
+      PRIVATE = 'private',
+      SHARED = 'shared',
+      APPLICATION = 'application',
+      ORGANIZATION = 'organization',
+      PUBLIC = 'public'
+    }
+
+    // Calendar Entry Status Enum
+    export enum ReactoryCalendarEntryStatus {
+      DRAFT = 'draft',
+      CONFIRMED = 'confirmed',
+      CANCELLED = 'cancelled',
+      COMPLETED = 'completed'
+    }
+
+    // Calendar Entry Priority Enum
+    export enum ReactoryCalendarEntryPriority {
+      LOW = 'low',
+      NORMAL = 'normal',
+      HIGH = 'high',
+      URGENT = 'urgent'
+    }
+
+    // Calendar Participant Role Enum
+    export enum ReactoryCalendarParticipantRole {
+      ORGANIZER = 'organizer',
+      REQUIRED = 'required',
+      OPTIONAL = 'optional',
+      RESOURCE = 'resource'
+    }
+
+    // Calendar RSVP Status Enum
+    export enum ReactoryCalendarRSVPStatus {
+      PENDING = 'pending',
+      ACCEPTED = 'accepted',
+      DECLINED = 'declined',
+      TENTATIVE = 'tentative'
+    }
+
+    // Calendar Recurrence Frequency Enum
+    export enum ReactoryCalendarRecurrenceFrequency {
+      DAILY = 'daily',
+      WEEKLY = 'weekly',
+      MONTHLY = 'monthly',
+      YEARLY = 'yearly'
+    }
+
+    // Calendar Working Hours Interface
+    export interface ReactoryCalendarWorkingHours {
+      monday?: { start: string; end: string };
+      tuesday?: { start: string; end: string };
+      wednesday?: { start: string; end: string };
+      thursday?: { start: string; end: string };
+      friday?: { start: string; end: string };
+      saturday?: { start: string; end: string };
+      sunday?: { start: string; end: string };
+      timeZone: string;
+    }
+
+    // Calendar Settings Interface
+    export interface ReactoryCalendarSettings {
+      defaultEntryDuration?: number; // minutes
+      defaultReminderTime?: number; // minutes before event
+      allowOverlaps?: boolean;
+      defaultVisibility?: ReactoryCalendarVisibility;
+      colorScheme?: string;
+      notifications?: {
+        emailEnabled: boolean;
+        pushEnabled: boolean;
+        reminderTimes: number[]; // minutes before event
+      };
+    }
+
+    // Calendar Recurrence Pattern Interface
+    export interface ReactoryCalendarRecurrencePattern {
+      frequency: ReactoryCalendarRecurrenceFrequency;
+      interval: number;
+      endDate?: Date;
+      count?: number;
+      byDay?: string[]; // e.g., ['MO', 'WE', 'FR']
+      byMonth?: number[];
+      byMonthDay?: number[];
+      exceptions?: Date[];
+    }
+
+    // Calendar Workflow Trigger Interface
+    export interface ReactoryCalendarWorkflowTrigger {
+      workflowId: string;
+      workflowVersion: string;
+      triggerType: 'on_create' | 'on_update' | 'on_delete' | 'time_based' | 'participant_response';
+      triggerOffset?: number; // minutes before/after event
+      parameters: Record<string, any>;
+    }
+
+    // Calendar Service Trigger Interface
+    export interface ReactoryCalendarServiceTrigger {
+      serviceId: string;
+      serviceVersion: string;
+      method: string;
+      triggerType: 'on_create' | 'on_update' | 'on_delete' | 'time_based' | 'participant_response';
+      triggerOffset?: number; // minutes before/after event
+      parameters: Record<string, any>;
+    }
+
+    // Calendar Filter Interface
+    export interface ReactoryCalendarFilter {
+      visibility?: ReactoryCalendarVisibility[];
+      ownerId?: string;
+      organizationId?: string;
+      clientId?: string;
+      isActive?: boolean;
+      search?: string;
+      limit?: number;
+      offset?: number;
+    }
+
+    // Calendar Entry Filter Interface
+    export interface ReactoryCalendarEntryFilter {
+      calendarIds?: number[];
+      status?: ReactoryCalendarEntryStatus[];
+      priority?: ReactoryCalendarEntryPriority[];
+      startDate?: Date;
+      endDate?: Date;
+      category?: string;
+      tags?: string[];
+      organizerId?: string;
+      participantId?: string;
+      search?: string;
+      limit?: number;
+      offset?: number;
+    }
+
+    // Calendar Permissions Interface
+    export interface ReactoryCalendarPermissions {
+      userPermissions?: { userId: string; role: 'viewer' | 'editor' | 'admin' }[];
+      teamPermissions?: { teamId: string; role: 'viewer' | 'editor' | 'admin' }[];
+    }
+
+    // Calendar Time Slot Interface
+    export interface ReactoryCalendarTimeSlot {
+      startDate: Date;
+      endDate: Date;
+      available: boolean;
+      calendarId?: number;
+      conflictingEntries?: number[];
+    }
+
+    // Workflow Trigger Event Types
+    export enum ReactoryCalendarWorkflowTriggerType {
+      ON_CREATE = 'on_create',
+      ON_UPDATE = 'on_update',
+      ON_DELETE = 'on_delete',
+      TIME_BASED = 'time_based',
+      PARTICIPANT_RESPONSE = 'participant_response'
+    }
+
+    // Service Trigger Event Types
+    export enum ReactoryCalendarServiceTriggerType {
+      ON_CREATE = 'on_create',
+      ON_UPDATE = 'on_update',
+      ON_DELETE = 'on_delete',
+      TIME_BASED = 'time_based',
+      PARTICIPANT_RESPONSE = 'participant_response'
+    }
+
+    // Trigger Event Types
+    export enum ReactoryCalendarTriggerEventType {
+      CREATED = 'created',
+      UPDATED = 'updated',
+      DELETED = 'deleted',
+      STARTING = 'starting',
+      PARTICIPANT_RESPONSE = 'participant_response'
+    }
+
+    // Notification Event Types
+    export enum ReactoryCalendarNotificationEventType {
+      CREATED = 'created',
+      UPDATED = 'updated',
+      CANCELLED = 'cancelled',
+      REMINDER = 'reminder',
+      PARTICIPANT_ADDED = 'participant_added',
+      PARTICIPANT_RESPONSE = 'participant_response'
+    }
   }
 
   /**
@@ -7346,7 +7536,7 @@ declare namespace Reactory {
       IReactoryModelMetaDocumenFunctions<TMeta>,
       IReactoryModelMetaDocumentQueryHelpers<TMeta>,
       IReactoryModelMetaDocument<TMeta>
-    >;
+    >;    
   }
 
   export namespace Native {}
@@ -12071,6 +12261,39 @@ declare namespace Reactory {
         | INumberSchema
         | IStringSchema
         | ISchema;
+      /**
+       * Minimum number of items in the array
+       */
+      minLength?: number;
+      /**
+       * Maximum number of items in the array
+       */
+      maxLength?: number;
+      /**
+       * Indicates whether or not the items in the array should be unique
+       */
+      uniqueItems?: boolean;
+      /**
+       * Default value for the array
+       */
+      default?: unknown[];
+      /**
+       * Allow additional items to be added to the array
+       */
+      allowAdd?: boolean;
+      /**
+       * Allow items to be removed from the array
+       */
+      allowRemove?: boolean;
+      /**
+       * Indicates whether or not the array is sortable
+       */
+      sortable?: boolean;    
+      /**
+       * default sort expression for the array items, can be a field name or a lodash template
+       * expression.
+       */
+      sortBy?: string;
     }
 
     export interface IObjectProperties {
