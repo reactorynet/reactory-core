@@ -12274,6 +12274,12 @@ declare namespace Reactory {
        */
       uniqueItems?: boolean;
       /**
+       * A lodash template expression that can be used to determine the unique field for the array items.
+       * This could be a field name, or a comma separated list of field names to create a composite unique key.
+       * eg: "id", "firstName,lastName", "address.city"
+       */
+      uniqueFieldExpression?: string;
+      /**
        * Default value for the array
        */
       default?: unknown[];
@@ -12294,6 +12300,18 @@ declare namespace Reactory {
        * expression.
        */
       sortBy?: string;
+      /**
+       * We can provide a total count for the array when dealing with paged data sources.
+       */
+      totalCount?: number;
+      /**
+       * The page size for the array when dealing with paged data sources.
+       */
+      pageSize?: number;
+      /**
+       * The current page index for the array when dealing with paged data sources.
+       */
+      pageIndex?: number;
     }
 
     export interface IObjectProperties {
