@@ -12200,11 +12200,17 @@ declare namespace Reactory {
        * additional properties that may be added to the object
        */
       additionalProperties?: ISchema;
-
+      /**
+       * oneOf schema elements.        
+       */
       oneOf?: Partial<ISchema>[] | undefined;
-
+      /**
+       * anyOf schema elements
+       */
       anyOf?: Partial<ISchema>[] | undefined;
-
+      /**
+       * allOf schema elements
+       */
       allOf?: Partial<ISchema>[] | undefined;
     }
 
@@ -12216,6 +12222,8 @@ declare namespace Reactory {
       minLength?: number;
       maxLength?: number;
       pattern?: string | RegExp;
+      locale?: string;
+      default?: string;
     }
 
     export interface IBooleanSchema extends ISchema {
