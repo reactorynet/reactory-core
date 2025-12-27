@@ -5525,6 +5525,22 @@ declare namespace Reactory {
 
     export type TReactoryTask = IReactoryTask | IReactoryTaskDocument;
 
+ 
+    export enum TemplateEngine {
+      EJS = 'ejs',
+      HANDLEBARS = 'handlebars',
+      LODASH = 'lodash',
+      REACT = 'react',
+      CUSTOM = 'custom'
+    }
+
+
+    export enum TemplateStatus {
+      DRAFT = 'draft',
+      PUBLISHED = 'published',
+      ARCHIVED = 'archived'
+    }
+
     /**
      * A Reactory Template Object
      */
@@ -5542,8 +5558,10 @@ declare namespace Reactory {
       user?: ObjectId | Reactory.Models.IUser | Reactory.Models.IUserDocument;
       visiblity?: string | "user" | "public" | "businessUnit" | "organization" | "client";
       view: string;
+      engine: TemplateEngine;
+      status: TemplateStatus;
       kind: TemplateType;
-      format: string;
+      format: string | "html" | "text" | "json" | "xml" | "binary" | "pdf" | "markdown" | "svg";
       content: string;
       description?: string;
       name?: string;
@@ -5757,7 +5775,7 @@ declare namespace Reactory {
        * Which engine to use to render the content.
        * You can use lodash, or ejs or javascript template strings.
        */
-      engine?: string;
+      engine?: TemplateEngine;
       /**
        * Provide a form fqn to use as input form for
        * the properties when testing the content.
@@ -5828,6 +5846,10 @@ declare namespace Reactory {
        * Indicates if the comment has been flagged
        */
       flagged?: boolean;
+      /**
+       * meta daata for the content
+       */
+      metadata?: Record<string, unknown>;
     }
 
     export class ReactoryContentDocument extends Mongoose.Document<
