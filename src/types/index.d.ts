@@ -2649,6 +2649,52 @@ declare namespace Reactory {
         [key: string]: unknown;
       }
 
+      export interface IMaterialTableWidgetToolbarProps {
+        data?: Partial<Reactory.Models.IReactorySupportTicket>[];
+        paging?: {
+          hasNext: boolean;
+          hasPrevious: boolean;
+          page: number;
+          pageSize: number;
+          total: number;
+          totalPages: number;
+        };
+        selected?: Partial<Reactory.Models.IReactorySupportTicket>[] | null;
+        onDataChange?: (filteredData: any[]) => void;
+        onPagingChange?: (paging: {
+          page: number;
+          pageSize: number;
+        }) => void;
+        onSelectedChange?: (selected: Partial<Reactory.Models.IReactorySupportTicket>[] | null) => void;
+        onFilterChange?: (filters: any[]) => void;
+        onSortChange?: (sort: {
+          field: string;
+          direction: 'asc' | 'desc';
+        }) => void;
+        onGroupChange?: (group: {
+          field: string;
+          direction: 'asc' | 'desc';
+        }) => void;
+        searchText?: string;
+        onSearchChange?: (text: string) => void;
+        onColumnSortChange?: (column: string, direction: 'asc' | 'desc') => void;
+        onColumnGroupChange?: (column: string, direction: 'asc' | 'desc') => void;
+        onColumnFilterChange?: (column: string, filter: any) => void;
+        onColumnSearchChange?: (column: string, text: string) => void;
+      }
+
+      export interface IMaterialTableRowDetailsPanelProps {
+        rowData?: Partial<Reactory.Models.IReactorySupportTicket>;
+        rid?: number;
+        state?: unknown;
+        selected?: boolean;
+        expanded?: boolean;
+        dirty?: boolean;
+        editing?: boolean;
+        saving?: boolean;
+        hover?: boolean;        
+        [key: string]: unknown;
+      }
       /**
        * Options interface for the Reactory Material Table Widget
        *
@@ -2773,22 +2819,24 @@ declare namespace Reactory {
          * The component map
          */
         componentMap?: {
+          /**
+           * The component FQN to use for the row details panel.
+           */
           DetailsPanel?: string;
+          /**
+           * The component FQN to use for the custom toolbar.
+           */
           Toolbar?: string;
         };
         actions?: IMaterialTableWidgetAction[];
         /**
          * Toolbar static props
          */
-        toolbarProps?: {
-          [key: string]: unknown;
-        };
+        toolbarProps?: Partial<IMaterialTableWidgetToolbarProps>;
         /**
          * Toolbar property map
          */
-        toolbarPropsMap?: {
-          [key: string]: unknown;
-        };
+        toolbarPropsMap?: ObjectMap;
         /**
          * Where to place the toolbar
          */
@@ -2800,21 +2848,14 @@ declare namespace Reactory {
         /**
          * Static properties to pass to the detail panel
          */
-        detailPanelProps?: {
-          [key: string]: unknown;
-        };
+        detailPanelProps?: Partial<IMaterialTableRowDetailsPanelProps>;
         /**
-         *
+         * The result map to use for the result.
          */
         resultMap?: ObjectMap;
-        resultType?: string | "array" | "object";
-        resultKey?: string;
-        variables: ObjectMap;
-
-        columnsProperty?: string;
-
-        columnsPropertyMap?: ObjectMap;
-
+        /**
+         * The result type to use for the result.
+         */
         headerStyle?: {
           [key: string]: unknown;
         };
@@ -6525,18 +6566,28 @@ declare namespace Reactory {
 
     export interface IReactorySupportTicket {
       id?: unknown;
+      partner?: ObjectId | IReactoryClient;
       request: string;
       requestType: string;
       description: string;
       status: string;
+      priority: string;
       reference: string;
       createdBy: ObjectId | IUser | IUserDocument;
       createdDate: Date;
-      updatedDate: Date;
-      assignedTo: ObjectId | IUser | IUserDocument;
-      formId: string;
-      comments: IReactoryComment[] | IReactoryCommentDocument[];
-      documents: IReactoryFile[] | IReactoryFileModel[];
+      reportedBy?: ObjectId | IUser | IUserDocument;
+      reportedDate?: Date;
+      updatedDate?: Date;
+      updatedBy?: ObjectId | IUser | IUserDocument;
+      assignedTo?: ObjectId | IUser | IUserDocument;
+      formId?: string;
+      comments?: IReactoryComment[] | IReactoryCommentDocument[];
+      documents?: IReactoryFile[] | IReactoryFileModel[];
+      tags?: string[];
+      slaDeadline?: Date;      
+      isOverdue: boolean;
+      meta?: any;
+      [key: string]: unknown;
     }
 
     export class ReactorySupportDocument
@@ -6544,18 +6595,29 @@ declare namespace Reactory {
       implements IReactorySupportTicket
     {
       constructor();
+      id?: unknown;
+      partner?: ObjectId | IReactoryClient;
       request: string;
       requestType: string;
       description: string;
       status: string;
+      priority: string;
       reference: string;
       createdBy: ObjectId | IUser | IUserDocument;
       createdDate: Date;
+      reportedBy: ObjectId | IUser | IUserDocument;
+      reportedDate: Date;
       updatedDate: Date;
+      updatedBy: ObjectId | IUser | IUserDocument;
       assignedTo: ObjectId | IUser | IUserDocument;
-      formId: string;
+      formId?: string;
       comments: IReactoryComment[] | IReactoryCommentDocument[];
       documents: IReactoryFile[] | IReactoryFileModel[];
+      tags: string[];
+      slaDeadline?: Date;
+      isOverdue: boolean;
+      meta?: any;
+      [key: string]: unknown;
     }
 
     export interface IReactorySupportTicketDocument

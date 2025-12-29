@@ -1,6 +1,6 @@
 {
   "name": "@reactory/reactory-core",
-  "version": "1.1.0-RC1-31288e",
+  "version": "1.1.0-RC1-1fdc92",
   "displayName": "Reactory Core",
   "description": "Reactory Core - shared across all platforms and services. Contains type definitions, constants and shared components for the reactory eco-system.",
   "main": "dist/reactory.core.js",
