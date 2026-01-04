@@ -1,3 +1,4 @@
+
 /* eslint-disable no-unused-vars */
 import { ObjectId } from "mongodb";
 import Mongoose from "mongoose";
@@ -8539,7 +8540,7 @@ declare namespace Reactory {
        */
       alias: string;
     }
-
+    
     export type ServiceDependency = string | IReactoryServiceDependency;
 
     export type ReactoryServiceDependencies = ServiceDependency[];
@@ -8550,6 +8551,33 @@ declare namespace Reactory {
      * services based on the type.
      */
     export type ValidServiceType = string | ReactoryServiceTypes;
+
+    /**
+     * REST route configuration for a service when exposing a service over REST
+     */
+    export interface ServiceRestRouteConfig {
+      /**
+       * HTTP method for the route
+       * if not set, defaults to 'GET'
+       */
+      method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+      /** 
+       * Route - if not set, defaults to '/'
+       * */
+      path?: string;
+      /**
+       * Function name to invoke on the service for this route
+       */
+      fnc?: string,
+      /**
+       * Props map
+       */
+      propsMap: Reactory.ObjectMap,
+      /**
+       * props
+       */
+      props?: any
+    }
 
     /**
      * A service definition is used to define a service that can be loaded
@@ -8619,7 +8647,34 @@ declare namespace Reactory {
        * of the service.
        */
       lifeCycle?: SERVICE_LIFECYCLE;
+      /** 
+       * If set, this sets up a REST endpoint for the service 
+       * this will use the roles and permissions defined in the service definition
+       * to determine access control.
+       * */  
+      rest?: {
+        /** root path for the REST endpoint */
+        path: string;
+        /** HTTP methods supported */
+        routes: ServiceRestRouteConfig[]
+      };
+      /**
+       * Service GRPC configuration. The property can be added as an 
+       * empty object to indicate that the service should be exposed over gRPC
+       * with default settings.
+       */
+      grpc?: {        
+        /** 
+         * gRPC service definition path 
+         * if not set, the system will look for a default path based on the service name
+         * */
+        protoPath?: string;
+        /** gRPC service name - if not set the system will look for a default service name based on the service nameSpace and name and version */
+        serviceName?: string;
+      };
     }
+
+    export type ServiceAnnotationOptions<T> = Partial<Reactory.Service.IReactoryServiceDefinition<T extends Reactory.Service.IReactoryService ? T : Reactory.Service.IReactoryService>>;
 
     export interface IReactoryServiceRegister {
       [key: string]: IReactoryServiceDefinition<IReactoryService>;
@@ -8688,6 +8743,83 @@ declare namespace Reactory {
        */
       onShutdown(): Promise<void>;
     }
+    
+     export type AutowiredService<T extends Reactory.Service.IReactoryService> = T &
+      Reactory.Service.IReactoryTelemetryAwareService &
+      Reactory.Service.IReactoryLoggerAwareService & {
+        context: Reactory.Server.IReactoryContext;
+      }
+    
+    export interface LoggingMeta {
+      traceId?: string;
+      spanId?: string;
+      userId?: string;
+      sessionId?: string;
+      requestId?: string;
+      partnerId?: string;
+      ip?: string;
+      hostname?: string;
+      error?: Error;            
+      [key: string]: unknown;
+    }
+
+    export interface ServiceLogger {
+      
+        /* 
+        * Logging method to write logs.
+        * @param message - the message to log
+        * @param meta - unknown meta data
+        * @param type - "error", "info", "debug" or "warning"
+        * @param clazz - the class or component id
+        */
+        log(message: string, meta?: LoggingMeta, type?: Service.LOG_TYPE): void;
+
+        /**
+         * Logs a debug message to the console / log output
+         * @param message - message to log out
+         * @param meta - unknown meta data
+         * @param clazz - the class or component id
+         */
+        debug(message: string, meta?: LoggingMeta): void;
+        /**
+         * Logs a warning message to the console / log output
+         * @param message - message to log out
+         * @param meta - unknown meta data
+         * @param clazz - the class or component id
+         */
+        warn(message: string, meta?: LoggingMeta): void;
+        /**
+         * Logs an error message to the console / log output
+         * @param message - message to log out
+         * @param meta - unknown meta data
+         * @param clazz - the class or component id
+         */
+        error(message: string, error?: Error, meta?: LoggingMeta): void;
+        /**
+         * Write an info message to the console / log output
+         * @param message - message to log out
+         * @param meta - unknown meta data
+         * @param clazz - the class or component id
+         */
+        info(message: string, meta?: LoggingMeta): void;
+      
+    }
+
+    export interface IReactoryLoggerAwareService {
+      logger: ServiceLogger;
+    }
+
+    /**
+     * Base interface for a Telemetry Aware Reactory Service.
+     * Provides logging and telemetry capabilities to the service.
+     */
+    export interface IReactoryTelemetryAwareService  {
+      /**
+       * Telemetry service instance
+       */
+      telemetry: Reactory.Telemetry.IReactoryTelemetry;            
+    }
+
 
     /**
      * Base interface for a Context Aware Reactory Service.
@@ -8710,7 +8842,7 @@ declare namespace Reactory {
       props: TP;
       context: TC;
       description?: string;
-      tags?: string[];
+      tags?: string[];            
       getExecutionContext(): Server.IReactoryContext;
       setExecutionContext(executionContext: Server.IReactoryContext): void;
       onStartup(): Promise<void>;
@@ -9374,9 +9506,27 @@ declare namespace Reactory {
        */
       attachDocument(
         ticket_id: string,
-        file: File,
-        name: string,
+        file_ids: string[],        
       ): Promise<Models.IReactorySupportTicket | Models.IReactorySupportTicketDocument>;
+
+      uploadFiles(
+        ticket_id: string,
+        files: File[],
+      ): Promise<Models.IReactoryFile[]>; 
+
+      getFiles(
+        ticket_id: string,
+      ): Promise<Models.IReactoryFile[]>; 
+
+      deleteFiles(
+        ticket_id: string,
+        file_ids: string[],
+      ): Promise<void>; 
+
+      getFile(
+        ticket_id: string,
+        file_id: string,
+      ): Promise<Models.IReactoryFile>; 
 
       /**
        * Returns a paged list of support tickets
@@ -9387,6 +9537,13 @@ declare namespace Reactory {
         filter: Partial<Models.IReactorySupportTicketFilter>,
         paging: Models.IPagingRequest,
       ): Promise<Models.IPagedReactorySupportTickets>;
+
+      addComment(
+        ticketId: string,
+        commentText: string,
+        parentId?: string,
+        attachmentIds?: string[],
+      ): Promise<Models.IReactoryComment>;
     }
 
     export class ReactorySupportServiceStatic {
@@ -10209,6 +10366,22 @@ declare namespace Reactory {
       createCounter(name: string, options?: MetricOptions): ICounter;
 
       /**
+       * Increment a counter metric by a specified value
+       * @param name 
+       * @param value 
+       * @param attributes 
+       */
+      increment(name: string, value?: number, attributes?: MetricAttributes, options?: MetricOptions): void;
+
+      /**
+       * decrement a counter metric by a specified value
+       * @param name 
+       * @param value 
+       * @param attributes 
+       */
+      decrement(name: string, value?: number, attributes?: MetricAttributes, options?: MetricOptions): void;
+
+      /**
        * Create or get an up-down counter metric
        * UpDownCounters can increase or decrease
        * @param name - Metric name (will be prefixed automatically)
@@ -10240,6 +10413,19 @@ declare namespace Reactory {
       createHistogram(name: string, options?: MetricOptions): IHistogram;
 
       /**
+       * Record a value to a histogram metric
+       * @param name 
+       * @param value 
+       * @param attributes 
+       */
+      recordHistogram(
+        name: string,
+        value: number,
+        attributes?: MetricAttributes,
+        options?: MetricOptions,
+      ): void;
+
+      /**
        * Create or get a gauge metric
        * Gauges track current values that can go up or down
        * @param name - Metric name (will be prefixed automatically)
@@ -10254,6 +10440,20 @@ declare namespace Reactory {
        * ```
        */
       createGauge(name: string, options?: MetricOptions): IGauge;
+
+      /**
+       * Record a value to a gauge metric
+       * @param name 
+       * @param value 
+       * @param attributes 
+       */
+      recordGauge(
+        name: string,
+        value: number,
+        attributes?: MetricAttributes,
+        options?: MetricOptions,
+      ): void;
+
 
       /**
        * Start a timer for measuring operation duration
@@ -10807,7 +11007,7 @@ declare namespace Reactory {
       type?: string;
       lifeCycle?: Reactory.Service.SERVICE_LIFECYCLE;
     };
-
+   
     /**
      * The IReactoryContext is the object should be passed through to all levels of the execution.
      * It contains the logged in user, the memberships and several shortcut utilities that allows
@@ -10840,12 +11040,15 @@ declare namespace Reactory {
        * @param context - a specific context if you want to execute as different user,
        * otherwise current context is used
        * @param lifeCycle - the lifecycle type for the service, either instance or singleton
+       * 
+       * Returns an instance of the requested service with autowired telemetry and logging capabilities.
        */
-      getService<T extends Reactory.Service.IReactoryService>(
-        fqn: string,
+      getService<T extends 
+        Reactory.Service.IReactoryService>(
+        fqn: FQN,
         props?: unknown,
         lifeCycle?: Service.SERVICE_LIFECYCLE,
-      ): T;
+      ): Service.AutowiredService<T>;
 
       /**
        * list all services that are available to the current context.
@@ -12588,13 +12791,38 @@ declare namespace Reactory {
     /**
      * Reactory workflow definition. This is the base definition for a workflow in the reactory platform.
      */
-    export interface IWorkflow {
-      id: string;
-      component: unknown;
-      category: string;
+    export interface IWorkflow extends IReactoryComponentDefinition<unknown> {
+      /**
+       * Use the id property to set a unique identifier for the workflow instance.
+       * If not set the engine will make use of name.nameSpace@version to identify
+       * the workflow instance.
+       */
+      id?: string;      
+      /**
+       * Category for the workflow definition object
+       */
+      category?: string;
+      /**
+       * Use the component onStart() method for initialization logic for provisioned
+       * workflows.
+       */
       autoStart?: boolean;
+      /**
+       * Properties that are passed to the workflow instance
+       */
       props?: unknown;
-    }
+      /**
+       * An object map that can be used to map properties from the context
+       * to the workflow instance.
+       */
+      propsMap?: ObjectMap;
+      /**
+       * Indicates whether or not the workflow is provisioned 
+       * in code / code - or whether it is provisioned via the 
+       * workflow engine / database.
+       */
+      provisioned?: boolean;
+    }    
   }
 
   export namespace Git {
