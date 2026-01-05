@@ -1,3 +1,4 @@
+
 /* eslint-disable no-unused-vars */
 import { ObjectId } from "mongodb";
 import Mongoose from "mongoose";
@@ -1324,7 +1325,7 @@ declare namespace Reactory {
       /**
        * Function call to reload the forms
        */
-      forms(): Promise<Reactory.Forms.IReactoryForm[]>;
+      forms(bypassCache: boolean): Promise<Reactory.Forms.IReactoryForm[]>;
 
       /**
        * Loads a form with a gven id
@@ -1774,7 +1775,7 @@ declare namespace Reactory {
       reactoryForm(
         form: Forms.IReactoryForm,
       ): ReactAlias.ReactElement<any, string | ReactAlias.JSXElementConstructor<any>>;
-      forms(): void;
+      forms(bypassCache: boolean): Promise<Reactory.Forms.IReactoryForm[]>;
       raiseFormCommand(commandId: string, commandDef: unknown, formData: unknown): Promise<unknown>;
       startWorkFlow(workFlowId: string, data: unknown): void;
       onFormCommandEvent(commandId: string, func: (args: unknown) => unknown): void;
@@ -2649,6 +2650,52 @@ declare namespace Reactory {
         [key: string]: unknown;
       }
 
+      export interface IMaterialTableWidgetToolbarProps {
+        data?: Partial<Reactory.Models.IReactorySupportTicket>[];
+        paging?: {
+          hasNext: boolean;
+          hasPrevious: boolean;
+          page: number;
+          pageSize: number;
+          total: number;
+          totalPages: number;
+        };
+        selected?: Partial<Reactory.Models.IReactorySupportTicket>[] | null;
+        onDataChange?: (filteredData: any[]) => void;
+        onPagingChange?: (paging: {
+          page: number;
+          pageSize: number;
+        }) => void;
+        onSelectedChange?: (selected: Partial<Reactory.Models.IReactorySupportTicket>[] | null) => void;
+        onFilterChange?: (filters: any[]) => void;
+        onSortChange?: (sort: {
+          field: string;
+          direction: 'asc' | 'desc';
+        }) => void;
+        onGroupChange?: (group: {
+          field: string;
+          direction: 'asc' | 'desc';
+        }) => void;
+        searchText?: string;
+        onSearchChange?: (text: string) => void;
+        onColumnSortChange?: (column: string, direction: 'asc' | 'desc') => void;
+        onColumnGroupChange?: (column: string, direction: 'asc' | 'desc') => void;
+        onColumnFilterChange?: (column: string, filter: any) => void;
+        onColumnSearchChange?: (column: string, text: string) => void;
+      }
+
+      export interface IMaterialTableRowDetailsPanelProps {
+        rowData?: Partial<Reactory.Models.IReactorySupportTicket>;
+        rid?: number;
+        state?: unknown;
+        selected?: boolean;
+        expanded?: boolean;
+        dirty?: boolean;
+        editing?: boolean;
+        saving?: boolean;
+        hover?: boolean;        
+        [key: string]: unknown;
+      }
       /**
        * Options interface for the Reactory Material Table Widget
        *
@@ -2773,22 +2820,24 @@ declare namespace Reactory {
          * The component map
          */
         componentMap?: {
+          /**
+           * The component FQN to use for the row details panel.
+           */
           DetailsPanel?: string;
+          /**
+           * The component FQN to use for the custom toolbar.
+           */
           Toolbar?: string;
         };
         actions?: IMaterialTableWidgetAction[];
         /**
          * Toolbar static props
          */
-        toolbarProps?: {
-          [key: string]: unknown;
-        };
+        toolbarProps?: Partial<IMaterialTableWidgetToolbarProps>;
         /**
          * Toolbar property map
          */
-        toolbarPropsMap?: {
-          [key: string]: unknown;
-        };
+        toolbarPropsMap?: ObjectMap;
         /**
          * Where to place the toolbar
          */
@@ -2800,21 +2849,14 @@ declare namespace Reactory {
         /**
          * Static properties to pass to the detail panel
          */
-        detailPanelProps?: {
-          [key: string]: unknown;
-        };
+        detailPanelProps?: Partial<IMaterialTableRowDetailsPanelProps>;
         /**
-         *
+         * The result map to use for the result.
          */
         resultMap?: ObjectMap;
-        resultType?: string | "array" | "object";
-        resultKey?: string;
-        variables: ObjectMap;
-
-        columnsProperty?: string;
-
-        columnsPropertyMap?: ObjectMap;
-
+        /**
+         * The result type to use for the result.
+         */
         headerStyle?: {
           [key: string]: unknown;
         };
@@ -5434,6 +5476,10 @@ declare namespace Reactory {
       setPassword: (password: string) => void;
     }
 
+    /**
+     * The Reactory Client Document represent the Reactory Client model in the database. A client is a tenant of the platform.
+     * It is used to store the client configuration and settings.
+     */
     export class ReactoryClientDocument
       extends Mongoose.Document<ObjectId, unknown, IReactoryClient>
       implements IReactoryClient
@@ -5521,6 +5567,22 @@ declare namespace Reactory {
 
     export type TReactoryTask = IReactoryTask | IReactoryTaskDocument;
 
+ 
+    export enum TemplateEngine {
+      EJS = 'ejs',
+      HANDLEBARS = 'handlebars',
+      LODASH = 'lodash',
+      REACT = 'react',
+      CUSTOM = 'custom'
+    }
+
+
+    export enum TemplateStatus {
+      DRAFT = 'draft',
+      PUBLISHED = 'published',
+      ARCHIVED = 'archived'
+    }
+
     /**
      * A Reactory Template Object
      */
@@ -5538,8 +5600,10 @@ declare namespace Reactory {
       user?: ObjectId | Reactory.Models.IUser | Reactory.Models.IUserDocument;
       visiblity?: string | "user" | "public" | "businessUnit" | "organization" | "client";
       view: string;
+      engine: TemplateEngine;
+      status: TemplateStatus;
       kind: TemplateType;
-      format: string;
+      format: string | "html" | "text" | "json" | "xml" | "binary" | "pdf" | "markdown" | "svg";
       content: string;
       description?: string;
       name?: string;
@@ -5753,7 +5817,7 @@ declare namespace Reactory {
        * Which engine to use to render the content.
        * You can use lodash, or ejs or javascript template strings.
        */
-      engine?: string;
+      engine?: TemplateEngine;
       /**
        * Provide a form fqn to use as input form for
        * the properties when testing the content.
@@ -5824,6 +5888,10 @@ declare namespace Reactory {
        * Indicates if the comment has been flagged
        */
       flagged?: boolean;
+      /**
+       * meta daata for the content
+       */
+      metadata?: Record<string, unknown>;
     }
 
     export class ReactoryContentDocument extends Mongoose.Document<
@@ -6499,18 +6567,28 @@ declare namespace Reactory {
 
     export interface IReactorySupportTicket {
       id?: unknown;
+      partner?: ObjectId | IReactoryClient;
       request: string;
       requestType: string;
       description: string;
       status: string;
+      priority: string;
       reference: string;
       createdBy: ObjectId | IUser | IUserDocument;
       createdDate: Date;
-      updatedDate: Date;
-      assignedTo: ObjectId | IUser | IUserDocument;
-      formId: string;
-      comments: IReactoryComment[] | IReactoryCommentDocument[];
-      documents: IReactoryFile[] | IReactoryFileModel[];
+      reportedBy?: ObjectId | IUser | IUserDocument;
+      reportedDate?: Date;
+      updatedDate?: Date;
+      updatedBy?: ObjectId | IUser | IUserDocument;
+      assignedTo?: ObjectId | IUser | IUserDocument;
+      formId?: string;
+      comments?: IReactoryComment[] | IReactoryCommentDocument[];
+      documents?: IReactoryFile[] | IReactoryFileModel[];
+      tags?: string[];
+      slaDeadline?: Date;      
+      isOverdue: boolean;
+      meta?: any;
+      [key: string]: unknown;
     }
 
     export class ReactorySupportDocument
@@ -6518,18 +6596,29 @@ declare namespace Reactory {
       implements IReactorySupportTicket
     {
       constructor();
+      id?: unknown;
+      partner?: ObjectId | IReactoryClient;
       request: string;
       requestType: string;
       description: string;
       status: string;
+      priority: string;
       reference: string;
       createdBy: ObjectId | IUser | IUserDocument;
       createdDate: Date;
+      reportedBy: ObjectId | IUser | IUserDocument;
+      reportedDate: Date;
       updatedDate: Date;
+      updatedBy: ObjectId | IUser | IUserDocument;
       assignedTo: ObjectId | IUser | IUserDocument;
-      formId: string;
+      formId?: string;
       comments: IReactoryComment[] | IReactoryCommentDocument[];
       documents: IReactoryFile[] | IReactoryFileModel[];
+      tags: string[];
+      slaDeadline?: Date;
+      isOverdue: boolean;
+      meta?: any;
+      [key: string]: unknown;
     }
 
     export interface IReactorySupportTicketDocument
@@ -7309,6 +7398,192 @@ declare namespace Reactory {
         schemaUrl?: string;
       };
     }
+
+    // Calendar Visibility Enum
+    export enum ReactoryCalendarVisibility {
+      PRIVATE = 'private',
+      SHARED = 'shared',
+      APPLICATION = 'application',
+      ORGANIZATION = 'organization',
+      PUBLIC = 'public'
+    }
+
+    // Calendar Entry Status Enum
+    export enum ReactoryCalendarEntryStatus {
+      DRAFT = 'draft',
+      CONFIRMED = 'confirmed',
+      CANCELLED = 'cancelled',
+      COMPLETED = 'completed'
+    }
+
+    // Calendar Entry Priority Enum
+    export enum ReactoryCalendarEntryPriority {
+      LOW = 'low',
+      NORMAL = 'normal',
+      HIGH = 'high',
+      URGENT = 'urgent'
+    }
+
+    // Calendar Participant Role Enum
+    export enum ReactoryCalendarParticipantRole {
+      ORGANIZER = 'organizer',
+      REQUIRED = 'required',
+      OPTIONAL = 'optional',
+      RESOURCE = 'resource'
+    }
+
+    // Calendar RSVP Status Enum
+    export enum ReactoryCalendarRSVPStatus {
+      PENDING = 'pending',
+      ACCEPTED = 'accepted',
+      DECLINED = 'declined',
+      TENTATIVE = 'tentative'
+    }
+
+    // Calendar Recurrence Frequency Enum
+    export enum ReactoryCalendarRecurrenceFrequency {
+      DAILY = 'daily',
+      WEEKLY = 'weekly',
+      MONTHLY = 'monthly',
+      YEARLY = 'yearly'
+    }
+
+    // Calendar Working Hours Interface
+    export interface ReactoryCalendarWorkingHours {
+      monday?: { start: string; end: string };
+      tuesday?: { start: string; end: string };
+      wednesday?: { start: string; end: string };
+      thursday?: { start: string; end: string };
+      friday?: { start: string; end: string };
+      saturday?: { start: string; end: string };
+      sunday?: { start: string; end: string };
+      timeZone: string;
+    }
+
+    // Calendar Settings Interface
+    export interface ReactoryCalendarSettings {
+      defaultEntryDuration?: number; // minutes
+      defaultReminderTime?: number; // minutes before event
+      allowOverlaps?: boolean;
+      defaultVisibility?: ReactoryCalendarVisibility;
+      colorScheme?: string;
+      notifications?: {
+        emailEnabled: boolean;
+        pushEnabled: boolean;
+        reminderTimes: number[]; // minutes before event
+      };
+    }
+
+    // Calendar Recurrence Pattern Interface
+    export interface ReactoryCalendarRecurrencePattern {
+      frequency: ReactoryCalendarRecurrenceFrequency;
+      interval: number;
+      endDate?: Date;
+      count?: number;
+      byDay?: string[]; // e.g., ['MO', 'WE', 'FR']
+      byMonth?: number[];
+      byMonthDay?: number[];
+      exceptions?: Date[];
+    }
+
+    // Calendar Workflow Trigger Interface
+    export interface ReactoryCalendarWorkflowTrigger {
+      workflowId: string;
+      workflowVersion: string;
+      triggerType: 'on_create' | 'on_update' | 'on_delete' | 'time_based' | 'participant_response';
+      triggerOffset?: number; // minutes before/after event
+      parameters: Record<string, any>;
+    }
+
+    // Calendar Service Trigger Interface
+    export interface ReactoryCalendarServiceTrigger {
+      serviceId: string;
+      serviceVersion: string;
+      method: string;
+      triggerType: 'on_create' | 'on_update' | 'on_delete' | 'time_based' | 'participant_response';
+      triggerOffset?: number; // minutes before/after event
+      parameters: Record<string, any>;
+    }
+
+    // Calendar Filter Interface
+    export interface ReactoryCalendarFilter {
+      visibility?: ReactoryCalendarVisibility[];
+      ownerId?: string;
+      organizationId?: string;
+      clientId?: string;
+      isActive?: boolean;
+      search?: string;
+      limit?: number;
+      offset?: number;
+    }
+
+    // Calendar Entry Filter Interface
+    export interface ReactoryCalendarEntryFilter {
+      calendarIds?: number[];
+      status?: ReactoryCalendarEntryStatus[];
+      priority?: ReactoryCalendarEntryPriority[];
+      startDate?: Date;
+      endDate?: Date;
+      category?: string;
+      tags?: string[];
+      organizerId?: string;
+      participantId?: string;
+      search?: string;
+      limit?: number;
+      offset?: number;
+    }
+
+    // Calendar Permissions Interface
+    export interface ReactoryCalendarPermissions {
+      userPermissions?: { userId: string; role: 'viewer' | 'editor' | 'admin' }[];
+      teamPermissions?: { teamId: string; role: 'viewer' | 'editor' | 'admin' }[];
+    }
+
+    // Calendar Time Slot Interface
+    export interface ReactoryCalendarTimeSlot {
+      startDate: Date;
+      endDate: Date;
+      available: boolean;
+      calendarId?: number;
+      conflictingEntries?: number[];
+    }
+
+    // Workflow Trigger Event Types
+    export enum ReactoryCalendarWorkflowTriggerType {
+      ON_CREATE = 'on_create',
+      ON_UPDATE = 'on_update',
+      ON_DELETE = 'on_delete',
+      TIME_BASED = 'time_based',
+      PARTICIPANT_RESPONSE = 'participant_response'
+    }
+
+    // Service Trigger Event Types
+    export enum ReactoryCalendarServiceTriggerType {
+      ON_CREATE = 'on_create',
+      ON_UPDATE = 'on_update',
+      ON_DELETE = 'on_delete',
+      TIME_BASED = 'time_based',
+      PARTICIPANT_RESPONSE = 'participant_response'
+    }
+
+    // Trigger Event Types
+    export enum ReactoryCalendarTriggerEventType {
+      CREATED = 'created',
+      UPDATED = 'updated',
+      DELETED = 'deleted',
+      STARTING = 'starting',
+      PARTICIPANT_RESPONSE = 'participant_response'
+    }
+
+    // Notification Event Types
+    export enum ReactoryCalendarNotificationEventType {
+      CREATED = 'created',
+      UPDATED = 'updated',
+      CANCELLED = 'cancelled',
+      REMINDER = 'reminder',
+      PARTICIPANT_ADDED = 'participant_added',
+      PARTICIPANT_RESPONSE = 'participant_response'
+    }
   }
 
   /**
@@ -7346,7 +7621,7 @@ declare namespace Reactory {
       IReactoryModelMetaDocumenFunctions<TMeta>,
       IReactoryModelMetaDocumentQueryHelpers<TMeta>,
       IReactoryModelMetaDocument<TMeta>
-    >;
+    >;    
   }
 
   export namespace Native {}
@@ -8265,7 +8540,7 @@ declare namespace Reactory {
        */
       alias: string;
     }
-
+    
     export type ServiceDependency = string | IReactoryServiceDependency;
 
     export type ReactoryServiceDependencies = ServiceDependency[];
@@ -8276,6 +8551,33 @@ declare namespace Reactory {
      * services based on the type.
      */
     export type ValidServiceType = string | ReactoryServiceTypes;
+
+    /**
+     * REST route configuration for a service when exposing a service over REST
+     */
+    export interface ServiceRestRouteConfig {
+      /**
+       * HTTP method for the route
+       * if not set, defaults to 'GET'
+       */
+      method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+      /** 
+       * Route - if not set, defaults to '/'
+       * */
+      path?: string;
+      /**
+       * Function name to invoke on the service for this route
+       */
+      fnc?: string,
+      /**
+       * Props map
+       */
+      propsMap: Reactory.ObjectMap,
+      /**
+       * props
+       */
+      props?: any
+    }
 
     /**
      * A service definition is used to define a service that can be loaded
@@ -8345,7 +8647,34 @@ declare namespace Reactory {
        * of the service.
        */
       lifeCycle?: SERVICE_LIFECYCLE;
+      /** 
+       * If set, this sets up a REST endpoint for the service 
+       * this will use the roles and permissions defined in the service definition
+       * to determine access control.
+       * */  
+      rest?: {
+        /** root path for the REST endpoint */
+        path: string;
+        /** HTTP methods supported */
+        routes: ServiceRestRouteConfig[]
+      };
+      /**
+       * Service GRPC configuration. The property can be added as an 
+       * empty object to indicate that the service should be exposed over gRPC
+       * with default settings.
+       */
+      grpc?: {        
+        /** 
+         * gRPC service definition path 
+         * if not set, the system will look for a default path based on the service name
+         * */
+        protoPath?: string;
+        /** gRPC service name - if not set the system will look for a default service name based on the service nameSpace and name and version */
+        serviceName?: string;
+      };
     }
+
+    export type ServiceAnnotationOptions<T> = Partial<Reactory.Service.IReactoryServiceDefinition<T extends Reactory.Service.IReactoryService ? T : Reactory.Service.IReactoryService>>;
 
     export interface IReactoryServiceRegister {
       [key: string]: IReactoryServiceDefinition<IReactoryService>;
@@ -8414,6 +8743,83 @@ declare namespace Reactory {
        */
       onShutdown(): Promise<void>;
     }
+    
+     export type AutowiredService<T extends Reactory.Service.IReactoryService> = T &
+      Reactory.Service.IReactoryTelemetryAwareService &
+      Reactory.Service.IReactoryLoggerAwareService & {
+        context: Reactory.Server.IReactoryContext;
+      }
+    
+    export interface LoggingMeta {
+      traceId?: string;
+      spanId?: string;
+      userId?: string;
+      sessionId?: string;
+      requestId?: string;
+      partnerId?: string;
+      ip?: string;
+      hostname?: string;
+      error?: Error;            
+      [key: string]: unknown;
+    }
+
+    export interface ServiceLogger {
+      
+        /* 
+        * Logging method to write logs.
+        * @param message - the message to log
+        * @param meta - unknown meta data
+        * @param type - "error", "info", "debug" or "warning"
+        * @param clazz - the class or component id
+        */
+        log(message: string, meta?: LoggingMeta, type?: Service.LOG_TYPE): void;
+
+        /**
+         * Logs a debug message to the console / log output
+         * @param message - message to log out
+         * @param meta - unknown meta data
+         * @param clazz - the class or component id
+         */
+        debug(message: string, meta?: LoggingMeta): void;
+        /**
+         * Logs a warning message to the console / log output
+         * @param message - message to log out
+         * @param meta - unknown meta data
+         * @param clazz - the class or component id
+         */
+        warn(message: string, meta?: LoggingMeta): void;
+        /**
+         * Logs an error message to the console / log output
+         * @param message - message to log out
+         * @param meta - unknown meta data
+         * @param clazz - the class or component id
+         */
+        error(message: string, error?: Error, meta?: LoggingMeta): void;
+        /**
+         * Write an info message to the console / log output
+         * @param message - message to log out
+         * @param meta - unknown meta data
+         * @param clazz - the class or component id
+         */
+        info(message: string, meta?: LoggingMeta): void;
+      
+    }
+
+    export interface IReactoryLoggerAwareService {
+      logger: ServiceLogger;
+    }
+
+    /**
+     * Base interface for a Telemetry Aware Reactory Service.
+     * Provides logging and telemetry capabilities to the service.
+     */
+    export interface IReactoryTelemetryAwareService  {
+      /**
+       * Telemetry service instance
+       */
+      telemetry: Reactory.Telemetry.IReactoryTelemetry;            
+    }
+
 
     /**
      * Base interface for a Context Aware Reactory Service.
@@ -8436,7 +8842,7 @@ declare namespace Reactory {
       props: TP;
       context: TC;
       description?: string;
-      tags?: string[];
+      tags?: string[];            
       getExecutionContext(): Server.IReactoryContext;
       setExecutionContext(executionContext: Server.IReactoryContext): void;
       onStartup(): Promise<void>;
@@ -9100,9 +9506,27 @@ declare namespace Reactory {
        */
       attachDocument(
         ticket_id: string,
-        file: File,
-        name: string,
+        file_ids: string[],        
       ): Promise<Models.IReactorySupportTicket | Models.IReactorySupportTicketDocument>;
+
+      uploadFiles(
+        ticket_id: string,
+        files: File[],
+      ): Promise<Models.IReactoryFile[]>; 
+
+      getFiles(
+        ticket_id: string,
+      ): Promise<Models.IReactoryFile[]>; 
+
+      deleteFiles(
+        ticket_id: string,
+        file_ids: string[],
+      ): Promise<void>; 
+
+      getFile(
+        ticket_id: string,
+        file_id: string,
+      ): Promise<Models.IReactoryFile>; 
 
       /**
        * Returns a paged list of support tickets
@@ -9113,6 +9537,13 @@ declare namespace Reactory {
         filter: Partial<Models.IReactorySupportTicketFilter>,
         paging: Models.IPagingRequest,
       ): Promise<Models.IPagedReactorySupportTickets>;
+
+      addComment(
+        ticketId: string,
+        commentText: string,
+        parentId?: string,
+        attachmentIds?: string[],
+      ): Promise<Models.IReactoryComment>;
     }
 
     export class ReactorySupportServiceStatic {
@@ -9935,6 +10366,22 @@ declare namespace Reactory {
       createCounter(name: string, options?: MetricOptions): ICounter;
 
       /**
+       * Increment a counter metric by a specified value
+       * @param name 
+       * @param value 
+       * @param attributes 
+       */
+      increment(name: string, value?: number, attributes?: MetricAttributes, options?: MetricOptions): void;
+
+      /**
+       * decrement a counter metric by a specified value
+       * @param name 
+       * @param value 
+       * @param attributes 
+       */
+      decrement(name: string, value?: number, attributes?: MetricAttributes, options?: MetricOptions): void;
+
+      /**
        * Create or get an up-down counter metric
        * UpDownCounters can increase or decrease
        * @param name - Metric name (will be prefixed automatically)
@@ -9966,6 +10413,19 @@ declare namespace Reactory {
       createHistogram(name: string, options?: MetricOptions): IHistogram;
 
       /**
+       * Record a value to a histogram metric
+       * @param name 
+       * @param value 
+       * @param attributes 
+       */
+      recordHistogram(
+        name: string,
+        value: number,
+        attributes?: MetricAttributes,
+        options?: MetricOptions,
+      ): void;
+
+      /**
        * Create or get a gauge metric
        * Gauges track current values that can go up or down
        * @param name - Metric name (will be prefixed automatically)
@@ -9980,6 +10440,20 @@ declare namespace Reactory {
        * ```
        */
       createGauge(name: string, options?: MetricOptions): IGauge;
+
+      /**
+       * Record a value to a gauge metric
+       * @param name 
+       * @param value 
+       * @param attributes 
+       */
+      recordGauge(
+        name: string,
+        value: number,
+        attributes?: MetricAttributes,
+        options?: MetricOptions,
+      ): void;
+
 
       /**
        * Start a timer for measuring operation duration
@@ -10533,7 +11007,7 @@ declare namespace Reactory {
       type?: string;
       lifeCycle?: Reactory.Service.SERVICE_LIFECYCLE;
     };
-
+   
     /**
      * The IReactoryContext is the object should be passed through to all levels of the execution.
      * It contains the logged in user, the memberships and several shortcut utilities that allows
@@ -10566,12 +11040,15 @@ declare namespace Reactory {
        * @param context - a specific context if you want to execute as different user,
        * otherwise current context is used
        * @param lifeCycle - the lifecycle type for the service, either instance or singleton
+       * 
+       * Returns an instance of the requested service with autowired telemetry and logging capabilities.
        */
-      getService<T extends Reactory.Service.IReactoryService>(
-        fqn: string,
+      getService<T extends 
+        Reactory.Service.IReactoryService>(
+        fqn: FQN,
         props?: unknown,
         lifeCycle?: Service.SERVICE_LIFECYCLE,
-      ): T;
+      ): Service.AutowiredService<T>;
 
       /**
        * list all services that are available to the current context.
@@ -12010,11 +12487,17 @@ declare namespace Reactory {
        * additional properties that may be added to the object
        */
       additionalProperties?: ISchema;
-
+      /**
+       * oneOf schema elements.        
+       */
       oneOf?: Partial<ISchema>[] | undefined;
-
+      /**
+       * anyOf schema elements
+       */
       anyOf?: Partial<ISchema>[] | undefined;
-
+      /**
+       * allOf schema elements
+       */
       allOf?: Partial<ISchema>[] | undefined;
     }
 
@@ -12026,6 +12509,8 @@ declare namespace Reactory {
       minLength?: number;
       maxLength?: number;
       pattern?: string | RegExp;
+      locale?: string;
+      default?: string;
     }
 
     export interface IBooleanSchema extends ISchema {
@@ -12071,6 +12556,57 @@ declare namespace Reactory {
         | INumberSchema
         | IStringSchema
         | ISchema;
+      /**
+       * Minimum number of items in the array
+       */
+      minLength?: number;
+      /**
+       * Maximum number of items in the array
+       */
+      maxLength?: number;
+      /**
+       * Indicates whether or not the items in the array should be unique
+       */
+      uniqueItems?: boolean;
+      /**
+       * A lodash template expression that can be used to determine the unique field for the array items.
+       * This could be a field name, or a comma separated list of field names to create a composite unique key.
+       * eg: "id", "firstName,lastName", "address.city"
+       */
+      uniqueFieldExpression?: string;
+      /**
+       * Default value for the array
+       */
+      default?: unknown[];
+      /**
+       * Allow additional items to be added to the array
+       */
+      allowAdd?: boolean;
+      /**
+       * Allow items to be removed from the array
+       */
+      allowRemove?: boolean;
+      /**
+       * Indicates whether or not the array is sortable
+       */
+      sortable?: boolean;    
+      /**
+       * default sort expression for the array items, can be a field name or a lodash template
+       * expression.
+       */
+      sortBy?: string;
+      /**
+       * We can provide a total count for the array when dealing with paged data sources.
+       */
+      totalCount?: number;
+      /**
+       * The page size for the array when dealing with paged data sources.
+       */
+      pageSize?: number;
+      /**
+       * The current page index for the array when dealing with paged data sources.
+       */
+      pageIndex?: number;
     }
 
     export interface IObjectProperties {
@@ -12255,13 +12791,38 @@ declare namespace Reactory {
     /**
      * Reactory workflow definition. This is the base definition for a workflow in the reactory platform.
      */
-    export interface IWorkflow {
-      id: string;
-      component: unknown;
-      category: string;
+    export interface IWorkflow extends IReactoryComponentDefinition<unknown> {
+      /**
+       * Use the id property to set a unique identifier for the workflow instance.
+       * If not set the engine will make use of name.nameSpace@version to identify
+       * the workflow instance.
+       */
+      id?: string;      
+      /**
+       * Category for the workflow definition object
+       */
+      category?: string;
+      /**
+       * Use the component onStart() method for initialization logic for provisioned
+       * workflows.
+       */
       autoStart?: boolean;
+      /**
+       * Properties that are passed to the workflow instance
+       */
       props?: unknown;
-    }
+      /**
+       * An object map that can be used to map properties from the context
+       * to the workflow instance.
+       */
+      propsMap?: ObjectMap;
+      /**
+       * Indicates whether or not the workflow is provisioned 
+       * in code / code - or whether it is provisioned via the 
+       * workflow engine / database.
+       */
+      provisioned?: boolean;
+    }    
   }
 
   export namespace Git {
