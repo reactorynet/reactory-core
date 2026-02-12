@@ -58,6 +58,7 @@ import { Breakpoint, FilledInputProps, InputProps, OutlinedInputProps } from "@m
 import { ReadLine } from "readline";
 import LocalForage, { key } from "localforage";
 import { GraphQLRequestContext } from "@apollo/server";
+import { deprecate } from "util";
 
 /// <reference path="global.d.ts" />
 
@@ -2460,6 +2461,98 @@ declare namespace Reactory {
         [key: string]: unknown;
       }
 
+      /**
+       * Enhanced header configuration options for MaterialTableWidget columns
+       */
+      export type MaterialTableColumnHeaderConfig = {
+        /**
+         * Custom header renderer component FQN (e.g., 'custom.MyColumnHeader@1.0.0')
+         * When provided, this component will be used instead of the default renderer
+         */
+        headerComponent?: string;
+        /**
+         * Props to pass to the custom header component
+         */
+        headerComponentProps?: Record<string, unknown>;
+        /**
+         * Props map for dynamic prop resolution (uses reactory.utils.objectMapper)
+         */
+        headerComponentPropsMap?: ObjectMap;
+        /**
+         * i18n key for the column title. If provided, will be translated using reactory.i18n.t
+         * Falls back to the 'title' property if translation is not found
+         */
+        titleKey?: string;
+        /**
+         * Icon to display in the header (Material icon name)
+         */
+        icon?: string;
+        /**
+         * Position of the icon relative to the title
+         */
+        iconPosition?: 'left' | 'right';
+        /**
+         * Icon color (can be a theme color key or CSS color)
+         */
+        iconColor?: string;
+        /**
+         * Header text color
+         */
+        color?: string;
+        /**
+         * Header background color
+         */
+        backgroundColor?: string;
+        /**
+         * Enable sorting for this column
+         */
+        sortable?: boolean;
+        /**
+         * Enable filtering for this column
+         */
+        filterable?: boolean;
+        /**
+         * Custom filter component FQN for the column filter popup
+         */
+        filterComponent?: string;
+        /**
+         * Tooltip text for header
+         */
+        tooltip?: string;
+        /**
+         * i18n key for tooltip (uses reactory.i18n.t)
+         */
+        tooltipKey?: string;
+        /**
+         * Header text alignment
+         */
+        align?: 'left' | 'center' | 'right';
+        /**
+         * Custom header cell styles (SxProps)
+         */
+        headerSx?: Record<string, unknown>;
+        /**
+         * CSS class name for the header cell
+         */
+        headerClassName?: string;
+        /**
+         * Minimum width for the column header
+         */
+        minWidth?: number | string;
+        /**
+         * Maximum width for the column header
+         */
+        maxWidth?: number | string;
+        /**
+         * Whether to allow text wrapping in header
+         */
+        noWrap?: boolean;
+        /**
+         * Typography variant for the title
+         */
+        variant?: 'h6' | 'subtitle1' | 'subtitle2' | 'body1' | 'body2' | 'caption';
+      };
+
       export type MaterialTableWidgetColumnDefinition = {
         /**
          * Field title
@@ -2470,11 +2563,11 @@ declare namespace Reactory {
          */
         field: string;
         /**
-         * A component to bind to the column
+         * A component to bind to the column cell renderer
          */
         component?: string;
         /**
-         * Array of components to bind
+         * Array of components to bind to the cell
          */
         components?: {
           component: string;
@@ -2484,11 +2577,11 @@ declare namespace Reactory {
           propsMap?: ObjectMap;
         }[];
         /**
-         * An array of components to bind to the column
+         * Props map for dynamic property resolution
          */
         propsMap?: unknown;
         /**
-         *
+         * Static props to pass to the cell renderer
          */
         props?: {
           actionButton?: {
@@ -2501,20 +2594,30 @@ declare namespace Reactory {
           [key: string]: unknown;
         };
         /**
-         *
+         * Enable sorting for this column (legacy, prefer header.sortable)
          */
         sort?: boolean;
         /**
-         *
+         * Show column total in footer
          */
         total?: boolean;
-
         /**
-         *
+         * Responsive breakpoint - column hidden below this breakpoint
          */
         breakpoint?: string;
-
+        /**
+         * Aggregator function for footer totals
+         */
         aggregator?: (column: MaterialTableWidgetColumnDefinition, data: unknown[]) => unknown;
+        /**
+         * Enhanced header configuration options
+         * Provides control over header rendering including:
+         * - Custom header components via FQN
+         * - i18n translation support
+         * - Icons, colors, and styling
+         * - Sort and filter indicators
+         */
+        header?: MaterialTableColumnHeaderConfig;
         [key: string]: unknown;
       };
 
@@ -9211,6 +9314,29 @@ declare namespace Reactory {
       ): Promise<Reactory.Forms.IReactoryFormResource>;
     }
 
+    export interface UserSearchResults {
+      total: number;
+      users: Reactory.Models.IUserDocument[];
+      limit: number;
+      offset: number;
+      sortBy: string;
+      sortOrder: "asc" | "desc";
+      fields: string[];
+      provider: string;
+      providerOptions: Record<string, unknown>;      
+    }
+
+    export interface UserSearchRequest {
+      search: string;
+      limit?: number;
+      offset?: number;
+      sortBy?: string;
+      sortOrder?: "asc" | "desc";
+      fields?: string[];
+      provider?: string;
+      providerOptions?: Record<string, unknown>;
+    }
+
     export interface IReactoryUserService extends Reactory.Service.IReactoryDefaultService {
       createUser(
         userInput: Reactory.Models.IUserCreateParams,
@@ -9260,12 +9386,51 @@ declare namespace Reactory {
 
       listAllUsers(): Promise<Reactory.Models.IUserDocument[]>;
 
+      /**
+       * deprecated('2024-12-31', 'Use search(request: UserSearchRequest) instead')
+       * @param search
+       * @param sort
+       * @param limit
+       * @param offset
+       */
       searchUsers(
         search: string,
         sort?: string,
         limit?: number,
         offset?: number,
       ): Promise<Reactory.Models.IUserDocument[]>;
+
+      /**
+       * Advanced search function for users that allows for more granular control
+       * of search. 
+       * 
+       * Basic search uses the search string to look for matches in
+       * name, email and username fields.
+       * @param request 
+       */
+      search(request: UserSearchRequest): Promise<UserSearchResults>;
+
+      /**
+       * Get users by client membership
+       * Returns users who have an active membership for the specified ReactoryClient
+       * @param clientId - The ReactoryClient ID to filter users by
+       * @param paging - Optional paging parameters
+       * @param filter - Optional filter parameters (searchString, roles, includeDeleted)
+       * @returns UserList with paging info and users array
+       */
+      getUsersByClientMembership(
+        clientId: string | ObjectId,
+        paging?: { page?: number; pageSize?: number },
+        filter?: {
+          searchString?: string;
+          roles?: string[];
+          includeDeleted?: boolean;
+        }
+      ): Promise<{
+        paging: Reactory.Models.IPagingResult;
+        users: Reactory.Models.IUserDocument[];
+        totalUsers: number;
+      }>;
     }
 
     export interface IReactoryUserDemographicsService

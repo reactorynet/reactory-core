@@ -768,6 +768,38 @@ export interface IReactoryImportPackageManager extends Service.IReactoryContextA
         limit?: number,
         offset?: number,
       ): Promise<Reactory.Models.IUserDocument[]>;
+
+      /**
+       * Advanced search function for users that allows for more granular control
+       * of search.
+       *
+       * Basic search uses the search string to look for matches in
+       * name, email and username fields.
+       * @param request
+       */
+      search(request: UserSearchRequest): Promise<UserSearchResults>;
+
+      /**
+       * Get users by client membership
+       * Returns users who have an active membership for the specified ReactoryClient
+       * @param clientId - The ReactoryClient ID to filter users by
+       * @param paging - Optional paging parameters
+       * @param filter - Optional filter parameters (searchString, roles, includeDeleted)
+       * @returns UserList with paging info and users array
+       */
+      getUsersByClientMembership(
+        clientId: string | ObjectId,
+        paging?: { page?: number; pageSize?: number },
+        filter?: {
+          searchString?: string;
+          roles?: string[];
+          includeDeleted?: boolean;
+        }
+      ): Promise<{
+        paging: Reactory.Models.IPagingResult;
+        users: Reactory.Models.IUserDocument[];
+        totalUsers: number;
+      }>;
     }
 
     export interface IReactoryUserDemographicsService
