@@ -1,6 +1,6 @@
 {
   "name": "@reactory/reactory-core",
-  "version": "1.1.0-RC1-7275e4",
+  "version": "1.1.1",
   "displayName": "Reactory Core",
   "description": "Reactory Core - shared across all platforms and services. Contains type definitions, constants and shared components for the reactory eco-system.",
   "main": "dist/reactory.core.js",
@@ -32,13 +32,34 @@
     "build:version-write": "node ./scripts/version.mjs",
     "build:version-read": "node ./scripts/version.mjs --read",
     "deploy:local": "NODE_PATH=./scripts npx babel-node ./scripts/deploy.js --presets @babel/env",
+    "prepublishOnly": "npm-run-all build:clean build:version-write build:rollup build:docs test",
+    "publish:npm": "npm publish",
+    "publish:patch": "npm-run-all build:clean build:version-write build:rollup build:docs test publish:npm",
     "test": "jest",
     "build:lint": "eslint . --fix",
     "build:docs": "jsdoc -c jsdoc.json"
   },
   "repository": {
     "type": "git",
-    "url": "https://bitbucket.org/reactory/reactory-core.git"
+    "url": "https://github.com/reactorynet/reactory-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/reactorynet/reactory-core/issues"
+  },
+  "homepage": "https://github.com/reactorynet/reactory-core#readme",
+  "keywords": [
+    "reactory",
+    "framework",
+    "typescript",
+    "react",
+    "node",
+    "low-code",
+    "rad",
+    "rapid-application-development"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
     "reflect-annotations": "4.0.0-beta.1",

@@ -1,0 +1,55 @@
+# Source files - we only publish the dist folder
+src/
+test/
+scripts/
+rollup/
+
+# Development files
+.eslintrc.json
+.prettierrc.json
+.mocharc.json
+.nvmrc
+.version
+rollup.config.mjs
+tsconfig.json
+jest.config.cjs
+jsdoc.json
+babel.config.js
+
+# Documentation source (we keep the built docs)
+# docs/ is already in the files array in package.json
+
+# Git files
+.git/
+.gitignore
+.github/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+*.tgz
+.cache/
+coverage/
+
+# Misc
+.env
+.env.local
+.env.*.local

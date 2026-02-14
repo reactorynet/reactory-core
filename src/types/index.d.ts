@@ -514,7 +514,9 @@ declare namespace Reactory {
       export interface IUser
         extends Reactory.Models.IUserBio,
           Reactory.Models.IUserContact,
-          Reactory.Models.IUserDemographics {
+          Reactory.Models.IUserDemographics,
+          Reactory.Models.IUserSocials,
+          Reactory.Models.IUserAI {
         id?: string;
       }
 
@@ -6321,6 +6323,59 @@ declare namespace Reactory {
     }
 
     /**
+     * Social reference type
+     */
+    export interface IReactorySocialReference {
+      id: string;
+      /**
+       * The provider of the social reference
+       */
+      provider: string;
+      /**
+       * The url of the social reference
+       */
+      url: string;
+      /**
+       * Whether the social reference is authenticated
+       */
+      authenticated: boolean;
+      /**
+       * The scope of the social reference
+       */
+      scope: unknown;
+      /**
+       * The authentication of the social reference
+       */
+      auth: unknown;
+      /**
+       * Whether the social reference is valid
+       */
+      valid: boolean;
+      /**
+       * The date and time the social reference was created
+       */
+      created: Date;
+      /**
+       * The date and time the social reference was last updated
+       */
+      updated: Date;
+    }
+
+    export interface IUserSocials {
+      socials: IReactorySocialReference[];
+    }
+
+    export interface IUserAI {
+      // The assistant ID to use for the user. 
+      // This is a persona ID from the AI platform.
+      assistantId: string;
+
+      // The persona ID to use for the user. 
+      // This will be a persona that represents the user's identity and behavior.
+      personaId: string;
+    }
+
+    /**
      * Represents a user in the application.
      *
      * @interface
@@ -6328,7 +6383,7 @@ declare namespace Reactory {
      * @extends {IUserContact}
      * @extends {IUserHelpers}
      */
-    export interface IUser extends IUserBio, IUserContact, IUserHelpers {
+    export interface IUser extends IUserBio, IUserContact, IUserHelpers, IUserSocials, IUserAI {
       /**
        * depending on whether or not the model is client side or server side
        */
