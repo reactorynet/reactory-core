@@ -27,11 +27,64 @@ function getCurrentBuildNumber() {
 }
 
 /**
+ * Checks if there are uncommitted changes in the repository
+ */
+function hasUncommittedChanges() {
+  const result = shell.exec('git status --porcelain', { silent: true });
+  return result.code === 0 && result.stdout.trim().length > 0;
+}
+
+/**
+ * Checks if there are unpushed commits on the current branch
+ */
+function hasUnpushedCommits() {
+  // Get the current branch name
+  const branchResult = shell.exec('git rev-parse --abbrev-ref HEAD', { silent: true });
+  if (branchResult.code !== 0) {
+    return false;
+  }
+  
+  const branch = branchResult.stdout.trim();
+  
+  // Check if there are commits that haven't been pushed
+  const result = shell.exec(`git log origin/${branch}..HEAD`, { silent: true });
+  
+  // If the command fails (e.g., no upstream), consider it as having changes
+  if (result.code !== 0) {
+    return true;
+  }
+  
+  return result.stdout.trim().length > 0;
+}
+
+/**
+ * Determines if the build number should be incremented
+ */
+function shouldIncrementVersion() {
+  const uncommitted = hasUncommittedChanges();
+  const unpushed = hasUnpushedCommits();
+  
+  if (uncommitted || unpushed) {
+    console.log(`Version will be incremented (uncommitted: ${uncommitted}, unpushed: ${unpushed})`);
+    return true;
+  }
+  
+  console.log('No changes detected - version will remain the same');
+  return false;
+}
+
+/**
  * Generates the next build number by incrementing the current one
+ * Only increments if there are uncommitted or unpushed changes
  */
 function generateBuildNumber() {
   const currentBuild = getCurrentBuildNumber();
-  return currentBuild + 1;
+  
+  if (shouldIncrementVersion()) {
+    return currentBuild + 1;
+  }
+  
+  return currentBuild;
 }
 
 /**
