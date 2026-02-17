@@ -21,9 +21,7 @@
       "*": [
         "src/*"
       ],
-      "@reactory/reactory-core/*": [
-        "src/*"
-      ],
+      "@reactorynet/reactory-core": ["src/*"],
       "test/*": [
         "test/*"
       ],

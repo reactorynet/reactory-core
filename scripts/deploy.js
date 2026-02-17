@@ -55,7 +55,7 @@ dest.forEach((target) => {
   
   shell.cd(target);
   shell.echo(`Deploying lib to ${target}`);
-  log(shell.exec(`rm -rf ${target}/node_module/@reactory/react-core`));
+  log(shell.exec(`rm -rf ${target}/node_module/@reactorynet/react-core`));
   log(shell.exec(`rm -rf ${target}/lib/${filepattern}`));
   log(shell.exec(`cp ${source} ${target}/lib/${filename}`));
   updatePackage(target);
