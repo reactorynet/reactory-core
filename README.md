@@ -34,6 +34,16 @@ Install dependencies using `yarn install`.
 
 To build and install the reactory-core library run the `yarn build:install` at the command prompt.
 
+### Version Bumping
+
+By default, `build:install` automatically increments the build number if uncommitted or unpushed changes are detected. To build and install without incrementing the version number, use:
+
+```bash
+yarn build:install:no-bump
+```
+
+This is useful when you want to rebuild the library without creating a new version.
+
 
 ## Testing
 
