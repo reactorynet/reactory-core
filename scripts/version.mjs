@@ -59,8 +59,14 @@ function hasUnpushedCommits() {
 
 /**
  * Determines if the build number should be incremented
+ * @param {boolean} forceNoBump - If true, never increment version regardless of changes
  */
-function shouldIncrementVersion() {
+function shouldIncrementVersion(forceNoBump = false) {
+  if (forceNoBump) {
+    console.log('Version bump disabled by --no-bump flag');
+    return false;
+  }
+  
   const uncommitted = hasUncommittedChanges();
   const unpushed = hasUnpushedCommits();
   
@@ -76,11 +82,12 @@ function shouldIncrementVersion() {
 /**
  * Generates the next build number by incrementing the current one
  * Only increments if there are uncommitted or unpushed changes
+ * @param {boolean} forceNoBump - If true, never increment version regardless of changes
  */
-function generateBuildNumber() {
+function generateBuildNumber(forceNoBump = false) {
   const currentBuild = getCurrentBuildNumber();
   
-  if (shouldIncrementVersion()) {
+  if (shouldIncrementVersion(forceNoBump)) {
     return currentBuild + 1;
   }
   
@@ -89,11 +96,12 @@ function generateBuildNumber() {
 
 /**
  * Updates the package.json with the next version number
+ * @param {boolean} forceNoBump - If true, never increment version regardless of changes
  */
-function getNextVersion() {
+function getNextVersion(forceNoBump = false) {
   // Read the version template
   const versionTemplate = fs.readFileSync(VERSION_FILE).toString().trim();
-  const buildNumber = generateBuildNumber();
+  const buildNumber = generateBuildNumber(forceNoBump);
   const version = lodash.template(versionTemplate)({ buildNumber });
   
   // Update package.json
@@ -116,8 +124,12 @@ function readCurrentVersion() {
 }
 
 // Main execution
-if (process.argv[2] === "--read") {
+const args = process.argv.slice(2);
+const hasReadFlag = args.includes("--read");
+const hasNoBumpFlag = args.includes("--no-bump");
+
+if (hasReadFlag) {
   readCurrentVersion();
 } else {
-  getNextVersion();
+  getNextVersion(hasNoBumpFlag);
 }
