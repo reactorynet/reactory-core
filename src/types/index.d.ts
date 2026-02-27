@@ -6721,6 +6721,8 @@ declare namespace Reactory {
       status?: string;
       comment?: string;
       assignTo?: string;
+      priority?: string;
+      tags?: string[];
     }
 
     export interface IReactorySupportTicket {
@@ -13041,7 +13043,7 @@ declare namespace Reactory {
        * in code / code - or whether it is provisioned via the 
        * workflow engine / database.
        */
-      provisioned?: boolean;
+      provisioned?: boolean;      
     }    
   }
 
