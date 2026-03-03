@@ -1040,6 +1040,12 @@ declare namespace Reactory {
         activeColor?: unknown;
         components?: string[];
       };
+      /**
+       * Controls the loading indicator variant displayed while the form is loading.
+       * - 'full': Shows progress bar, stage list, and skeleton preview (default)
+       * - 'compact': Shows progress bar and active stage label only
+       */
+      loadingVariant?: 'full' | 'compact';
     }
 
     export interface UISchemaGridLayout {
