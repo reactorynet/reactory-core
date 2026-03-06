@@ -11667,6 +11667,11 @@ declare namespace Reactory {
        * The data value for the feature flag
        */
       value: T;
+      /**
+       * Whether this feature flag instance is active.
+       * Defaults to false so flags must be explicitly enabled.
+       */
+      enabled?: boolean;
     }
 
     export interface IReactoryClientSetting<T> {

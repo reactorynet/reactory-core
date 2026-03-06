@@ -202,6 +202,14 @@ export type NAMED_PALETTE = "info" | "warning" | "error" | "primary" | "secondar
        */
       roles?: string[];
       /**
+       * Whether this menu item is enabled or disabled.
+       */
+      enabled?: boolean;
+      /**
+       * Feature flags that must be enabled for this menu item to be visible.
+       */
+      featureFlags?: string[];
+      /**
        * The sub menu items for this menu item
        */
       items?: IMenuItem[];
@@ -242,6 +250,14 @@ export type NAMED_PALETTE = "info" | "warning" | "error" | "primary" | "secondar
        * The roles the user should have in order to access this menu item
        */
       roles: string[];
+      /**
+       * Whether this menu is enabled or disabled.
+       */
+      enabled?: boolean;
+      /**
+       * Feature flags that must be enabled for this menu to be visible.
+       */
+      featureFlags?: string[];
       /**
        * The menu entries associated with this group.
        */
