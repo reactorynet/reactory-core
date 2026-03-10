@@ -5997,6 +5997,15 @@ declare namespace Reactory {
        * meta daata for the content
        */
       metadata?: Record<string, unknown>;
+      /**
+       * The parent content for this content. This is used to create a hierarchy of content. If null the content is a top level content.
+       */
+      parent?: IReactoryContent | IReactoryContentDocument | ObjectId;
+
+      /**
+       * The child content for this content. This is used to create a hierarchy of content. If null the content is a leaf content.
+       */
+      children?: IReactoryContent[] | IReactoryContentDocument[] | ObjectId[];
     }
 
     export class ReactoryContentDocument extends Mongoose.Document<
@@ -11676,9 +11685,18 @@ declare namespace Reactory {
 
     export interface IReactoryClientSetting<T> {
       /**
+       * nameSpace for the setting. This is used to group settings together
+       */
+      nameSpace: string;
+      /**
        * The name of the setting
        */
       name: string;
+      /**
+       * The version of the setting. This is used to manage changes to the setting over time
+       * and allows for multiple versions of the same setting to be stored and managed.
+       */
+      version: string;
       /**
        * The type of the setting
        */
@@ -11707,6 +11725,23 @@ declare namespace Reactory {
        * The data of the setting
        */
       data: T;
+      /**
+       * Roles that are allowed to view / edit this setting
+       */
+      roles?: {
+        /**
+         * The roles that are allowed to view the setting
+         */
+        viewer: string[];
+        /**
+         * The roles that are allowed to edit the setting
+         *  */
+        editor: string[];
+        /**
+         * The roles that are allowed to admin the setting
+         * */
+        admin: string[];
+      };
     }
 
     /**
