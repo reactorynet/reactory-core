@@ -9497,6 +9497,30 @@ declare namespace Reactory {
         users: Reactory.Models.IUserDocument[];
         totalUsers: number;
       }>;
+
+      /**
+       * Self-registration for anonymous users. No role guard.
+       * Finds or creates the organization, creates the user, assigns memberships.
+       * If no username is provided, falls back to the sanitized email local-part.
+       */
+      selfRegister(
+        userInput: Reactory.Models.IUserCreateParams,
+        organizationInput: { name?: string; id?: string },
+        partner: Reactory.Models.IReactoryClientDocument,
+      ): Promise<{
+        user: Reactory.Models.IUserDocument;
+        organization: Reactory.Models.IOrganizationDocument;
+      }>;
+
+      /**
+       * Checks whether the given username is already taken.
+       * Returns the count of users whose username begins with the input
+       * (for suggesting alternatives) and a suggested unique username when
+       * the exact name is already in use.
+       */
+      checkUsernameExists(
+        username: string,
+      ): Promise<{ exists: boolean; count: number; suggestion?: string }>;
     }
 
     export interface IReactoryUserDemographicsService
