@@ -36,6 +36,7 @@
     "deploy:local": "NODE_PATH=./scripts npx babel-node ./scripts/deploy.js --presets @babel/env",
     "prepublishOnly": "npm-run-all build:clean build:version-write build:rollup build:docs test",
     "publish:npm": "npm publish",
+    "publish:current": "npm-run-all build:clean build:version-write:no-bump build:rollup build:docs test && npm publish --ignore-scripts",
     "publish:patch": "npm-run-all build:clean build:version-write build:rollup build:docs test publish:npm",
     "test": "jest",
     "build:lint": "eslint . --fix",
