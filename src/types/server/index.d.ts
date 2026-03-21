@@ -470,6 +470,13 @@ declare namespace Reactory {
       workflows?: Workflow.IWorkflow[];
 
       /**
+       * Workflow step implementations provided by this module.
+       * Each entry registers a custom step type with the YAML workflow engine.
+       * Steps are discovered and registered during server startup.
+       */
+      workflowSteps?: Workflow.IWorkflowStepProvider[];
+
+      /**
        * The forms of the module.
        */
       forms?: TReactoryForm[];

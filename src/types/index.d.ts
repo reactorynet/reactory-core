@@ -11183,6 +11183,13 @@ declare namespace Reactory {
       workflows?: Workflow.IWorkflow[];
 
       /**
+       * Workflow step implementations provided by this module.
+       * Each entry registers a custom step type with the YAML workflow engine.
+       * Steps are discovered and registered during server startup.
+       */
+      workflowSteps?: Workflow.IWorkflowStepProvider[];
+
+      /**
        * The forms of the module.
        */
       forms?: TReactoryForm[];
@@ -13113,8 +13120,505 @@ declare namespace Reactory {
        * in code / code - or whether it is provisioned via the 
        * workflow engine / database.
        */
-      provisioned?: boolean;      
-    }    
+      provisioned?: boolean;
+    }
+
+    // =========================================================================
+    // YAML Workflow Step Execution Contracts
+    // =========================================================================
+
+    /**
+     * Context provided to each step during execution
+     */
+    export interface IStepExecutionContext {
+      workflow: {
+        id: string;
+        instanceId: string;
+        nameSpace: string;
+        name: string;
+        version: string;
+      };
+      inputs: Record<string, any>;
+      variables: Record<string, any>;
+      env: Record<string, any>;
+      stepResults: Record<string, IYamlStepExecutionResult>;
+      logger: {
+        log: (message: string, ...args: any[]) => void;
+        error: (message: string, ...args: any[]) => void;
+        warn: (message: string, ...args: any[]) => void;
+        info: (message: string, ...args: any[]) => void;
+        debug: (message: string, ...args: any[]) => void;
+      };
+      reactoryContext?: Reactory.Server.IReactoryContext;
+    }
+
+    export interface IYamlStepExecutionResult {
+      success: boolean;
+      outputs: Record<string, any>;
+      metadata: Record<string, any>;
+      error?: string;
+      skipped?: boolean;
+      stackTrace?: string;
+    }
+
+    export interface IStepValidationResult {
+      valid: boolean;
+      errors: string[];
+      warnings?: string[];
+    }
+
+    export interface IYamlStep {
+      readonly id: string;
+      readonly stepType: string;
+      readonly config: Record<string, any>;
+      readonly enabled: boolean;
+      execute(context: IStepExecutionContext): Promise<IYamlStepExecutionResult>;
+      validateConfig(config: Record<string, any>): IStepValidationResult;
+    }
+
+    export interface IStepConstructor {
+      new (id: string, config: Record<string, any>): IYamlStep;
+    }
+
+    export interface IStepRegistrationOptions {
+      force?: boolean;
+      description?: string;
+      version?: string;
+    }
+
+    export interface IStepMetadata {
+      stepType: string;
+      constructor: IStepConstructor;
+      options: IStepRegistrationOptions;
+      registeredAt: Date;
+    }
+
+    export interface IWorkflowStepProvider {
+      stepType: string;
+      constructor: IStepConstructor;
+      options?: IStepRegistrationOptions;
+    }
+
+    // =========================================================================
+    // YAML Workflow Definition Types
+    // =========================================================================
+
+    export interface IYamlWorkflowDefinition {
+      nameSpace: string;
+      name: string;
+      version: string;
+      description?: string;
+      author?: string;
+      tags?: string[];
+      metadata?: IWorkflowMetadata;
+      inputs?: Record<string, IInputParameter>;
+      outputs?: Record<string, IOutputParameter>;
+      variables?: Record<string, any>;
+      steps: IYamlWorkflowStep[];
+    }
+
+    export interface IWorkflowMetadata {
+      timeout?: number;
+      retryPolicy?: IRetryPolicy;
+      security?: ISecuritySettings;
+      designer?: IDesignerMetadata;
+    }
+
+    export interface IYamlWorkflowStep {
+      id: string;
+      name?: string;
+      description?: string;
+      type: StepType;
+      enabled?: boolean;
+      continueOnError?: boolean;
+      timeout?: number;
+      retryPolicy?: IRetryPolicy;
+      inputs?: Record<string, any>;
+      outputs?: Record<string, string>;
+      condition?: string;
+      dependsOn?: string | string[];
+      config?: IStepConfig;
+      steps?: IYamlWorkflowStep[];
+      designer?: IStepDesignerMetadata;
+    }
+
+    type CoreStepType =
+      | 'log' | 'delay' | 'validation' | 'dataTransformation'
+      | 'apiCall' | 'cliCommand' | 'fileOperation'
+      | 'conditional' | 'parallel' | 'forEach' | 'while'
+      | 'custom' | 'start' | 'end' | 'condition'
+      | 'for_each' | 'service_invoke';
+
+    type StepType = CoreStepType | (string & {});
+
+    export interface IStepConfig {
+      [key: string]: any;
+    }
+
+    export interface ILogStepConfig extends IStepConfig {
+      message: string;
+      level?: 'debug' | 'info' | 'warn' | 'error';
+      data?: Record<string, any>;
+    }
+
+    export interface IDelayStepConfig extends IStepConfig {
+      duration: number;
+      reason?: string;
+    }
+
+    export interface IValidationStepConfig extends IStepConfig {
+      rules: IValidationRule[];
+      stopOnFirstError?: boolean;
+    }
+
+    export interface IDataTransformationStepConfig extends IStepConfig {
+      transformations: IDataTransformation[];
+    }
+
+    export interface IApiCallStepConfig extends IStepConfig {
+      url: string;
+      method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS';
+      headers?: Record<string, string>;
+      body?: string | object;
+      authentication?: IAuthentication;
+      expectedStatusCodes?: number[];
+    }
+
+    export interface ICliCommandStepConfig extends IStepConfig {
+      command: string;
+      arguments?: string[];
+      workingDirectory?: string;
+      environment?: Record<string, string>;
+      expectedExitCodes?: number[];
+    }
+
+    export interface IFileOperationStepConfig extends IStepConfig {
+      operation: 'read' | 'write' | 'copy' | 'move' | 'delete' | 'exists' | 'mkdir';
+      source?: string;
+      destination?: string;
+      content?: string;
+      encoding?: string;
+      overwrite?: boolean;
+    }
+
+    export interface IConditionalStepConfig extends IStepConfig {
+      condition: string;
+      thenSteps?: IYamlWorkflowStep[];
+      elseSteps?: IYamlWorkflowStep[];
+    }
+
+    export interface IParallelStepConfig extends IStepConfig {
+      maxConcurrency?: number;
+      failFast?: boolean;
+      branches?: IParallelBranch[];
+    }
+
+    export interface IParallelBranch {
+      name: string;
+      steps: IYamlWorkflowStep[];
+    }
+
+    export interface IForEachStepConfig extends IStepConfig {
+      items: string;
+      itemVariable?: string;
+      indexVariable?: string;
+      maxConcurrency?: number;
+      steps: IYamlWorkflowStep[];
+    }
+
+    export interface IWhileStepConfig extends IStepConfig {
+      condition: string;
+      maxIterations?: number;
+      steps: IYamlWorkflowStep[];
+    }
+
+    export interface IInputParameter {
+      type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+      description?: string;
+      required?: boolean;
+      default?: any;
+      validation?: IParameterValidation;
+    }
+
+    export interface IOutputParameter {
+      type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+      description?: string;
+      source: string;
+    }
+
+    export interface IParameterValidation {
+      pattern?: string;
+      minLength?: number;
+      maxLength?: number;
+      minimum?: number;
+      maximum?: number;
+      enum?: (string | number)[];
+    }
+
+    export interface IValidationRule {
+      field: string;
+      type: 'required' | 'type' | 'pattern' | 'range' | 'custom';
+      value?: string | number | object;
+      message?: string;
+    }
+
+    export interface IDataTransformation {
+      operation: 'map' | 'filter' | 'reduce' | 'sort' | 'group' | 'merge' | 'extract' | 'custom';
+      source?: string;
+      target?: string;
+      config?: Record<string, any>;
+    }
+
+    export interface IAuthentication {
+      type: 'none' | 'basic' | 'bearer' | 'apiKey' | 'oauth2';
+      config?: Record<string, any>;
+    }
+
+    export interface IRetryPolicy {
+      maxAttempts?: number;
+      backoffStrategy?: 'fixed' | 'exponential' | 'linear';
+      initialDelay?: number;
+      maxDelay?: number;
+      retryOnErrors?: string[];
+    }
+
+    export interface ISecuritySettings {
+      requiresAuthentication?: boolean;
+      permissions?: string[];
+      roles?: string[];
+    }
+
+    export interface IPosition {
+      x: number;
+      y: number;
+    }
+
+    export interface ISize {
+      width: number;
+      height: number;
+    }
+
+    export interface IDesignerMetadata {
+      canvas?: {
+        zoom?: number;
+        panX?: number;
+        panY?: number;
+        gridSize?: number;
+        snapToGrid?: boolean;
+      };
+      connections?: IConnectionDesignerMetadata[];
+      notes?: IDesignerNote[];
+      groups?: IDesignerGroup[];
+    }
+
+    export interface IConnectionDesignerMetadata {
+      id?: string;
+      sourceStepId: string;
+      sourcePort: string;
+      targetStepId: string;
+      targetPort: string;
+      points?: IPosition[];
+      style?: 'straight' | 'curved' | 'orthogonal';
+      color?: string;
+      label?: string;
+    }
+
+    export interface IDesignerNote {
+      id: string;
+      text: string;
+      position: IPosition;
+      size?: ISize;
+      color?: string;
+    }
+
+    export interface IDesignerGroup {
+      id: string;
+      label: string;
+      stepIds: string[];
+      color?: string;
+      collapsed?: boolean;
+    }
+
+    export interface IStepDesignerMetadata {
+      position?: IPosition;
+      size?: ISize;
+      color?: string;
+      icon?: string;
+      collapsed?: boolean;
+      helpText?: string;
+      ports?: {
+        inputs?: IPortDesignerMetadata[];
+        outputs?: IPortDesignerMetadata[];
+      };
+    }
+
+    export interface IPortDesignerMetadata {
+      name: string;
+      label?: string;
+      position?: IPosition;
+      dataType?: string;
+    }
+
+    export type StepConfigMap = {
+      log: ILogStepConfig;
+      delay: IDelayStepConfig;
+      validation: IValidationStepConfig;
+      dataTransformation: IDataTransformationStepConfig;
+      apiCall: IApiCallStepConfig;
+      cliCommand: ICliCommandStepConfig;
+      fileOperation: IFileOperationStepConfig;
+      conditional: IConditionalStepConfig;
+      parallel: IParallelStepConfig;
+      forEach: IForEachStepConfig;
+      while: IWhileStepConfig;
+      custom: IStepConfig;
+    };
+
+    export type StepConfigForType<T extends StepType> = T extends keyof StepConfigMap
+      ? StepConfigMap[T]
+      : IStepConfig;
+
+    // =========================================================================
+    // Execution Engine Types
+    // =========================================================================
+
+    type ExecutionState = 'idle' | 'running' | 'completed' | 'failed' | 'cancelled';
+
+    export interface IExecutorWorkflowContext {
+      inputs: Record<string, any>;
+      environment: Record<string, any>;
+      stepOutputs: Record<string, any>;
+      workflow: {
+        name: string;
+        namespace: string;
+        version: string;
+        executionId: string;
+      };
+      execution: {
+        startTime: Date;
+        currentStep?: string;
+        completedSteps: string[];
+        totalSteps: number;
+      };
+      reactoryContext?: Reactory.Server.IReactoryContext;
+    }
+
+    export interface IStepExecutionRecord {
+      stepId: string;
+      stepType: string;
+      success: boolean;
+      outputs: Record<string, any>;
+      metadata: {
+        startTime: Date;
+        endTime: Date;
+        duration: number;
+        executionId: string;
+      };
+      error?: {
+        message: string;
+        stack?: string;
+        code?: string;
+      };
+    }
+
+    export interface IWorkflowExecutionResult {
+      success: boolean;
+      cancelled?: boolean;
+      executedSteps: IStepExecutionRecord[];
+      outputs: Record<string, any>;
+      metadata: {
+        executionId: string;
+        startTime: Date;
+        endTime: Date;
+        duration: number;
+        totalSteps: number;
+        completedSteps: number;
+        failedSteps: number;
+      };
+      error?: {
+        message: string;
+        stack?: string;
+        code?: string;
+        stepId?: string;
+      };
+      errors?: Array<{
+        stepId: string;
+        message: string;
+        stack?: string;
+        code?: string;
+      }>;
+    }
+
+    export interface IWorkflowValidationResult {
+      valid: boolean;
+      errors: Array<{
+        message: string;
+        path?: string;
+        code?: string;
+        stepId?: string;
+      }>;
+      warnings?: Array<{
+        message: string;
+        path?: string;
+        code?: string;
+        stepId?: string;
+      }>;
+    }
+
+    type ProgressEventType =
+      | 'workflow_started' | 'workflow_completed' | 'workflow_failed' | 'workflow_cancelled'
+      | 'step_started' | 'step_completed' | 'step_failed' | 'step_skipped';
+
+    export interface IProgressEvent {
+      type: ProgressEventType;
+      timestamp: Date;
+      progress: number;
+      step?: {
+        id: string;
+        type: string;
+        name?: string;
+      };
+      message?: string;
+      data?: Record<string, any>;
+    }
+
+    export interface IExecutionOptions {
+      onProgress?: (event: IProgressEvent) => void;
+      continueOnError?: boolean;
+      timeout?: number;
+      inputs?: Record<string, any>;
+      environment?: Record<string, any>;
+      dryRun?: boolean;
+      reactoryContext?: Reactory.Server.IReactoryContext;
+    }
+
+    export interface IExecutionStateSnapshot {
+      status: ExecutionState;
+      currentStep: string | null;
+      completedSteps: string[];
+      failedSteps: string[];
+      startTime: Date | null;
+      progress: number;
+      totalSteps: number;
+      executionId: string | null;
+    }
+
+    export interface IDependencyResolutionResult {
+      executionOrder: string[];
+      valid: boolean;
+      errors: Array<{
+        message: string;
+        stepId: string;
+        dependency?: string;
+      }>;
+    }
+
+    export interface IStepCreationError {
+      stepId: string;
+      stepType: string;
+      message: string;
+      cause?: Error;
+    }
   }
 
   export namespace Git {
