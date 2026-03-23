@@ -1107,6 +1107,56 @@ export interface IReactoryImportPackageManager extends Service.IReactoryContextA
        * @param variables
        */
       mutate(mutation: string, variables: unknown): Promise<unknown>;
+
+      /**
+       * Adds a route to a ReactoryClient
+       * @param clientId - the client id
+       * @param route - the route data to add
+       */
+      addRoute(clientId: string, route: unknown): Promise<Models.TReactoryClient>;
+
+      /**
+       * Updates an existing route on a ReactoryClient
+       * @param clientId - the client id
+       * @param routeId - the subdocument id of the route to update
+       * @param route - the updated route data
+       */
+      updateRoute(clientId: string, routeId: string, route: unknown): Promise<Models.TReactoryClient>;
+
+      /**
+       * Deletes a route from a ReactoryClient
+       * @param clientId - the client id
+       * @param routeId - the subdocument id of the route to remove
+       */
+      deleteRoute(clientId: string, routeId: string): Promise<Models.TReactoryClient>;
+
+      /**
+       * Reorders routes on a ReactoryClient by the given ordered list of route IDs
+       * @param clientId - the client id
+       * @param routeIds - ordered array of route subdocument IDs
+       */
+      reorderRoutes(clientId: string, routeIds: string[]): Promise<Models.TReactoryClient>;
+
+      /**
+       * Replaces the menus for a ReactoryClient
+       * @param clientId - the client id
+       * @param menus - the full set of menus to save
+       */
+      updateMenus(clientId: string, menus: unknown[]): Promise<Models.TReactoryClient>;
+
+      /**
+       * Replaces the application roles for a ReactoryClient
+       * @param clientId - the client id
+       * @param roles - the full set of role strings
+       */
+      updateApplicationRoles(clientId: string, roles: string[]): Promise<Models.TReactoryClient>;
+
+      /**
+       * Replaces the settings for a ReactoryClient
+       * @param clientId - the client id
+       * @param settings - the full set of settings
+       */
+      updateSettings(clientId: string, settings: unknown[]): Promise<Models.TReactoryClient>;
     }
 
     export interface IReactoryTranslationService extends Reactory.Service.IReactoryDefaultService {
