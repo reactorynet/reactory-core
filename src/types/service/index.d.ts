@@ -934,61 +934,35 @@ export interface IReactoryImportPackageManager extends Service.IReactoryContextA
       ): Promise<Response | T>;
     }
 
-    export interface IPDFStyleDefinition {
-      alignment?: string | "left" | "right" | "justify" | "center";
-      font?: string;
-      fontSize?: string;
-      margin?: [number, number?, number?, number?];
-      lineHeight?: number;
-      bold?: boolean;
-      italics?: boolean;
-      color?: string;
-      [key: string]: unknown;
-    }
-    export interface IPDFContentNode {
-      style?: string[];
-      margin?:
-        | [number]
-        | [number, number]
-        | [number, number, number]
-        | [number, number, number, number];
-      [key: string]: unknown;
-    }
-
-    export interface IPDFTableLayout {
-      fillColor: (rowIndex: number, node: unknown, columnIndex: number) => unknown;
-    }
-
-    export interface IPDFDocumentDefinition {
-      filename: string;
-      info?: {
-        title?: string;
-        author?: string;
-        subject?: string;
-        keywords?: string;
-      };
-      content: IPDFContentNode[];
-      header?: (currentPage: number, pageCount: number) => IPDFContentNode[];
-      footer?: (currentPage: number, pageCount: number, pageSize: number) => IPDFContentNode[];
-      images?: {
-        [key: string]: string | Buffer;
-      };
-      pageMargins: [number, number, number, number];
-      styles: {
-        [key: string]: IPDFStyleDefinition;
-      };
-      tableLayoutOut: {
-        [key: string]: IPDFTableLayout;
-      };
-    }
+    // PDF document types (IPDFStyleDefinition, IPDFContentNode, IPDFDocumentDefinition, etc.)
+    // are defined in the Reactory.Pdf namespace in types/index.d.ts and types/pdf/index.d.ts.
 
     /**
-     * Pdf service that generates PDFs using PDF make
+     * PDF service for generation, extraction, and manipulation of PDF documents.
      */
     export interface IReactoryPdfService extends Reactory.Service.IReactoryDefaultService {
-      generate(definition: unknown, stream: unknown): Promise<unknown>;
+      // Generation
+      generate(definition: Reactory.Pdf.IPDFDocumentDefinition, stream?: NodeJS.WritableStream): Promise<Buffer | void>;
+      generateToBuffer(definition: Reactory.Pdf.IPDFDocumentDefinition): Promise<Buffer>;
+      generateToStream(definition: Reactory.Pdf.IPDFDocumentDefinition, stream: NodeJS.WritableStream): Promise<void>;
+      generateToResponse(definition: Reactory.Pdf.IPDFDocumentDefinition): Promise<void>;
 
-      pdfDefinitions(): Reactory.Pdf.IReactoryPdfComponent;
+      // Extraction
+      extractText(source: Buffer | string): Promise<Reactory.Pdf.IPDFExtractedText>;
+      extractPages(source: Buffer | string): Promise<Reactory.Pdf.IPDFExtractedPageLayout[]>;
+      extractImages(source: Buffer | string): Promise<Reactory.Pdf.IPDFExtractedImage[]>;
+
+      // Manipulation
+      merge(options: Reactory.Pdf.IPDFMergeOptions): Promise<Buffer>;
+      split(options: Reactory.Pdf.IPDFSplitOptions): Promise<Buffer[]>;
+
+      // Component registry
+      getRegisteredComponents(): Reactory.Pdf.IReactoryPdfComponent[];
+      getComponent(nameSpace: string, name: string, version?: string): Reactory.Pdf.IReactoryPdfComponent | null;
+
+      // Font management
+      getFontConfig(): Reactory.Pdf.IFontConfig;
+      registerFonts(fonts: Reactory.Pdf.IFontDescriptors): void;
     }
 
     export interface IReactorySupportService extends Reactory.Service.IReactoryDefaultService {

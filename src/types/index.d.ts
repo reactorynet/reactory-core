@@ -8457,28 +8457,357 @@ declare namespace Reactory {
   }
 
   export namespace Pdf {
+
+    // ─── Font Management ───────────────────────────────────────────────
+
+    export interface IFontDescriptor {
+      normal: string;
+      bold?: string;
+      italics?: string;
+      bolditalics?: string;
+    }
+
+    export interface IFontDescriptors {
+      [fontName: string]: IFontDescriptor;
+    }
+
+    export interface IFontConfig {
+      descriptors: IFontDescriptors;
+      defaultFont?: string;
+      defaultFontSize?: number;
+    }
+
+    // ─── Style Definitions ─────────────────────────────────────────────
+
+    export interface IPDFStyleDefinition {
+      alignment?: 'left' | 'right' | 'center' | 'justify';
+      font?: string;
+      fontSize?: number;
+      margin?: number | [number] | [number, number] | [number, number, number, number];
+      lineHeight?: number;
+      bold?: boolean;
+      italics?: boolean;
+      color?: string;
+      background?: string;
+      decoration?: 'underline' | 'lineThrough' | 'overline';
+      decorationStyle?: 'dashed' | 'dotted' | 'double' | 'wavy';
+      decorationColor?: string;
+      characterSpacing?: number;
+      opacity?: number;
+      fillOpacity?: number;
+      noWrap?: boolean;
+      leadingIndent?: number;
+      preserveLeadingSpaces?: boolean;
+      preserveTrailingSpaces?: boolean;
+      sup?: boolean;
+      sub?: boolean;
+      markerColor?: string;
+    }
+
+    // ─── Shared Content Properties ─────────────────────────────────────
+
+    type PDFMargin = number | [number] | [number, number] | [number, number, number, number];
+
+    interface IPDFBaseNode {
+      style?: string | string[];
+      margin?: PDFMargin;
+      pageBreak?: 'before' | 'after';
+      pageOrientation?: 'portrait' | 'landscape';
+      id?: string;
+    }
+
+    // ─── Content Node Types ────────────────────────────────────────────
+
+    export interface IPDFTextNode extends IPDFBaseNode, IPDFStyleDefinition {
+      text: string | (string | IPDFTextNode)[];
+      link?: string;
+      linkToPage?: number;
+      linkToDestination?: string;
+      headlineLevel?: number;
+      tocItem?: boolean | string | string[];
+      tocStyle?: string | string[];
+      tocMargin?: PDFMargin;
+      tocNumberStyle?: IPDFStyleDefinition;
+    }
+
+    export interface IPDFImageNode extends IPDFBaseNode {
+      image: string;
+      width?: number;
+      height?: number;
+      fit?: [number, number];
+      cover?: {
+        width: number;
+        height: number;
+        valign?: 'top' | 'center' | 'bottom';
+        align?: 'left' | 'center' | 'right';
+      };
+      opacity?: number;
+      link?: string;
+    }
+
+    export interface IPDFSVGNode extends IPDFBaseNode {
+      svg: string;
+      width?: number;
+      height?: number;
+      fit?: [number, number];
+    }
+
+    export interface IPDFColumnNode extends IPDFBaseNode {
+      columns: IPDFContentNode[];
+      columnGap?: number;
+    }
+
+    export interface IPDFStackNode extends IPDFBaseNode {
+      stack: IPDFContentNode[];
+    }
+
+    // ─── Table Types ───────────────────────────────────────────────────
+
+    export interface IPDFTableCell extends IPDFStyleDefinition {
+      text?: string | IPDFTextNode | (string | IPDFTextNode)[];
+      image?: string;
+      svg?: string;
+      stack?: IPDFContentNode[];
+      ul?: IPDFContentNode[];
+      ol?: IPDFContentNode[];
+      colSpan?: number;
+      rowSpan?: number;
+      fillColor?: string;
+      fillOpacity?: number;
+      border?: [boolean, boolean, boolean, boolean];
+      borderColor?: [string, string, string, string];
+      style?: string | string[];
+      margin?: PDFMargin;
+    }
+
+    export interface IPDFTableLayout {
+      hLineWidth?: (i: number, node: unknown) => number;
+      vLineWidth?: (i: number, node: unknown) => number;
+      hLineColor?: (i: number, node: unknown) => string;
+      vLineColor?: (i: number, node: unknown) => string;
+      hLineStyle?: (i: number, node: unknown) => { dash: { length: number; space?: number } } | null;
+      vLineStyle?: (i: number, node: unknown) => { dash: { length: number; space?: number } } | null;
+      fillColor?: (rowIndex: number, node: unknown, columnIndex: number) => string | null;
+      fillOpacity?: (rowIndex: number, node: unknown, columnIndex: number) => number;
+      paddingLeft?: (i: number, node: unknown) => number;
+      paddingRight?: (i: number, node: unknown) => number;
+      paddingTop?: (i: number, node: unknown) => number;
+      paddingBottom?: (i: number, node: unknown) => number;
+      defaultBorder?: boolean;
+    }
+
+    export interface IPDFTableNode extends IPDFBaseNode {
+      table: {
+        body: (IPDFContentNode | IPDFTableCell | string)[][];
+        widths?: (number | string | '*' | 'auto')[];
+        heights?: number | number[] | ((row: number) => number);
+        headerRows?: number;
+        dontBreakRows?: boolean;
+        keepWithHeaderRows?: number;
+      };
+      layout?: string | IPDFTableLayout;
+    }
+
+    // ─── List Types ────────────────────────────────────────────────────
+
+    export interface IPDFOrderedListNode extends IPDFBaseNode {
+      ol: IPDFContentNode[];
+      type?: 'lower-alpha' | 'upper-alpha' | 'lower-roman' | 'upper-roman' | 'none';
+      start?: number;
+      reversed?: boolean;
+      separator?: string | [string, string];
+      markerColor?: string;
+    }
+
+    export interface IPDFUnorderedListNode extends IPDFBaseNode {
+      ul: IPDFContentNode[];
+      type?: 'disc' | 'square' | 'circle' | 'none';
+      markerColor?: string;
+    }
+
+    // ─── Special Content Nodes ─────────────────────────────────────────
+
+    export interface IPDFTocNode extends IPDFBaseNode {
+      toc: {
+        title?: IPDFTextNode;
+        numberStyle?: IPDFStyleDefinition;
+        textMargin?: PDFMargin;
+        textStyle?: IPDFStyleDefinition;
+      };
+    }
+
+    export interface IPDFQrCodeNode extends IPDFBaseNode {
+      qr: string;
+      eccLevel?: 'L' | 'M' | 'Q' | 'H';
+      fit?: number;
+      foreground?: string;
+      background?: string;
+      version?: number;
+    }
+
+    export type IPDFCanvasElement =
+      | { type: 'rect'; x: number; y: number; w: number; h: number; r?: number; color?: string; lineColor?: string; lineWidth?: number }
+      | { type: 'line'; x1: number; y1: number; x2: number; y2: number; lineWidth?: number; lineColor?: string; dash?: { length: number; space?: number } }
+      | { type: 'ellipse'; x: number; y: number; r1: number; r2?: number; color?: string; lineColor?: string; lineWidth?: number }
+      | { type: 'polyline'; points: { x: number; y: number }[]; closePath?: boolean; color?: string; lineColor?: string; lineWidth?: number };
+
+    export interface IPDFCanvasNode extends IPDFBaseNode {
+      canvas: IPDFCanvasElement[];
+    }
+
+    // ─── Content Union Type ────────────────────────────────────────────
+
+    export type IPDFContentNode =
+      | string
+      | IPDFTextNode
+      | IPDFImageNode
+      | IPDFSVGNode
+      | IPDFColumnNode
+      | IPDFStackNode
+      | IPDFTableNode
+      | IPDFOrderedListNode
+      | IPDFUnorderedListNode
+      | IPDFTocNode
+      | IPDFQrCodeNode
+      | IPDFCanvasNode;
+
+    // ─── Page Size ─────────────────────────────────────────────────────
+
+    export interface IPDFPageSize {
+      width: number;
+      height: number;
+    }
+
+    // ─── Document Definition ───────────────────────────────────────────
+
+    export interface IPDFDocumentDefinition {
+      filename?: string;
+      info?: {
+        title?: string;
+        author?: string;
+        subject?: string;
+        keywords?: string;
+        creator?: string;
+        producer?: string;
+      };
+      content: IPDFContentNode | IPDFContentNode[];
+      header?: IPDFContentNode | ((currentPage: number, pageCount: number, pageSize: IPDFPageSize) => IPDFContentNode);
+      footer?: IPDFContentNode | ((currentPage: number, pageCount: number, pageSize: IPDFPageSize) => IPDFContentNode);
+      background?: IPDFContentNode | ((currentPage: number, pageSize: IPDFPageSize) => IPDFContentNode);
+      images?: { [key: string]: string | Buffer };
+      pageSize?: string | IPDFPageSize;
+      pageOrientation?: 'portrait' | 'landscape';
+      pageMargins?: number | [number, number] | [number, number, number, number];
+      defaultStyle?: IPDFStyleDefinition;
+      styles?: { [key: string]: IPDFStyleDefinition };
+      tableLayouts?: { [key: string]: IPDFTableLayout };
+      compress?: boolean;
+      watermark?: string | {
+        text: string;
+        color?: string;
+        opacity?: number;
+        bold?: boolean;
+        italics?: boolean;
+        fontSize?: number;
+        angle?: number;
+      };
+      pageBreakBefore?: (
+        currentNode: unknown,
+        followingNodesOnPage: unknown[],
+        nodesOnNextPage: unknown[],
+        previousNodesOnPage: unknown[]
+      ) => boolean;
+      userPassword?: string;
+      ownerPassword?: string;
+      permissions?: {
+        printing?: 'highResolution' | 'lowResolution';
+        modifying?: boolean;
+        copying?: boolean;
+        annotating?: boolean;
+        fillingForms?: boolean;
+        contentAccessibility?: boolean;
+        documentAssembly?: boolean;
+      };
+    }
+
+    // ─── Extraction Types ──────────────────────────────────────────────
+
+    export interface IPDFExtractedPage {
+      pageNumber: number;
+      text: string;
+      lines: string[];
+    }
+
+    export interface IPDFExtractedText {
+      pages: IPDFExtractedPage[];
+      metadata?: Record<string, string>;
+      totalPages: number;
+    }
+
+    export interface IPDFExtractedElement {
+      type: 'text' | 'image' | 'form-field';
+      content: string;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    }
+
+    export interface IPDFExtractedPageLayout {
+      pageNumber: number;
+      width: number;
+      height: number;
+      text: string;
+      elements: IPDFExtractedElement[];
+    }
+
+    export interface IPDFExtractedImage {
+      pageNumber: number;
+      index: number;
+      data: Buffer;
+      mimeType: string;
+      width?: number;
+      height?: number;
+    }
+
+    // ─── Manipulation Types ────────────────────────────────────────────
+
+    export interface IPDFMergeOptions {
+      sources: (Buffer | string)[];
+      outputPath?: string;
+    }
+
+    export interface IPDFSplitOptions {
+      source: Buffer | string;
+      ranges: [number, number][];
+      outputDir?: string;
+    }
+
+    // ─── Component & Generator ─────────────────────────────────────────
+
     export interface IReactoryPdfGenerator {
       enabled: boolean;
       key: string;
       name: string;
       description: string;
-      content: (params: unknown, context: Server.IReactoryContext) => Promise<unknown>;
-      resolver: (params: unknown, context: Server.IReactoryContext) => Promise<unknown>;
-      props: {
-        meta: {
-          title: string;
-          author: string;
+      content: (params: unknown, context: Server.IReactoryContext) => Promise<IPDFDocumentDefinition>;
+      resolver?: (params: unknown, context: Server.IReactoryContext) => Promise<unknown>;
+      props?: {
+        meta?: {
+          title?: string;
+          author?: string;
           [key: string]: unknown;
         };
-        fonts: {
-          [key: string]: {
-            normal: string;
-            bold: string;
-          };
-        };
-        defaultFont: string;
-        fontSize: number;
+        fonts?: IFontDescriptors;
+        defaultFont?: string;
+        fontSize?: number;
       };
+    }
+
+    export interface IReactoryPdfOptions {
+      fonts: IFontDescriptors;
+      defaultFont: string;
+      fontSize: number;
     }
 
     export interface IReactoryPdfComponent {
@@ -9655,61 +9984,35 @@ declare namespace Reactory {
       ): Promise<Response | T>;
     }
 
-    export interface IPDFStyleDefinition {
-      alignment?: string | "left" | "right" | "justify" | "center";
-      font?: string;
-      fontSize?: string;
-      margin?: [number, number?, number?, number?];
-      lineHeight?: number;
-      bold?: boolean;
-      italics?: boolean;
-      color?: string;
-      [key: string]: unknown;
-    }
-    export interface IPDFContentNode {
-      style?: string[];
-      margin?:
-        | [number]
-        | [number, number]
-        | [number, number, number]
-        | [number, number, number, number];
-      [key: string]: unknown;
-    }
-
-    export interface IPDFTableLayout {
-      fillColor: (rowIndex: number, node: unknown, columnIndex: number) => unknown;
-    }
-
-    export interface IPDFDocumentDefinition {
-      filename: string;
-      info?: {
-        title?: string;
-        author?: string;
-        subject?: string;
-        keywords?: string;
-      };
-      content: IPDFContentNode[];
-      header?: (currentPage: number, pageCount: number) => IPDFContentNode[];
-      footer?: (currentPage: number, pageCount: number, pageSize: number) => IPDFContentNode[];
-      images?: {
-        [key: string]: string | Buffer;
-      };
-      pageMargins: [number, number, number, number];
-      styles: {
-        [key: string]: IPDFStyleDefinition;
-      };
-      tableLayoutOut: {
-        [key: string]: IPDFTableLayout;
-      };
-    }
+    // PDF document types (IPDFStyleDefinition, IPDFContentNode, IPDFDocumentDefinition, etc.)
+    // are defined in types/pdf/index.d.ts under the Reactory.Pdf namespace.
 
     /**
-     * Pdf service that generates PDFs using PDF make
+     * PDF service for generation, extraction, and manipulation of PDF documents.
      */
     export interface IReactoryPdfService extends Reactory.Service.IReactoryDefaultService {
-      generate(definition: unknown, stream: unknown): Promise<unknown>;
+      // Generation
+      generate(definition: Reactory.Pdf.IPDFDocumentDefinition, stream?: NodeJS.WritableStream): Promise<Buffer | void>;
+      generateToBuffer(definition: Reactory.Pdf.IPDFDocumentDefinition): Promise<Buffer>;
+      generateToStream(definition: Reactory.Pdf.IPDFDocumentDefinition, stream: NodeJS.WritableStream): Promise<void>;
+      generateToResponse(definition: Reactory.Pdf.IPDFDocumentDefinition): Promise<void>;
 
-      pdfDefinitions(): Reactory.Pdf.IReactoryPdfComponent;
+      // Extraction
+      extractText(source: Buffer | string): Promise<Reactory.Pdf.IPDFExtractedText>;
+      extractPages(source: Buffer | string): Promise<Reactory.Pdf.IPDFExtractedPageLayout[]>;
+      extractImages(source: Buffer | string): Promise<Reactory.Pdf.IPDFExtractedImage[]>;
+
+      // Manipulation
+      merge(options: Reactory.Pdf.IPDFMergeOptions): Promise<Buffer>;
+      split(options: Reactory.Pdf.IPDFSplitOptions): Promise<Buffer[]>;
+
+      // Component registry
+      getRegisteredComponents(): Reactory.Pdf.IReactoryPdfComponent[];
+      getComponent(nameSpace: string, name: string, version?: string): Reactory.Pdf.IReactoryPdfComponent | null;
+
+      // Font management
+      getFontConfig(): Reactory.Pdf.IFontConfig;
+      registerFonts(fonts: Reactory.Pdf.IFontDescriptors): void;
     }
 
     export interface IReactorySupportService extends Reactory.Service.IReactoryDefaultService {
