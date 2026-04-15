@@ -1131,6 +1131,28 @@ export interface IReactoryImportPackageManager extends Service.IReactoryContextA
        * @param settings - the full set of settings
        */
       updateSettings(clientId: string, settings: unknown[]): Promise<Models.TReactoryClient>;
+
+      /**
+       * Adds a feature flag to a ReactoryClient
+       * @param clientId - the client id
+       * @param featureFlag - the feature flag value to add
+       */
+      addFeatureFlag(clientId: string, featureFlag: unknown): Promise<Models.TReactoryClient>;
+
+      /**
+       * Updates an existing feature flag on a ReactoryClient, matched by feature key
+       * @param clientId - the client id
+       * @param feature - the feature key (FQN) to match
+       * @param featureFlag - the updated feature flag data
+       */
+      updateFeatureFlag(clientId: string, feature: string, featureFlag: unknown): Promise<Models.TReactoryClient>;
+
+      /**
+       * Removes a feature flag from a ReactoryClient, matched by feature key
+       * @param clientId - the client id
+       * @param feature - the feature key (FQN) to remove
+       */
+      deleteFeatureFlag(clientId: string, feature: string): Promise<Models.TReactoryClient>;
     }
 
     export interface IReactoryTranslationService extends Reactory.Service.IReactoryDefaultService {
