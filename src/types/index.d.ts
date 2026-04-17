@@ -13441,7 +13441,7 @@ declare namespace Reactory {
         name: string;
         version: string;
       };
-      inputs: Record<string, any>;
+      workflowInputs: Record<string, any>;
       variables: Record<string, any>;
       env: Record<string, any>;
       stepResults: Record<string, IYamlStepExecutionResult>;
@@ -13474,13 +13474,24 @@ declare namespace Reactory {
       readonly id: string;
       readonly stepType: string;
       readonly config: Record<string, any>;
+      readonly inputs: Record<string, any>;
       readonly enabled: boolean;
       execute(context: IStepExecutionContext): Promise<IYamlStepExecutionResult>;
       validateConfig(config: Record<string, any>): IStepValidationResult;
     }
 
     export interface IStepConstructor {
-      new (id: string, config: Record<string, any>): IYamlStep;
+      new (id: string, config: Record<string, any>, inputs?: Record<string, any>): IYamlStep;
+    }
+
+    /**
+     * Parameters passed to the step registry's createStep factory.
+     */
+    export interface IStepCreationParams {
+      id: string;
+      type: StepType;
+      config?: Record<string, any>;
+      inputs?: Record<string, any> | string;
     }
 
     export interface IStepRegistrationOptions {
@@ -13546,11 +13557,10 @@ declare namespace Reactory {
     }
 
     type CoreStepType =
-      | 'log' | 'delay' | 'validation' | 'dataTransformation'
-      | 'apiCall' | 'cliCommand' | 'fileOperation'
-      | 'conditional' | 'parallel' | 'forEach' | 'while'
-      | 'custom' | 'start' | 'end' | 'condition'
-      | 'for_each' | 'service_invoke';
+      | 'log' | 'delay' | 'validation' | 'data_transformation'
+      | 'api_call' | 'cli_command' | 'file_operation'
+      | 'condition' | 'parallel' | 'for_each' | 'while'
+      | 'custom' | 'start' | 'end' | 'service_invoke' | 'task';
 
     type StepType = CoreStepType | (string & {});
 
@@ -13766,15 +13776,19 @@ declare namespace Reactory {
       log: ILogStepConfig;
       delay: IDelayStepConfig;
       validation: IValidationStepConfig;
-      dataTransformation: IDataTransformationStepConfig;
-      apiCall: IApiCallStepConfig;
-      cliCommand: ICliCommandStepConfig;
-      fileOperation: IFileOperationStepConfig;
-      conditional: IConditionalStepConfig;
+      data_transformation: IDataTransformationStepConfig;
+      api_call: IApiCallStepConfig;
+      cli_command: ICliCommandStepConfig;
+      file_operation: IFileOperationStepConfig;
+      condition: IConditionalStepConfig;
       parallel: IParallelStepConfig;
-      forEach: IForEachStepConfig;
+      for_each: IForEachStepConfig;
       while: IWhileStepConfig;
       custom: IStepConfig;
+      service_invoke: IStepConfig;
+      start: IStepConfig;
+      end: IStepConfig;
+      task: IStepConfig;
     };
 
     export type StepConfigForType<T extends StepType> = T extends keyof StepConfigMap

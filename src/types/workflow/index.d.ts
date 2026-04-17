@@ -41,8 +41,8 @@ declare namespace Reactory {
         version: string;
       };
 
-      /** Input data for this step */
-      inputs: Record<string, any>;
+      /** Workflow-level input data provided at execution time */
+      workflowInputs: Record<string, any>;
 
       /** Workflow-level variables */
       variables: Record<string, any>;
@@ -116,8 +116,11 @@ declare namespace Reactory {
       /** Type of step (log, delay, etc.) */
       readonly stepType: string;
 
-      /** Configuration for this step */
+      /** Static, step-type-specific configuration (e.g. message, url, command) */
       readonly config: Record<string, any>;
+
+      /** Dynamic input parameters with variable substitution support */
+      readonly inputs: Record<string, any>;
 
       /** Whether this step is enabled */
       readonly enabled: boolean;
@@ -137,7 +140,23 @@ declare namespace Reactory {
      * Constructor signature for step classes
      */
     export interface IStepConstructor {
-      new (id: string, config: Record<string, any>): IYamlStep;
+      new (id: string, config: Record<string, any>, inputs?: Record<string, any>): IYamlStep;
+    }
+
+    /**
+     * Parameters passed to the step registry's createStep factory.
+     * Distinct from IStepConfig which represents the step-type-specific
+     * configuration content.
+     */
+    export interface IStepCreationParams {
+      /** Unique step identifier */
+      id: string;
+      /** Step type (e.g. 'log', 'api_call') */
+      type: StepType;
+      /** Static step-type-specific configuration */
+      config?: Record<string, any>;
+      /** Dynamic input parameters (may be a JSON string from YAML) */
+      inputs?: Record<string, any> | string;
     }
 
     /**
@@ -238,27 +257,32 @@ declare namespace Reactory {
     }
 
     /**
-     * Known core step types. Extensible via `(string & {})` so modules
-     * can register custom step types while preserving autocomplete for built-ins.
+     * Known core step types (snake_case convention).
+     * Extensible via `(string & {})` so modules can register custom step
+     * types while preserving autocomplete for built-ins.
      */
     type CoreStepType =
       | 'log'
       | 'delay'
       | 'validation'
-      | 'dataTransformation'
-      | 'apiCall'
-      | 'cliCommand'
-      | 'fileOperation'
-      | 'conditional'
+      | 'data_transformation'
+      | 'api_call'
+      | 'cli_command'
+      | 'file_operation'
+      | 'condition'
       | 'parallel'
-      | 'forEach'
+      | 'join'
+      | 'for_each'
       | 'while'
       | 'custom'
       | 'start'
       | 'end'
-      | 'condition'
-      | 'for_each'
-      | 'service_invoke';
+      | 'service_invoke'
+      | 'task'
+      | 'graphql'
+      | 'grpc'
+      | 'user_activity'
+      | 'telemetry';
 
     type StepType = CoreStepType | (string & {});
 
@@ -480,19 +504,67 @@ declare namespace Reactory {
 
     // Step config type map
 
+    export interface IJoinStepConfig extends IStepConfig {
+      timeout?: number;
+      strategy?: 'all' | 'any' | 'n_of';
+      count?: number;
+    }
+
+    export interface IGraphQLStepConfig extends IStepConfig {
+      query: string;
+      variables?: Record<string, any>;
+      endpoint?: string;
+      headers?: Record<string, string>;
+      operationType?: 'query' | 'mutation';
+    }
+
+    export interface IGRPCStepConfig extends IStepConfig {
+      service: string;
+      method: string;
+      payload?: Record<string, any>;
+      metadata?: Record<string, string>;
+      protoFile?: string;
+      deadline?: number;
+    }
+
+    export interface IUserActivityStepConfig extends IStepConfig {
+      activityType: 'approval' | 'input' | 'review' | 'acknowledgement';
+      assignee?: string;
+      timeout?: number;
+      formSchemaId?: string;
+      message?: string;
+    }
+
+    export interface ITelemetryStepConfig extends IStepConfig {
+      metricName: string;
+      metricType: 'counter' | 'histogram' | 'gauge';
+      value?: number;
+      labels?: Record<string, string>;
+      description?: string;
+    }
+
     export type StepConfigMap = {
       log: ILogStepConfig;
       delay: IDelayStepConfig;
       validation: IValidationStepConfig;
-      dataTransformation: IDataTransformationStepConfig;
-      apiCall: IApiCallStepConfig;
-      cliCommand: ICliCommandStepConfig;
-      fileOperation: IFileOperationStepConfig;
-      conditional: IConditionalStepConfig;
+      data_transformation: IDataTransformationStepConfig;
+      api_call: IApiCallStepConfig;
+      cli_command: ICliCommandStepConfig;
+      file_operation: IFileOperationStepConfig;
+      condition: IConditionalStepConfig;
       parallel: IParallelStepConfig;
-      forEach: IForEachStepConfig;
+      for_each: IForEachStepConfig;
       while: IWhileStepConfig;
       custom: IStepConfig;
+      service_invoke: IStepConfig;
+      start: IStepConfig;
+      end: IStepConfig;
+      task: IStepConfig;
+      join: IJoinStepConfig;
+      graphql: IGraphQLStepConfig;
+      grpc: IGRPCStepConfig;
+      user_activity: IUserActivityStepConfig;
+      telemetry: ITelemetryStepConfig;
     };
 
     export type StepConfigForType<T extends StepType> = T extends keyof StepConfigMap
