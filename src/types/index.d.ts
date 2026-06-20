@@ -13280,24 +13280,50 @@ declare namespace Reactory {
         [key: string]: unknown;
       };
       submitProps?: {
+          /**
+           * The variant of the submit button. Defaults to "contained".
+           */
         variant?: string | "fab" | "contained" | "outlined" | "text";
+          /**
+           * The color of the submit button. Defaults to "primary".
+           */
+        color?: string | "primary" | "secondary" | "inherit";
+          /**
+           * The text or label displayed on the submit button.
+           * Supports i18n keys (e.g., 'reactory:support-ticket.submit.title-text').
+           * Falls back to "Submit" if not provided.
+           */
+        titleText?: string;
+          /**
+           * The alignment of the icon relative to the button text.
+           */
         iconAlign?: string | "left" | "right";
-        /**
-         * If onClick is a string, form engine
-         * will look up the component, then call the
-         * function with the following params.
-         * (formData, formContext, formDefintion, onSubmit) => void
-         *
-         * This function can be used as a custom handler, or as an additional
-         * handler that can call the onSubmit function when it has
-         * completed it's execution.
-         * @returns
-         */
+          /**
+           * MUI sx prop for custom button styling.
+           */
+        sx?: MaterialCoreAlias.SxProps<MaterialCoreAlias.Theme>;
+          /**
+           * Inline CSS properties for the submit button.
+           */
+        style?: React.CSSProperties;
+          /**
+           * If onClick is a string, form engine
+           * will look up the component, then call the
+           * function with the following params.
+           * (formData, formContext, formDefintion, onSubmit) => void
+           *
+           * This function can be used as a custom handler, or as an additional
+           * handler that can call the onSubmit function when it has
+           * completed it's execution.
+           * @returns
+           */
         onClick?: () => void | FQN;
-        href: unknown;
-        [key: string]: unknown;
-      };
-      /**
+          /**
+           * Optional href for anchor-style submit buttons.
+           */
+        href?: unknown;
+          [key: string]: unknown;
+        };      /**
        * Indicates whether or not the submit button should be shown
        */
       showSubmit?: boolean;
