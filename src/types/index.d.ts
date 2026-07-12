@@ -2856,6 +2856,13 @@ declare namespace Reactory {
          */
         remoteData?: boolean;
         /**
+         * When true (and remoteData is true), the grid does NOT auto-fetch on
+         * mount. It waits until the user triggers a query change (search,
+         * filter, or paging) before loading data. Useful for large data sets
+         * that should only load once the user has narrowed the query.
+         */
+        deferInitialLoad?: boolean;
+        /**
          * query name
          */
         query?: string;
