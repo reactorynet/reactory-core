@@ -63,6 +63,13 @@ declare namespace Reactory {
       };
 
       /**
+       * Utility helpers forwarded from the active Reactory context.
+       * Present whenever a `reactoryContext` is available; undefined in bare
+       * test/CLI environments that construct a minimal execution context.
+       */
+      utils?: Reactory.Server.IReactoryContext['utils'];
+
+      /**
        * Reactory context for accessing services, user info, and partner context.
        * May be undefined if the workflow is executed outside of a Reactory server context.
        */
