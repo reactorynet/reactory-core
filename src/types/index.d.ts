@@ -13283,6 +13283,8 @@ declare namespace Reactory {
       style?: React.CSSProperties;
       submitIcon?: string;
       submitIconProps?: {
+        /** Name of the icon */
+        icon: string;
         color: string | "primary" | "secondary";
         [key: string]: unknown;
       };
