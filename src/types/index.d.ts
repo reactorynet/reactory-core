@@ -6381,6 +6381,14 @@ declare namespace Reactory {
       socials: IReactorySocialReference[];
     }
 
+    export interface ILinkedAgent {
+      personaId: string;
+      providerId: string;
+      modelId: string;
+      providerProps?: any;
+      description?: string;
+    }
+
     export interface IUserAI {
       // The assistant ID to use for the user. 
       // This is a persona ID from the AI platform.
@@ -6389,6 +6397,9 @@ declare namespace Reactory {
       // The persona ID to use for the user. 
       // This will be a persona that represents the user's identity and behavior.
       personaId: string;
+
+      // Linked agents configured for the user profile
+      linked_agents?: ILinkedAgent[];
     }
 
     /**
