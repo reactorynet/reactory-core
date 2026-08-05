@@ -5637,6 +5637,23 @@ declare namespace Reactory {
       featureFlags?: Server.IReactoryFeatureFlagValue<unknown>[];
       whitelist?: string[];
       allowCustomTheme?: boolean;
+
+      /**
+       * Runs after this client configuration has been seeded by the startup
+       * master. Hooks are available only to TypeScript client configurations.
+       */
+      onStartup?: (
+        context: Reactory.Server.IReactoryContext,
+        client: Reactory.Models.ReactoryClientDocument,
+      ) => Promise<void> | void;
+
+      /**
+       * Runs before the startup master releases its client configuration lock.
+       */
+      onShutdown?: (
+        context: Reactory.Server.IReactoryContext,
+        client: Reactory.Models.ReactoryClientDocument,
+      ) => Promise<void> | void;
     }
 
     export interface IReactoryClientDocument
