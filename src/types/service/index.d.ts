@@ -1249,6 +1249,16 @@ export interface IReactoryImportPackageManager extends Service.IReactoryContextA
       template?: boolean;
       /** The rendering engine to use, such as "react" or "vue". */
       engine?: string;
+      /** The authoring format of the body: "markdown" | "html" | "text". */
+      format?: string;
+      /** An identifier used to associate the content with a help topic. */
+      helpTopic?: string;
+      /** Roles permitted to view this content. Empty means all users. */
+      roles?: string[];
+      /** Free-form metadata bag for the content item. */
+      metadata?: Record<string, unknown>;
+      /** Translations of this content into other languages. */
+      translations?: Models.IReactoryContentTranslation[];
       /** The input form to use for previewing the content. */
       previewInputForm?: string;
       /** The version of the content object. */
@@ -1312,15 +1322,53 @@ export interface IReactoryImportPackageManager extends Service.IReactoryContextA
     }
 
     /**
+     * Options accepted when resolving a content item by slug.
+     */
+    export interface ReactoryGetContentOptions {
+      /**
+       * Filesystem base path used when the slug is not backed by a database record.
+       */
+      basePath?: string;
+      /**
+       * Resolve the content into this language. Defaults to the context language.
+       */
+      locale?: string;
+      /**
+       * Return the full translations collection alongside the resolved content.
+       */
+      includeTranslations?: boolean;
+      /**
+       * Return the source record untouched, skipping any translation overlay.
+       */
+      raw?: boolean;
+    }
+
+    /**
+     * The shape accepted when creating or replacing a single translation.
+     */
+    export interface ReactoryContentTranslationInput {
+      lang: string;
+      title?: string;
+      description?: string;
+      content?: string;
+      tags?: string[];
+      machineTranslated?: boolean;
+    }
+
+    /**
      * Represents a service for managing React-based content objects.
      */
     export interface IReactoryContentService extends Reactory.Service.IReactoryDefaultService {
       /**
        * Retrieves a content object by its slug.
        * @param slug The slug of the content object to retrieve.
+       * @param options A base path string (legacy) or a resolution options object.
        * @returns A promise that resolves to the retrieved content object.
        */
-      getContentBySlug(slug: string, basePath?: string): Promise<Models.IReactoryContent>;
+      getContentBySlug(
+        slug: string,
+        options?: string | ReactoryGetContentOptions,
+      ): Promise<Models.IReactoryContent>;
 
       /**
        * Retrieves a content object by its ID.
@@ -1384,6 +1432,30 @@ export interface IReactoryImportPackageManager extends Service.IReactoryContextA
        * @returns A promise that resolves to the created content object.
        */
       createContent(content: ReactoryContentInput): Promise<Models.IReactoryContent>;
+
+      /**
+       * Updates an existing content object.
+       * @param content The input data for the content object.
+       */
+      updateContent(content: ReactoryContentInput): Promise<Models.IReactoryContent>;
+
+      /**
+       * Creates or replaces a single translation on a content item without
+       * rewriting the source content.
+       * @param slug The slug of the content item to translate.
+       * @param translation The translation payload.
+       */
+      saveContentTranslation(
+        slug: string,
+        translation: ReactoryContentTranslationInput,
+      ): Promise<Models.IReactoryContent>;
+
+      /**
+       * Removes the translation for a given language from a content item.
+       * @param slug The slug of the content item.
+       * @param lang The ISO 639-1 language code to remove.
+       */
+      deleteContentTranslation(slug: string, lang: string): Promise<Models.IReactoryContent>;
 
       /**
        * Saves image data in the specified folder and filename.
