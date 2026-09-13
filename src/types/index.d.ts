@@ -11710,6 +11710,25 @@ declare namespace Reactory {
         tools: any[];
         mcp: any[];
       };
+
+      /**
+       * Environment Variables required by the module.
+       */
+      env?: {
+        key: string;
+        description?: string;
+        defaultValue?: string;
+      }[]
+
+      /**
+       * Settings required by the module.
+       */
+      settings?: IReactoryClientSetting<unknown>[];
+
+      /**
+       * The roles this module exposes / uses for access control within the application.
+       */
+      roles?: string[]
     }
 
     export type ReactoryServiceFilter = {
@@ -12374,7 +12393,7 @@ declare namespace Reactory {
        */
       auth_config?: IReactoryAuthConfiguration<unknown>[];
       /**
-       *
+       * Settings configured for the client application.
        */
       settings?: IReactoryClientSetting<unknown>[];
 
