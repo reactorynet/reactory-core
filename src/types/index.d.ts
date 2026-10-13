@@ -73,6 +73,15 @@ declare namespace Reactory {
   export type React = typeof ReactAlias;
 
   /**
+   * Header a client sets to state the language the user chose.
+   *
+   * Declared as a value so consumers can read `Reactory.LANGUAGE_HEADER`; the
+   * runtime value is attached to the exported Reactory class. Shared by the
+   * server's CORS allowlist and the client's request headers.
+   */
+  export const LANGUAGE_HEADER: string;
+
+  /**
    * A basic key value pair interface
    */
   export interface IKeyValuePair<K, V> {
