@@ -38,13 +38,22 @@ describe("Language header constant", () => {
   });
 
   describe("published typings", () => {
-    // `index.d-new.ts` is a dormant sibling of `index.d.ts` that duplicates the
-    // `Reactory` namespace; if it is ever promoted it must already carry the
-    // declaration. The rollup copy of `index.d.ts` is verbatim, so asserting on
-    // the source is equivalent to asserting on `dist/types`.
-    const candidateFiles = ["index.d.ts", "index.d-new.ts"]
-      .map((name) => path.resolve(__dirname, "../src/types", name))
-      .filter((file) => fs.existsSync(file));
+    const typesDir = path.resolve(__dirname, "../src/types");
+
+    // `package.json` `typings` points here and the rollup copy plugin keys on
+    // it, so it must exist and carry the declaration unconditionally. (Rollup
+    // copies it verbatim, so asserting on the source is equivalent to asserting
+    // on `dist/types`.)
+    const publishedEntryPoint = path.resolve(typesDir, "index.d.ts");
+
+    // A dormant sibling that duplicates the `Reactory` namespace. Optional: it
+    // may be deleted, but if present it must carry the declaration so promoting
+    // it cannot drop the constant silently.
+    const siblingFiles = [path.resolve(typesDir, "index.d-new.ts")].filter((file) =>
+      fs.existsSync(file),
+    );
+
+    const candidateFiles = [publishedEntryPoint, ...siblingFiles];
 
     /** The `declare namespace Reactory { ... }` node, if present. */
     const topLevelReactoryNamespace = (
@@ -95,9 +104,11 @@ describe("Language header constant", () => {
       );
     };
 
-    it("has at least one typings entry point", () => {
-      // A missing entry point entirely means the typings moved; fail loudly.
-      expect(candidateFiles.length).toBeGreaterThan(0);
+    it("has the published typings entry point", () => {
+      // A missing published entry point must fail here rather than be masked by
+      // the optional sibling still satisfying the per-file assertions.
+      expect(fs.existsSync(publishedEntryPoint)).toBe(true);
+      expect(candidateFiles).toContain(publishedEntryPoint);
     });
 
     it.each(candidateFiles)(
