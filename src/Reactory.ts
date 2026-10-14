@@ -1,6 +1,6 @@
 "use strict";
 import * as React from 'react';
-import { SERVER_ENVIRONMENT, VERSION } from "./constants";
+import { LANGUAGE_HEADER, SERVER_ENVIRONMENT, VERSION } from "./constants";
 
 /**
   * A feature type
@@ -225,6 +225,15 @@ class Service {
 class ReactoryClass {
   static REACTORY_VERSION = VERSION;
   static REACTORY_ENVIRONMENT = SERVER_ENVIRONMENT;
+
+  /**
+   * Header a client sets to state the language the user chose.
+   *
+   * Shared with the server's CORS allowlist and the client's request headers so
+   * the two cannot drift — a mismatch fails the CORS preflight and presents as
+   * "all GraphQL is broken".
+   */
+  static LANGUAGE_HEADER = LANGUAGE_HEADER;
 
   /**
    * Some core forms that are part of the system

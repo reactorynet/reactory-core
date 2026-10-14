@@ -20,6 +20,19 @@ declare namespace Reactory {
   export type FQN = string;
 
   /**
+   * Header a client sets to state the language the user chose.
+   *
+   * Declared as a value so consumers can read `Reactory.LANGUAGE_HEADER`; the
+   * runtime value is attached to the exported Reactory class. Shared by the
+   * server's CORS allowlist and the client's request headers.
+   *
+   * Kept in step with `index.d.ts` (see `test/languageHeader.spec.ts`): this
+   * file is a dormant sibling that duplicates the `Reactory` namespace, so a
+   * promoted `index.d.ts` must not be able to drop the declaration silently.
+   */
+  export const LANGUAGE_HEADER: string;
+
+  /**
    * A version string that is used to represent a version.
    * @example "1.0.0" or "1.0.0-alpha" or "1.0.0-beta" etc.
    */

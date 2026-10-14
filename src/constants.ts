@@ -1,5 +1,21 @@
 export const VERSION = "1.0.0";
 
+/**
+ * Header a client sets to state the language the user actually chose.
+ *
+ * The request language is read from this header (falling back to
+ * `Accept-Language`) when server-authored strings — form titles, schemas,
+ * default data — are rendered. It lives in the shared core so that the server's
+ * CORS allowlist and the client's request headers are built from a single
+ * definition: when the two were separate literals a rename on one side dropped
+ * the header from the allowlist and made every GraphQL request fail its CORS
+ * preflight, which presents as "all GraphQL is broken" rather than a
+ * localisation problem.
+ *
+ * Exposed to consumers as `Reactory.LANGUAGE_HEADER`.
+ */
+export const LANGUAGE_HEADER = "x-reactory-language";
+
 export const SERVER_ENVIRONMENT: Reactory.Server.ReactoryEnvironment = {
   NODE_PATH: process.env.NODE_PATH || ".",
   NODE_ENV: process.env.NODE_ENV || "development",
