@@ -11724,9 +11724,22 @@ declare namespace Reactory {
        * Environment Variables required by the module.
        */
       env?: {
+        /**
+         * They key / name of the Environment Variable
+         */
         key: string;
+        /**
+         * A description for the environment variable
+         */
         description?: string;
+        /**
+         * Default value provided by the module
+         */
         defaultValue?: string;
+        /**
+         * A component FQN that can be used to edit the environment variable. If blank a plain text input will be used.
+         */
+        componentFqn?: FQN;
       }[]
 
       /**
@@ -13463,7 +13476,7 @@ declare namespace Reactory {
           /**
            * The color of the submit button. Defaults to "primary".
            */
-        color?: string | "primary" | "secondary" | "inherit";
+        color?: MaterialStylesAlias.OverridableStringUnion<"inherit" | "error" | "primary" | "secondary" | "warning" | "info" | "success", MaterialStylesAlias.ButtonPropsColorOverrides>;
           /**
            * The text or label displayed on the submit button.
            * Supports i18n keys (e.g., 'reactory:support-ticket.submit.title-text').
