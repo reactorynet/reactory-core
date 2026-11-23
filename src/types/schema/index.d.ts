@@ -1060,7 +1060,7 @@ declare namespace Reactory {
         rowProps?: {
           [key: string]: unknown;
         };
-        render?: (props: unknown) => JSX.Element;
+        render?: (props: unknown) => React.JSX.Element;
       };
     }
     export interface IFormUISchema extends IUISchema {

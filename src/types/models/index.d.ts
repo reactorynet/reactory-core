@@ -1582,11 +1582,11 @@ declare namespace Reactory {
        /**
         * Components that should be rendered before the form component.
         */
-       before?: React.Component | React.ReactNode | React.ReactNodeArray;
+       before?: React.Component | React.ReactNode | Array<React.ReactNode>;
        /**
         * Components that should be rendered inside the form component as part of the node children.
         */
-       children?: React.ReactNode | React.ReactNodeArray;
+       children?: React.ReactNode | Array<React.ReactNode>;
        /**
         * The current active route
         */
@@ -1681,7 +1681,7 @@ declare namespace Reactory {
       path: string;
       caseSensitive?: boolean;
       key: React.Key;
-      element: () => JSX.Element;
+      element: () => React.JSX.Element;
     }
   }
 }

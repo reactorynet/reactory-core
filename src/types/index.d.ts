@@ -2112,11 +2112,11 @@ declare namespace Reactory {
       /**
        * Components that should be rendered before the form component.
        */
-      before?: React.Component | React.ReactNode | React.ReactNodeArray;
+      before?: React.Component | React.ReactNode | Array<React.ReactNode>;
       /**
        * Components that should be rendered inside the form component as part of the node children.
        */
-      children?: React.ReactNode | React.ReactNodeArray;
+      children?: React.ReactNode | Array<React.ReactNode>;
       /**
        * The current active route
        */
@@ -2222,7 +2222,7 @@ declare namespace Reactory {
       path: string;
       caseSensitive?: boolean;
       key: React.Key;
-      element: () => JSX.Element;
+      element: () => React.JSX.Element;
     }
 
     export namespace Web {
@@ -2265,11 +2265,11 @@ declare namespace Reactory {
       export interface StaticContentProps {
         slug: string;
         editRoles?: string[];
-        defaultValue?: JSX.Element;
+        defaultValue?: React.JSX.Element;
         [key: string]: unknown;
       }
 
-      type StaticContentWidget = (props: StaticContentProps) => JSX.Element;
+      type StaticContentWidget = (props: StaticContentProps) => React.JSX.Element;
 
       export interface IDropDownMenuItem {
         id?: string;
@@ -2283,7 +2283,7 @@ declare namespace Reactory {
         onSelect: (evt: React.SyntheticEvent, menu: IDropDownMenuItem) => void;
       }
 
-      export type DropDownMenu = (props: DropDownMenuProps) => JSX.Element;
+      export type DropDownMenu = (props: DropDownMenuProps) => React.JSX.Element;
 
       export interface FullScreenModalProps {
         onClose: () => void;
@@ -2293,7 +2293,7 @@ declare namespace Reactory {
         [key: string]: unknown;
       }
 
-      export type FullScreenModal = (props: FullScreenModalProps) => JSX.Element;
+      export type FullScreenModal = (props: FullScreenModalProps) => React.JSX.Element;
       export interface TAny {
         id?: string;
         [key: string]: unknown;
@@ -3026,7 +3026,7 @@ declare namespace Reactory {
       export type SupportTicket = (props: {
         reference: string;
         mode: "view" | "edit" | "new";
-      }) => JSX.Element;
+      }) => React.JSX.Element;
 
       /**
        * ReactoryForm component type alias.
@@ -13586,7 +13586,7 @@ declare namespace Reactory {
         rowProps?: {
           [key: string]: unknown;
         };
-        render?: (props: unknown) => JSX.Element;
+        render?: (props: unknown) => React.JSX.Element;
       };
     }
     export interface IFormUISchema extends IUISchema {

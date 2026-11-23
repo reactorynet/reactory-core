@@ -3,7 +3,7 @@
 
 declare namespace Reactory {
   export namespace Components {
-type StaticContentWidget = (props: StaticContentProps) => JSX.Element;
+type StaticContentWidget = (props: StaticContentProps) => React.JSX.Element;
 
       export interface IDropDownMenuItem {
         id?: string;
@@ -17,7 +17,7 @@ type StaticContentWidget = (props: StaticContentProps) => JSX.Element;
         onSelect: (evt: React.SyntheticEvent, menu: IDropDownMenuItem) => void;
       }
 
-      export type DropDownMenu = (props: DropDownMenuProps) => JSX.Element;
+      export type DropDownMenu = (props: DropDownMenuProps) => React.JSX.Element;
 
       export interface FullScreenModalProps {
         onClose: () => void;
@@ -27,7 +27,7 @@ type StaticContentWidget = (props: StaticContentProps) => JSX.Element;
         [key: string]: unknown;
       }
 
-      export type FullScreenModal = (props: FullScreenModalProps) => JSX.Element;
+      export type FullScreenModal = (props: FullScreenModalProps) => React.JSX.Element;
       export interface TAny {
         id?: string;
         [key: string]: unknown;
@@ -617,7 +617,7 @@ type StaticContentWidget = (props: StaticContentProps) => JSX.Element;
       export type SupportTicket = (props: {
         reference: string;
         mode: "view" | "edit" | "new";
-      }) => JSX.Element;
+      }) => React.JSX.Element;
 
       /**
        * ReactoryForm component type alias.
