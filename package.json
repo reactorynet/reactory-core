@@ -25,7 +25,7 @@
     "^reactory/reactory-core(.*)$": "<rootDir>/src/"
   },
   "scripts": {
-    "build:clean": "rm -rf dist && rm -rf docs && rm -rf *.tgz",
+    "build:clean": "rm -rf dist docs && find . -maxdepth 1 -name '*.tgz' -type f -delete",
     "build:rollup": "rollup --config rollup.config.mjs --bundleConfigAsCjs",
     "build:package": "node ./scripts/package.mjs",
     "build:install": "npm-run-all build:clean build:version-write build:rollup build:docs build:package deploy:local",
